@@ -1,0 +1,46 @@
+!SESSION 2026-01-23 12:19:25.856 -----------------------------------------------
+eclipse.buildId=4.38.0.202512192126
+java.version=25.0.1
+java.vendor=Eclipse Adoptium
+BootLoader constants: OS=macosx, ARCH=aarch64, WS=cocoa, NL=en_IN
+Framework arguments:  -product org.springframework.boot.ide.branding.springtools -keyring /Users/madan.mohan2/.eclipse_keyring
+Command-line arguments:  -os macosx -ws cocoa -arch aarch64 -product org.springframework.boot.ide.branding.springtools -keyring /Users/madan.mohan2/.eclipse_keyring
+
+!ENTRY ch.qos.logback.classic 1 0 2026-01-23 12:19:26.634
+!MESSAGE Activated before the state location was initialized. Retry after the state location is initialized.
+
+!ENTRY ch.qos.logback.classic 1 0 2026-01-23 12:19:39.252
+!MESSAGE Logback config file: /Users/madan.mohan2/Documents/JEDI-GROUP-PI-DEVELOPMENT-FLIPKART/JEDIPIDevelopmentJAVAPOS/.metadata/.plugins/org.eclipse.m2e.logback/logback.2.7.101.20251017-1242.xml
+
+!ENTRY org.eclipse.ui 2 0 2026-01-23 12:19:39.310
+!MESSAGE Warnings while parsing the commands from the 'org.eclipse.ui.commands' and 'org.eclipse.ui.actionDefinitions' extension points.
+!SUBENTRY 1 org.eclipse.ui 2 0 2026-01-23 12:19:39.310
+!MESSAGE Commands should really have a category: plug-in='org.springframework.tooling.boot.ls', id='spring.initializr.addStarters', categoryId='org.eclipse.lsp4e.commandCategory'
+
+!ENTRY org.eclipse.ui 2 0 2026-01-23 12:19:39.437
+!MESSAGE Warnings while parsing the commands from the 'org.eclipse.ui.commands' and 'org.eclipse.ui.actionDefinitions' extension points.
+!SUBENTRY 1 org.eclipse.ui 2 0 2026-01-23 12:19:39.437
+!MESSAGE Commands should really have a category: plug-in='org.springframework.tooling.boot.ls', id='spring.initializr.addStarters', categoryId='org.eclipse.lsp4e.commandCategory'
+!SESSION 2026-01-23 12:24:37.455 -----------------------------------------------
+eclipse.buildId=4.38.0.202512192126
+java.version=25.0.1
+java.vendor=Eclipse Adoptium
+BootLoader constants: OS=macosx, ARCH=aarch64, WS=cocoa, NL=en_IN
+Framework arguments:  -product org.springframework.boot.ide.branding.springtools -keyring /Users/madan.mohan2/.eclipse_keyring
+Command-line arguments:  -os macosx -ws cocoa -arch aarch64 -product org.springframework.boot.ide.branding.springtools -keyring /Users/madan.mohan2/.eclipse_keyring
+
+!ENTRY ch.qos.logback.classic 1 0 2026-01-23 12:24:38.304
+!MESSAGE Activated before the state location was initialized. Retry after the state location is initialized.
+
+!ENTRY ch.qos.logback.classic 1 0 2026-01-23 12:24:50.085
+!MESSAGE Logback config file: /Users/madan.mohan2/Documents/JEDI-GROUP-PI-DEVELOPMENT-FLIPKART/JEDIPIDevelopmentJAVAPOS/.metadata/.plugins/org.eclipse.m2e.logback/logback.2.7.101.20251017-1242.xml
+
+!ENTRY org.eclipse.ui 2 0 2026-01-23 12:24:50.173
+!MESSAGE Warnings while parsing the commands from the 'org.eclipse.ui.commands' and 'org.eclipse.ui.actionDefinitions' extension points.
+!SUBENTRY 1 org.eclipse.ui 2 0 2026-01-23 12:24:50.173
+!MESSAGE Commands should really have a category: plug-in='org.springframework.tooling.boot.ls', id='spring.initializr.addStarters', categoryId='org.eclipse.lsp4e.commandCategory'
+
+!ENTRY org.eclipse.ui 2 0 2026-01-23 12:24:50.306
+!MESSAGE Warnings while parsing the commands from the 'org.eclipse.ui.commands' and 'org.eclipse.ui.actionDefinitions' extension points.
+!SUBENTRY 1 org.eclipse.ui 2 0 2026-01-23 12:24:50.306
+!MESSAGE Commands should really have a category: plug-in='org.springframework.tooling.boot.ls', id='spring.initializr.addStarters', categoryId='org.eclipse.lsp4e.commandCategory'
