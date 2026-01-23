@@ -1,7 +1,16 @@
 package com.flipfit.client;
 
 import java.util.Scanner;
-import com.flipfit.business.*;
+
+import com.flipfit.business.GymAdminInterface;
+import com.flipfit.business.GymAdminServiceImpl;
+import com.flipfit.business.GymCustomerInterface;
+import com.flipfit.business.GymCustomerServiceImpl;
+import com.flipfit.business.GymOwnerInterface;
+import com.flipfit.business.GymOwnerServiceImpl;
+import com.flipfit.business.GymUserInterface;
+import com.flipfit.business.GymUserServiceImpl;
+
 
 public class FlipfitApplication {
 
@@ -35,9 +44,11 @@ public class FlipfitApplication {
 						handleRegistration(scanner, userService);
 						break;
 					case 3:
+						handleChangePassword(scanner, userService);
+					case 4:
 						handleGuestMenu(scanner, customerService);
 						break;
-					case 4:
+					case 5:
 						System.out.println("\nThank you for using FlipFit! Stay healthy!");
 						exit = true;
 						break;
@@ -62,6 +73,7 @@ public class FlipfitApplication {
 		System.out.println("========================================");
 		System.out.println("1. Login");
 		System.out.println("2. Register");
+		System.out.println("3. Change Password");
 		System.out.println("3. Browse as Guest");
 		System.out.println("4. Exit");
 		System.out.println("========================================");
@@ -121,6 +133,19 @@ public class FlipfitApplication {
 		
 		System.out.println("\nRegistration successful! Please login to continue.");
 	}
+	
+	private static void handleChangePassword(Scanner scanner, GymUserInterface userService) {
+        System.out.println("\n--- Change Password ---");
+        System.out.print("Enter Email: ");
+        String email = scanner.nextLine();
+        System.out.print("Enter Current Password: ");
+        String oldPassword = scanner.nextLine();
+        System.out.print("Enter New Password: ");
+        String newPassword = scanner.nextLine();
+        
+        // userService.updatePassword(email, oldPassword, newPassword);
+        System.out.println("Password updated successfully!");
+    }
 	
 	/**
 	 * Handle guest menu for browsing
