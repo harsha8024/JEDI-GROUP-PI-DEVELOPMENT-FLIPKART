@@ -7,12 +7,17 @@ public class User {
 	private String phoneNumber;
 	private String city;
 	private String password;
+	private Role role;
+	private boolean isActive;
 	
 	public User() {
-		
+		this.isActive=false;
 	}
 	
-	public User(String userID, String name, String email, String phoneNumber, String city, String password) {
+	
+	
+	public User(String userID, String name, String email, String phoneNumber, String city, String password, Role role,
+			boolean isActive) {
 		super();
 		this.userID = userID;
 		this.name = name;
@@ -20,7 +25,12 @@ public class User {
 		this.phoneNumber = phoneNumber;
 		this.city = city;
 		this.password = password;
+		this.role = role;
+		this.isActive = false;
 	}
+
+
+
 	public String getUserID() {
 		return userID;
 	}
@@ -57,5 +67,31 @@ public class User {
 	public void setPassword(String password) {
 		this.password = password;
 	}
+
+
+
+	public Role getRole() {
+		return role;
+	}
+
+
+
+	public void setRole(Role role) {
+		this.role = role;
+	}
+
+
+
+	public boolean isActive() {
+		return isActive;
+	}
+
+
+
+	public void setActive(boolean isActive) {
+		this.isActive = isActive;
+	}
+	
+	
 	
 }

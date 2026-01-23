@@ -1,24 +1,23 @@
 package com.flipfit.bean;
 
 public class GymCustomer extends User{
-	private boolean isApproved;
-
+	
+	private Registration registration;
 	public GymCustomer() {
 		super();
 	}
 	public GymCustomer(String userID, String name, String email, String phoneNumber, String city, String password,
-			boolean isApproved) {
-		super(userID, name, email, phoneNumber, city, password);
-		this.isApproved = isApproved;
+			Role role,boolean isApproved) {
+		super(userID, name, email, phoneNumber, city, password, role, isApproved);
+	}
+	public Registration getRegistration() {
+		return registration;
+	}
+	public void setRegistration(Registration registration) {
+		this.registration = registration;
 	}
 	
-	public boolean isApproved() {
-		return isApproved;
-	}
 	
-	public void setApproved(boolean approved) {
-		isApproved=approved;
-	}
 	
 	
 }
