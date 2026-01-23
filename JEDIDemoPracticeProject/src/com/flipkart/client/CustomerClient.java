@@ -22,8 +22,8 @@ public class CustomerClient {
 		CustomerInterface customer=new CustomerImpl();
 		customer.createCustomer();
 		customer.listCustomer();
-		System.out.println("Update customer-->"+customer.updateCustomer(101));
-		System.out.println("Delete customer-->"+customer.deleteCustomer(101));
+//		System.out.println("Update customer-->"+customer.updateCustomer(101));
+//		System.out.println("Delete customer-->"+customer.deleteCustomer(101));
 
 	}
 
