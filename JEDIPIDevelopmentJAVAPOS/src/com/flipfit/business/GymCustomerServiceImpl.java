@@ -1,7 +1,7 @@
 package com.flipfit.business;
-
 import com.flipfit.bean.Gym;
 import com.flipfit.bean.Booking;
+import com.flipfit.bean.User;
 import com.flipfit.bean.Slot;
 import java.util.ArrayList;
 import java.util.List;
@@ -44,15 +44,41 @@ public class GymCustomerServiceImpl implements GymCustomerInterface {
         allSlots.stream()
             .filter(s -> s.getGymId().equals(gymId))
             .forEach(s -> System.out.println(s.toString()));
+
     }
 
     @Override
     public boolean bookSlot(String slotId) {
-        // Create a new Booking object
+        // 1. First, find the slot to know which gym it belongs to
+        Slot selectedSlot = allSlots.stream()
+                .filter(s -> s.getSlotId().equals(slotId))
+                .findFirst()
+                .orElse(null);
+
+        if (selectedSlot == null) {
+            System.out.println("Error: Slot ID " + slotId + " does not exist.");
+            return false;
+        }
+
+        String gymId = selectedSlot.getGymId();
+
+        // 2. Check if the Gym ID exists in the central gym list (from OwnerService)
+        // Reusing the shared static list to ensure we are looking at real data
+        boolean gymExists = GymOwnerServiceImpl.getGymList().stream()
+                .anyMatch(g -> g.getGymId().equals(gymId));
+
+        if (!gymExists) {
+            System.out.println("Error: The gym associated with this slot (ID: " + gymId + ") no longer exists.");
+            return false;
+        }
+
+        // 3. Create a new Booking object since validation passed
         Booking newBooking = new Booking();
         newBooking.setBookingId("B" + (customerBookings.size() + 1));
         newBooking.setSlotId(slotId);
+        newBooking.setGymId(gymId); // Link the gym ID to the booking
         newBooking.setStatus("CONFIRMED");
+        newBooking.setBookingDate(java.time.LocalDate.now()); // Default to today for testing
         
         customerBookings.add(newBooking);
         System.out.println("Booking successful! Your Booking ID: " + newBooking.getBookingId());
@@ -102,12 +128,14 @@ public class GymCustomerServiceImpl implements GymCustomerInterface {
         } catch (java.time.format.DateTimeParseException e) {
             System.out.println("Invalid date format! Please use YYYY-MM-DD.");
         }
+
     }
 
     @Override
     public boolean cancelBooking(String bookingId) {
         // removeIf returns true if a booking was actually found and removed
         boolean removed = customerBookings.removeIf(b -> b.getBookingId().equals(bookingId));
+
         
         if (removed) {
             System.out.println("Success: Booking " + bookingId + " has been removed from the system.");
@@ -135,5 +163,6 @@ public class GymCustomerServiceImpl implements GymCustomerInterface {
     @Override
     public void register() {
         System.out.println("Customer registration handled by GymUserService.");
+
     }
 }

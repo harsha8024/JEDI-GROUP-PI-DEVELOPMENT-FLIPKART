@@ -1,16 +1,9 @@
 package com.flipfit.client;
 
 import java.util.Scanner;
-
-import com.flipfit.business.GymAdminInterface;
-import com.flipfit.business.GymAdminServiceImpl;
-import com.flipfit.business.GymCustomerInterface;
-import com.flipfit.business.GymCustomerServiceImpl;
-import com.flipfit.business.GymOwnerInterface;
-import com.flipfit.business.GymOwnerServiceImpl;
-import com.flipfit.business.GymUserInterface;
-import com.flipfit.business.GymUserServiceImpl;
-
+import java.util.List;              
+import com.flipfit.bean.Gym;
+import com.flipfit.business.*;
 
 public class FlipfitApplication {
 
@@ -175,39 +168,58 @@ public class FlipfitApplication {
 	 * Handle guest menu for browsing
 	 */
 	private static void handleGuestMenu(Scanner scanner, GymCustomerInterface customerService) {
-		boolean back = false;
-		
-		while (!back) {
-			System.out.println("\n--- Guest Menu ---");
-			System.out.println("1. View All Gyms in City");
-			System.out.println("2. View Gym Details");
-			System.out.println("3. Back to Main Menu");
-			System.out.print("Enter your choice: ");
-			
-			int choice = scanner.nextInt();
-			scanner.nextLine();
-			
-			switch (choice) {
-				case 1:
-					System.out.print("Enter city name: ");
-					String city = scanner.nextLine();
-					System.out.println("\nDisplaying gyms in " + city + "...");
-					// Call service method to display gyms
-					break;
-				case 2:
-					System.out.print("Enter gym ID: ");
-					String gymId = scanner.nextLine();
-					System.out.println("\nDisplaying details for gym " + gymId + "...");
-					// Call service method to display gym details
-					break;
-				case 3:
-					back = true;
-					break;
-				default:
-					System.out.println("Invalid choice!");
-			}
-		}
+	    boolean back = false;
+	    
+	    while (!back) {
+	        System.out.println("\n--- Guest Menu ---");
+	        System.out.println("1. View All Gyms in City");
+	        System.out.println("2. View Gym Details");
+	        System.out.println("3. Back to Main Menu");
+	        System.out.print("Enter your choice: ");
+	        
+	        int choice = scanner.nextInt();
+	        scanner.nextLine(); // Consume newline
+	        
+	        switch (choice) {
+	            case 1:
+	                System.out.print("Enter city (location) name: ");
+	                String locationInput = scanner.nextLine();
+	                // Reusing the logic already written in Customer Service
+	                customerService.viewCenters(locationInput);
+	                break;
+	                
+	            case 2:
+	                System.out.print("Enter gym ID: ");
+	                String inputId = scanner.nextLine().trim(); // .trim() removes accidental spaces
+	                System.out.println("\n--- Fetching details for ID: " + inputId + " ---");
+	                
+	                // Check if the list actually has data
+	                List<Gym> currentGyms = GymOwnerServiceImpl.getGymList();
+	                
+	                currentGyms.stream()
+	                    .filter(g -> g.getGymId().equalsIgnoreCase(inputId))
+	                    .findFirst()
+	                    .ifPresentOrElse(
+	                        g -> {
+	                            System.out.println("----------------------------");
+	                            System.out.println("Gym Name : " + g.getGymName());
+	                            System.out.println("Location : " + g.getLocation());
+	                            System.out.println("Status   : " + (g.isApproved() ? "Verified" : "Pending Approval"));
+	                            System.out.println("----------------------------");
+	                        },
+	                        () -> System.out.println("[Error] Gym ID " + inputId + " not found in our records.")
+	                    );
+	                break;
+	            case 3:
+	                back = true;
+	                break;
+	                
+	            default:
+	                System.out.println("Invalid choice! Please select 1, 2, or 3.");
+	        }
+	    }
 	}
+	
 	
 	/**
 	 * Handle customer menu
