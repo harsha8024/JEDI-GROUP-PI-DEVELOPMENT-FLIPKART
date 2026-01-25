@@ -45,6 +45,7 @@ public class FlipfitApplication {
 						break;
 					case 3:
 						handleChangePassword(scanner, userService);
+						break;
 					case 4:
 						handleGuestMenu(scanner, customerService);
 						break;
@@ -74,8 +75,8 @@ public class FlipfitApplication {
 		System.out.println("1. Login");
 		System.out.println("2. Register");
 		System.out.println("3. Change Password");
-		System.out.println("3. Browse as Guest");
-		System.out.println("4. Exit");
+		System.out.println("4. Browse as Guest");
+		System.out.println("5. Exit");
 		System.out.println("========================================");
 	}
 	
@@ -83,69 +84,92 @@ public class FlipfitApplication {
 	 * Handle user login
 	 */
 	private static void handleLogin(Scanner scanner, GymUserInterface userService,
-									GymCustomerInterface customerService, 
-									GymOwnerInterface ownerService,
-									GymAdminInterface adminService) {
-		System.out.println("\n--- Login ---");
-		System.out.print("Email: ");
-		String email = scanner.nextLine();
-		System.out.print("Password: ");
-		String password = scanner.nextLine();
-		
-		// In a real implementation, this would validate credentials
-		System.out.println("\nLogin successful!");
-		System.out.print("Select your role (1: Customer, 2: Owner, 3: Admin): ");
-		int roleChoice = scanner.nextInt();
-		scanner.nextLine();
-		
-		switch (roleChoice) {
-			case 1:
-				handleCustomerMenu(scanner, customerService);
-				break;
-			case 2:
-				handleOwnerMenu(scanner, ownerService);
-				break;
-			case 3:
-				handleAdminMenu(scanner, adminService);
-				break;
-			default:
-				System.out.println("Invalid role selection!");
-		}
-	}
+            GymCustomerInterface customerService, 
+            GymOwnerInterface ownerService,
+            GymAdminInterface adminService) {
+			System.out.println("\n--- Login ---");
+			System.out.print("Email: ");
+			String email = scanner.nextLine();
+			System.out.print("Password: ");
+			String password = scanner.nextLine();
+			
+			// Check the Collection-based logic in Service
+			boolean isAuthenticated = userService.login(email, password);
+			
+			if (isAuthenticated) {
+				System.out.println("\nLogin successful!");
+				System.out.print("Select your role (1: Customer, 2: Owner, 3: Admin): ");
+				int roleChoice = scanner.nextInt();
+				scanner.nextLine();
+				
+				switch (roleChoice) {
+					case 1:
+						handleCustomerMenu(scanner, customerService);
+						break;
+					case 2:
+						handleOwnerMenu(scanner, ownerService);
+						break;
+					case 3:
+						handleAdminMenu(scanner, adminService);
+						break;
+					default:
+						System.out.println("Invalid role selection!");
+					}
+				} else {
+					System.out.println("\nLogin failed! Invalid Email or Password.");
+				}
+			}
 	
 	/**
 	 * Handle user registration
 	 */
 	private static void handleRegistration(Scanner scanner, GymUserInterface userService) {
-		System.out.println("\n--- Registration ---");
-		System.out.print("Name: ");
-		String name = scanner.nextLine();
-		System.out.print("Email: ");
-		String email = scanner.nextLine();
-		System.out.print("Phone Number: ");
-		String phoneNumber = scanner.nextLine();
-		System.out.print("City: ");
-		String city = scanner.nextLine();
-		System.out.print("Password: ");
-		String password = scanner.nextLine();
-		System.out.print("Role (Customer/Owner/Admin): ");
-		String role = scanner.nextLine();
-		
-		System.out.println("\nRegistration successful! Please login to continue.");
+	    System.out.println("\n--- Registration ---");
+	    System.out.print("Name: ");
+	    String name = scanner.nextLine();
+	    System.out.print("Email: ");
+	    String email = scanner.nextLine();
+	    System.out.print("Password: ");
+	    String password = scanner.nextLine();
+	    System.out.print("Phone Number: ");
+	    String phoneNumber = scanner.nextLine();
+	    System.out.print("City: ");
+	    String city = scanner.nextLine();
+
+	    // 1. Create a User Bean object
+	    com.flipfit.bean.User newUser = new com.flipfit.bean.User();
+	    newUser.setName(name);
+	    newUser.setEmail(email);
+	    newUser.setPassword(password);
+	    newUser.setPhoneNumber(phoneNumber);
+	    newUser.setCity(city);
+
+	    // 2. Pass the bean to the Service to store in the Map
+	    // We cast to the Impl to access the register method
+	    ((com.flipfit.business.GymUserServiceImpl) userService).register(newUser);
+
+	    System.out.println("\nRegistration successful! Please login to continue.");
 	}
 	
 	private static void handleChangePassword(Scanner scanner, GymUserInterface userService) {
-        System.out.println("\n--- Change Password ---");
-        System.out.print("Enter Email: ");
-        String email = scanner.nextLine();
-        System.out.print("Enter Current Password: ");
-        String oldPassword = scanner.nextLine();
-        System.out.print("Enter New Password: ");
-        String newPassword = scanner.nextLine();
-        
-        // userService.updatePassword(email, oldPassword, newPassword);
-        System.out.println("Password updated successfully!");
-    }
+	    System.out.println("\n--- Change Password ---");
+	    System.out.print("Enter Email: ");
+	    String email = scanner.nextLine();
+	    System.out.print("Enter Current Password: ");
+	    String oldPassword = scanner.nextLine();
+	    System.out.print("Enter New Password: ");
+	    String newPassword = scanner.nextLine();
+	    
+	    // Call the Service logic we just wrote
+	    // We cast it to the Impl class to access the specific updatePassword method
+	    boolean isUpdated = ((GymUserServiceImpl) userService).updatePassword(email, oldPassword, newPassword);
+	    
+	    if (isUpdated) {
+	        System.out.println("Password updated successfully!");
+	    } else {
+	        System.out.println("Failed to update password. Please check your credentials.");
+	    }
+	}
 	
 	/**
 	 * Handle guest menu for browsing
@@ -210,48 +234,78 @@ public class FlipfitApplication {
 			scanner.nextLine();
 			
 			switch (choice) {
+				// Inside handleCustomerMenu switch(choice)
 				case 1:
-					System.out.print("Enter city name: ");
-					String city = scanner.nextLine();
-					System.out.println("\nFetching gyms in " + city + "...");
-					// customerService.viewGyms(city);
-					break;
+				    System.out.print("Enter city name: ");
+				    String cityName = scanner.nextLine();
+				    customerService.viewCenters(cityName); // Logic linked!
+				    break;
 				case 2:
-					System.out.print("Enter gym ID: ");
-					String gymId = scanner.nextLine();
-					System.out.print("Enter date (YYYY-MM-DD): ");
-					String date = scanner.nextLine();
-					System.out.println("\nFetching available slots...");
-					// customerService.viewAvailableSlots(gymId, date);
-					break;
+				    System.out.print("Enter gym ID: ");
+				    String gid = scanner.nextLine();
+				    System.out.print("Enter date (YYYY-MM-DD): ");
+				    String d = scanner.nextLine();
+				    customerService.viewAvailableSlots(gid, d); // Logic linked!
+				    break;
 				case 3:
-					handleBookingProcess(scanner, customerService);
-					break;
+				    handleBookingProcess(scanner, customerService); 
+				    break;
 				case 4:
-					System.out.println("\nYour Bookings:");
-					// customerService.viewMyBookings(userId);
-					break;
+					customerService.viewMyBookings(); 
+				    break;
 				case 5:
 					System.out.print("Enter booking ID to cancel: ");
-					String bookingId = scanner.nextLine();
-					System.out.println("\nBooking " + bookingId + " cancelled successfully!");
-					// customerService.cancelBooking(bookingId);
-					break;
+				    String bid = scanner.nextLine();
+				    
+				    // Call the service and check the result
+				    boolean isCancelled = customerService.cancelBooking(bid);
+				    
+				    if (isCancelled) {
+				        // Success message is handled inside the service or here
+				        System.out.println("\nUpdate: Your schedule has been cleared for that slot.");
+				    } else {
+				        System.out.println("\nAction Failed: Please verify the Booking ID from 'View My Bookings'.");
+				    }
+				    break;
 				case 6:
-					System.out.print("Enter date (YYYY-MM-DD): ");
-					String planDate = scanner.nextLine();
-					System.out.println("\nYour plan for " + planDate + ":");
-					// customerService.viewPlanByDay(userId, planDate);
-					break;
+				    System.out.print("Enter date (YYYY-MM-DD): ");
+				    String planDate = scanner.nextLine();
+				    
+				    // Calling the service method linked to the Collection
+				    customerService.viewPlanByDay(planDate);
+				    break;
+				    
 				case 7:
-					GymUserFlipFitMenu.showMenu(scanner);
-					break;
+				    System.out.println("\n--- Update Profile ---");
+				    System.out.print("Verify your Email: ");
+				    String emailToUpdate = scanner.nextLine();
+				    System.out.print("Enter New Name: ");
+				    String newName = scanner.nextLine();
+				    System.out.print("Enter New Phone: ");
+				    String newPhone = scanner.nextLine();
+				    System.out.print("Enter New City: ");
+				    String newCity = scanner.nextLine();
+
+				    // Call the Service logic
+				 // This will no longer be red
+				    boolean success = customerService.updateProfile(emailToUpdate, newName, newPhone, newCity);
+
+				    if (success) {
+				        System.out.println("Profile updated successfully in the system!");
+				    } else {
+				        System.out.println("Update failed. User email not found.");
+				    }
+				    break;  
 				case 8:
-					System.out.println("\nLogged out successfully!");
-					back = true;
-					break;
-				default:
-					System.out.println("Invalid choice!");
+				    // 1. Call the service to perform logic
+					customerService.logout(); 
+				    
+				    // 2. Break the menu loop to return to Main Menu
+				    back = true; 
+				    
+				    // 3. Provide clear user feedback
+				    System.out.println("You have been safely logged out. See you soon!");
+				    break;
 			}
 		}
 	}
@@ -260,19 +314,24 @@ public class FlipfitApplication {
 	 * Handle booking process
 	 */
 	private static void handleBookingProcess(Scanner scanner, GymCustomerInterface customerService) {
-		System.out.println("\n--- Book a Slot ---");
-		System.out.print("Enter gym ID: ");
-		String gymId = scanner.nextLine();
-		System.out.print("Enter slot ID: ");
-		String slotId = scanner.nextLine();
-		System.out.print("Enter date (YYYY-MM-DD): ");
-		String date = scanner.nextLine();
-		System.out.print("Any special requirements? (or press Enter to skip): ");
-		String specialReq = scanner.nextLine();
-		
-		System.out.println("\nBooking confirmed!");
-		System.out.println("You will receive a confirmation email shortly.");
-		// customerService.bookSlot(userId, gymId, slotId, date, specialReq);
+	    System.out.println("\n--- Book a Slot ---");
+	    System.out.print("Enter gym ID: ");
+	    String gymId = scanner.nextLine();
+	    System.out.print("Enter slot ID: ");
+	    String slotId = scanner.nextLine();
+	    System.out.print("Enter date (YYYY-MM-DD): ");
+	    String date = scanner.nextLine();
+	    
+	    // The link: Passing data to the service logic
+	    // Based on your current GymCustomerServiceImpl, we pass the slotId
+	    boolean isBooked = customerService.bookSlot(slotId);
+	    
+	    if (isBooked) {
+	        System.out.println("\nBooking confirmed for Slot ID: " + slotId);
+	        System.out.println("You can verify this in 'View My Bookings'.");
+	    } else {
+	        System.out.println("\nBooking failed. Slot might be full or invalid.");
+	    }
 	}
 	
 	/**
