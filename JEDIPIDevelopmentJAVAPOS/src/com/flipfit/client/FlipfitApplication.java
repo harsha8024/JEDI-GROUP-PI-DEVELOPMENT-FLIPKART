@@ -72,7 +72,7 @@ public class FlipfitApplication {
         
         System.out.println("\n--- Login ---");
         System.out.print("Email: ");
-        String email = scanner.nextLine();
+        String email = scanner.nextLine(); // This is your loggedInEmail
         System.out.print("Password: ");
         String password = scanner.nextLine();
 
@@ -84,22 +84,21 @@ public class FlipfitApplication {
 
             switch (roleChoice) {
                 case 1:
-                    // Utilizing com.flipfit.client.GymCustomerFlipFitMenu
+                    // Pass 'email' so the customer service knows who is booking
                     GymCustomerFlipFitMenu.showCustomerMenu(scanner, customerService);
                     break;
                 case 2:
-                    // Utilizing com.flipfit.client.GymOwnerFlipFitMenu
-                    GymOwnerFlipFitMenu.showOwnerMenu(scanner, ownerService);
+                    // Pass 'email' so the owner can update their specific profile
+                    GymOwnerFlipFitMenu.showOwnerMenu(scanner, ownerService, email);
                     break;
                 case 3:
-                    // Utilizing com.flipfit.client.GymAdminFlipfitMenu
                     GymAdminFlipfitMenu.showAdminMenu(scanner, adminService);
                     break;
                 default:
-                    System.out.println("Invalid role selection.");
+                    System.out.println("Invalid selection.");
             }
         } else {
-            System.out.println("[ERROR] Invalid credentials.");
+            System.out.println("[ERROR] Login failed.");
         }
     }
 

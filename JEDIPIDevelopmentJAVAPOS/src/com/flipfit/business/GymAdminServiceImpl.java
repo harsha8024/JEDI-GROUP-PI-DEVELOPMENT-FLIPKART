@@ -1,50 +1,80 @@
 package com.flipfit.business;
 
 import com.flipfit.bean.Gym;
-import com.flipfit.bean.User; // Added import
+import com.flipfit.bean.User;
 import java.util.List;
-import java.util.Map; // Added import
-import java.util.stream.Collectors;
+import java.util.Map;
 
 public class GymAdminServiceImpl implements GymAdminInterface {
 
     @Override
     public List<Gym> viewPendingApprovals() {
-        // Accessing the shared list via the static getter
+        // Access shared list and filter for isApproved == false
         return GymOwnerServiceImpl.getGymList().stream()
                 .filter(gym -> !gym.isApproved())
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
     public void approveGym(String gymId) {
-        List<Gym> allGyms = GymOwnerServiceImpl.getGymList();
-        for (Gym gym : allGyms) {
-            if (gym.getGymId().equals(gymId)) {
-                gym.setApproved(true);
-                System.out.println("Successfully approved " + gym.getGymName());
-                return;
-            }
+        GymOwnerServiceImpl.getGymList().stream()
+                .filter(gym -> gym.getGymId().equals(gymId))
+                .findFirst()
+                .ifPresentOrElse(
+                    gym -> {
+                        gym.setApproved(true);
+                        System.out.println("Gym " + gymId + " approved successfully!");
+                    },
+                    () -> System.out.println("Gym ID not found.")
+                );
+    }
+
+    @Override
+    public void rejectGym(String gymId) {
+        // Remove the gym from the shared list if rejected
+        boolean removed = GymOwnerServiceImpl.getGymList()
+                .removeIf(gym -> gym.getGymId().equals(gymId));
+        
+        if (removed) {
+            System.out.println("Gym " + gymId + " has been rejected and removed.");
+        } else {
+            System.out.println("Gym ID not found.");
         }
-        System.out.println("Gym ID " + gymId + " not found.");
+    }
+
+    @Override
+    public void viewAllGyms() {
+        List<Gym> gyms = GymOwnerServiceImpl.getGymList();
+        if (gyms.isEmpty()) {
+            System.out.println("No gyms registered in the system.");
+        } else {
+            gyms.forEach(g -> System.out.println("ID: " + g.getGymId() + " | Name: " + g.getGymName() + " | Status: " + (g.isApproved() ? "Approved" : "Pending")));
+        }
     }
 
     @Override
     public void viewAllUsers() {
-        // Calling the static getter we implemented in GymUserServiceImpl
         Map<String, User> users = GymUserServiceImpl.getUserMap();
-        
-        if (users == null || users.isEmpty()) {
-            System.out.println("No users registered in the system.");
+        if (users.isEmpty()) {
+            System.out.println("No users registered.");
         } else {
-            System.out.println("\n--- All Registered Users ---");
-            // Using Collection API values() to get all User objects from the Map
-            users.values().forEach(user -> {
-                System.out.println("ID: " + user.getUserID() + 
-                                   " | Name: " + user.getName() + 
-                                   " | Email: " + user.getEmail() + 
-                                   " | Role: " + user.getRole());
-            });
+            users.values().forEach(u -> System.out.println("Name: " + u.getName() + " | Email: " + u.getEmail() + " | City: " + u.getCity()));
+        }
+    }
+
+    @Override
+    public void viewAllBookings() {
+        // This would typically access a shared booking list from Customer Service
+        System.out.println("Fetching all system-wide bookings...");
+    }
+
+    @Override
+    public void generateReports(int reportType) {
+        switch (reportType) {
+            case 1 -> System.out.println("Report: Total Revenue generated is $5000.");
+            case 2 -> System.out.println("Report: 50 New Users registered this month.");
+            case 3 -> System.out.println("Report: Gym 'PowerHouse' has 90% utilization.");
+            default -> System.out.println("Invalid report type.");
         }
     }
 }
