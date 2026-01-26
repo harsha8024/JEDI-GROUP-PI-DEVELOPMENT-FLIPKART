@@ -8,6 +8,10 @@ import com.flipfit.bean.User;
 public class GymOwnerServiceImpl implements GymOwnerInterface {
     // Shared collection for all gym data
     private static List<Gym> gymList = new ArrayList<>();
+    static {
+        gymList.add(new Gym("G101", "PowerHouse Gym", "Bengaluru", true));
+        gymList.add(new Gym("G102", "FitLife Center", "Mumbai", false));
+    }
 
     // CRITICAL: This method allows Admin and Customer to access the collection
     public static List<Gym> getGymList() {
