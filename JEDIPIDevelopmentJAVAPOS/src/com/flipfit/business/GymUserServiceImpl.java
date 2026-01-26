@@ -5,10 +5,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class GymUserServiceImpl implements GymUserInterface {
-    // Centralized User Collection
+
     private static Map<String, User> userDatabase = new HashMap<>();
 
-    // Static getter for Admin service access
     public static Map<String, User> getUserMap() {
         return userDatabase;
     }
@@ -28,15 +27,28 @@ public class GymUserServiceImpl implements GymUserInterface {
     }
 
     @Override
-    public void updatePassword(String email, String newPassword) {
+    public boolean updatePassword(String email, String oldPassword, String newPassword) {
         if (userDatabase.containsKey(email)) {
-            userDatabase.get(email).setPassword(newPassword);
+            User user = userDatabase.get(email);
+            
+            if (user.getPassword().equals(oldPassword)) {
+                user.setPassword(newPassword);
+                userDatabase.put(email, user); 
+                System.out.println("Password successfully updated for: " + email);
+                return true;
+            } else {
+                System.out.println("[Error] Old password does not match.");
+            }
+        } else {
+            System.out.println("[Error] User not found.");
         }
+        return false;
     }
 
     @Override
     public void logout() {
         System.out.println("User logged out successfully.");
     }
+
 
 }
