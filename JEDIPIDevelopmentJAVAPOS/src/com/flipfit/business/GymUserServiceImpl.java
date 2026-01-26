@@ -1,5 +1,6 @@
 package com.flipfit.business;
 
+import com.flipfit.bean.GymAdmin;
 import com.flipfit.bean.User;
 import java.util.HashMap;
 import java.util.Map;
@@ -7,6 +8,24 @@ import java.util.Map;
 public class GymUserServiceImpl implements GymUserInterface {
 
     private static Map<String, User> userDatabase = new HashMap<>();
+    
+    static {
+        System.out.println("Booting up system... Creating default Admin account.");
+        
+        // 1. Create the single Admin object
+        GymAdmin defaultAdmin = new GymAdmin();
+        defaultAdmin.setUserID("ADMIN-001");
+        defaultAdmin.setName("FlipFit Admin");
+        defaultAdmin.setEmail("admin@flipfit.com"); // The fixed email
+        defaultAdmin.setPassword("admin123");       // The fixed password
+        defaultAdmin.setCity("Headquarters");
+        defaultAdmin.setPhoneNumber("9999999999");
+        defaultAdmin.setRole(new Role("RO3", "Admin", "System Administrator"));
+        defaultAdmin.setActive(true);
+
+        // 2. Add it to the map immediately
+        userDatabase.put(defaultAdmin.getEmail(), defaultAdmin);
+    }
 
     public static Map<String, User> getUserMap() {
         return userDatabase;
