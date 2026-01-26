@@ -1,168 +1,135 @@
 package com.flipfit.business;
-import com.flipfit.bean.Gym;
-import com.flipfit.bean.Booking;
+
 import com.flipfit.bean.User;
+import com.flipfit.bean.Gym;
 import com.flipfit.bean.Slot;
-import java.util.ArrayList;
+import com.flipfit.bean.Booking;
+import com.flipfit.database.LocalFileDatabase;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class GymCustomerServiceImpl implements GymCustomerInterface {
-    
-    // Collections to store our data in-memory
-    private static List<Gym> gymCenters = new ArrayList<>();
-    private static List<Booking> customerBookings = new ArrayList<>();
-    private static List<Slot> allSlots = new ArrayList<>();
 
-    // Hardcoded data initialization
-    static {
-        gymCenters.add(new Gym("G101", "FlipFit Bellandur", "Bangalore", true));
-        gymCenters.add(new Gym("G102", "FlipFit Koramangala", "Bangalore", true));
-        gymCenters.add(new Gym("G103", "FlipFit Andheri", "Mumbai", true));
-        
-        // Example slot for testing
-        allSlots.add(new Slot("S1", "G101", java.time.LocalTime.of(6, 0), java.time.LocalTime.of(7, 0), 20, 15));
+    public void register(User user) {
+        GymUserServiceImpl userService = new GymUserServiceImpl();
+        userService.register(user);
     }
 
-    @Override
-    public void viewCenters(String city) {
-        System.out.println("\n--- Available Gyms in " + city + " ---");
-        List<Gym> filtered = gymCenters.stream()
-            .filter(g -> g.getLocation().equalsIgnoreCase(city) && g.isApproved())
-            .collect(Collectors.toList());
-
-        if (filtered.isEmpty()) {
-            System.out.println("No approved gyms found in this city.");
+    public void viewCenters(String cityInput) {
+        List<Gym> allGyms = GymOwnerServiceImpl.getGymList(); 
+        List<Gym> filteredGyms = allGyms.stream().filter(gym -> gym.getLocation() != null && gym.getLocation().equalsIgnoreCase(cityInput)).filter(Gym::isApproved).collect(Collectors.toList());
+        if (filteredGyms.isEmpty()) {
+            System.out.println("No approved gym centers found in " + cityInput);
         } else {
-            filtered.forEach(g -> System.out.println("Gym ID: " + g.getGymId() + " | Name: " + g.getGymName()));
+            System.out.println("\n--- Available Centers in " + cityInput + " ---");
+            filteredGyms.forEach(g -> System.out.println("ID: " + g.getGymId() + " | Name: " + g.getGymName() + " | Address: " + g.getLocation()));
         }
     }
 
-    @Override
-    public void viewAvailableSlots(String gymId, String date) {
-        System.out.println("Fetching slots for Gym: " + gymId + " on " + date);
-        allSlots.stream()
-            .filter(s -> s.getGymId().equals(gymId))
-            .forEach(s -> System.out.println(s.toString()));
-
+    public void viewSlotsForGym(String gymId, LocalDate date) {
+        List<Slot> slots = LocalFileDatabase.loadSlots().stream().filter(slot -> slot.getGymId().equals(gymId)).collect(Collectors.toList());
+        if (slots.isEmpty()) {
+            System.out.println("No slots available for this gym.");
+        } else {
+            System.out.println("\n--- Available Slots for Gym " + gymId + " on " + date + " ---");
+            for (Slot slot : slots) {
+                String availability = slot.getAvailableSeats() > 0 ? "Available" : "Full";
+                System.out.println("Slot ID: " + slot.getSlotId() + " | Time: " + slot.getStartTime() + " - " + slot.getEndTime() + " | Available: " + slot.getAvailableSeats() + "/" + slot.getCapacity() + " | Status: " + availability);
+            }
+        }
     }
 
-    @Override
-    public boolean bookSlot(String slotId) {
-        // 1. First, find the slot to know which gym it belongs to
-        Slot selectedSlot = allSlots.stream()
-                .filter(s -> s.getSlotId().equals(slotId))
-                .findFirst()
-                .orElse(null);
+    public List<Slot> getAvailableSlots(String gymId, LocalDate date) {
+        return LocalFileDatabase.loadSlots().stream().filter(slot -> slot.getGymId().equals(gymId)).filter(slot -> slot.getAvailableSeats() > 0).collect(Collectors.toList());
+    }
 
-        if (selectedSlot == null) {
-            System.out.println("Error: Slot ID " + slotId + " does not exist.");
+    public boolean bookSlot(String userId, String slotId, String gymId, LocalDate date) {
+        List<Slot> slots = LocalFileDatabase.loadSlots();
+        List<Booking> bookings = LocalFileDatabase.loadBookings();
+        Slot targetSlot = slots.stream().filter(slot -> slot.getSlotId().equals(slotId)).findFirst().orElse(null);
+        if (targetSlot == null) {
+            System.out.println("Error: Slot not found!");
             return false;
         }
-
-        String gymId = selectedSlot.getGymId();
-
-        // 2. Check if the Gym ID exists in the central gym list (from OwnerService)
-        // Reusing the shared static list to ensure we are looking at real data
-        boolean gymExists = GymOwnerServiceImpl.getGymList().stream()
-                .anyMatch(g -> g.getGymId().equals(gymId));
-
-        if (!gymExists) {
-            System.out.println("Error: The gym associated with this slot (ID: " + gymId + ") no longer exists.");
+        if (targetSlot.getAvailableSeats() <= 0) {
+            System.out.println("Error: This slot is fully booked!");
             return false;
         }
-
-        // 3. Create a new Booking object since validation passed
+        final Slot finalTargetSlot = targetSlot;
+        boolean conflictExists = bookings.stream().filter(b -> b.getUserId().equals(userId)).filter(b -> b.getBookingDate().equals(date)).filter(b -> b.getStatus().equals("ACTIVE")).anyMatch(b -> {
+            Slot bookedSlot = slots.stream().filter(s -> s.getSlotId().equals(b.getSlotId())).findFirst().orElse(null);
+            if (bookedSlot != null) {
+                return !(finalTargetSlot.getEndTime().isBefore(bookedSlot.getStartTime()) || finalTargetSlot.getStartTime().isAfter(bookedSlot.getEndTime()));
+            }
+            return false;
+        });
+        if (conflictExists) {
+            System.out.println("Error: You already have a booking at this time on " + date);
+            return false;
+        }
+        String bookingId = LocalFileDatabase.generateBookingId();
         Booking newBooking = new Booking();
-        newBooking.setBookingId("B" + (customerBookings.size() + 1));
+        newBooking.setBookingId(bookingId);
+        newBooking.setUserId(userId);
         newBooking.setSlotId(slotId);
-        newBooking.setGymId(gymId); // Link the gym ID to the booking
-        newBooking.setStatus("CONFIRMED");
-        newBooking.setBookingDate(java.time.LocalDate.now()); // Default to today for testing
-        
-        customerBookings.add(newBooking);
-        System.out.println("Booking successful! Your Booking ID: " + newBooking.getBookingId());
+        newBooking.setGymId(gymId);
+        newBooking.setBookingDate(date);
+        newBooking.setStatus("ACTIVE");
+        newBooking.setCreatedAt(LocalDateTime.now());
+        targetSlot.setAvailableSeats(targetSlot.getAvailableSeats() - 1);
+        LocalFileDatabase.saveBooking(newBooking);
+        LocalFileDatabase.updateSlot(targetSlot);
+        System.out.println("Successfully booked slot: " + slotId);
         return true;
     }
 
-    @Override
-    public void viewMyBookings() {
-        System.out.println("\n--- Your Confirmed Bookings ---");
-        
-        // Check if the Collection is empty
-        if (customerBookings.isEmpty()) {
-            System.out.println("No bookings found. Go to 'Book a Slot' to make a reservation.");
-        } else {
-            // Use a loop or forEach to display each Booking bean in the List
-            for (Booking b : customerBookings) {
-                System.out.println("Booking ID: " + b.getBookingId() + 
-                                   " | Slot ID: " + b.getSlotId() + 
-                                   " | Status: " + b.getStatus());
+    public boolean cancelBooking(String bookingId, String userId) {
+        List<Booking> bookings = LocalFileDatabase.loadBookings();
+        Booking targetBooking = null;
+        for (Booking booking : bookings) {
+            if (booking.getBookingId().equals(bookingId) && booking.getUserId().equals(userId)) {
+                targetBooking = booking;
+                break;
             }
         }
+        if (targetBooking == null) {
+            System.out.println("Error: Booking not found.");
+            return false;
+        }
+        if (!targetBooking.getStatus().equals("ACTIVE")) {
+            System.out.println("Error: This booking is already cancelled.");
+            return false;
+        }
+        List<Slot> slots = LocalFileDatabase.loadSlots();
+        for (Slot slot : slots) {
+            if (slot.getSlotId().equals(targetBooking.getSlotId())) {
+                slot.setAvailableSeats(slot.getAvailableSeats() + 1);
+                LocalFileDatabase.updateSlot(slot);
+                break;
+            }
+        }
+        targetBooking.setStatus("CANCELLED");
+        LocalFileDatabase.updateBooking(targetBooking);
+        System.out.println("Successfully cancelled booking: " + bookingId);
+        return true;
     }
-    
-    @Override
-    public void viewPlanByDay(String date) {
-        System.out.println("\n--- Your Gym Plan for " + date + " ---");
-        
-        try {
-            // 1. Convert String input to LocalDate
-            java.time.LocalDate searchDate = java.time.LocalDate.parse(date);
-            boolean found = false;
 
-            // 2. Iterate through your static ArrayList
-            for (com.flipfit.bean.Booking b : customerBookings) {
-                // Compare the LocalDate objects
-                if (b.getBookingDate() != null && b.getBookingDate().equals(searchDate)) {
-                    System.out.println("Booking ID: " + b.getBookingId() + 
-                                       " | Slot ID: " + b.getSlotId() + 
-                                       " | Status: " + b.getStatus());
-                    found = true;
+    public void viewMyBookings(String userId) {
+        List<Booking> userBookings = LocalFileDatabase.loadBookings().stream().filter(booking -> booking.getUserId().equals(userId)).collect(Collectors.toList());
+        if (userBookings.isEmpty()) {
+            System.out.println("You have no bookings.");
+        } else {
+            System.out.println("\n--- Your Bookings ---");
+            for (Booking booking : userBookings) {
+                Slot slot = LocalFileDatabase.loadSlots().stream().filter(s -> s.getSlotId().equals(booking.getSlotId())).findFirst().orElse(null);
+                String timeInfo = "";
+                if (slot != null) {
+                    timeInfo = " | Time: " + slot.getStartTime() + " - " + slot.getEndTime();
                 }
+                System.out.println("Booking ID: " + booking.getBookingId() + " | Gym: " + booking.getGymId() + " | Date: " + booking.getBookingDate() + timeInfo + " | Status: " + booking.getStatus());
             }
-
-            if (!found) {
-                System.out.println("No bookings found for " + date);
-            }
-        } catch (java.time.format.DateTimeParseException e) {
-            System.out.println("Invalid date format! Please use YYYY-MM-DD.");
         }
-
-    }
-
-    @Override
-    public boolean cancelBooking(String bookingId) {
-        // removeIf returns true if a booking was actually found and removed
-        boolean removed = customerBookings.removeIf(b -> b.getBookingId().equals(bookingId));
-
-        
-        if (removed) {
-            System.out.println("Success: Booking " + bookingId + " has been removed from the system.");
-        } else {
-            System.out.println("Error: No booking found with ID " + bookingId);
-        }
-        
-        return removed;
-    }
-    
-    @Override
-    public boolean updateProfile(String email, String name, String phone, String city) {
-        System.out.println("Updating profile for " + email + " in Customer Service...");
-        
-        System.out.println("New Details - Name: " + name + ", City: " + city);
-        
-        return true; // Return true to indicate the Collection "updated"
-    }
-    
-    @Override
-    public void logout() {
-        System.out.println("\nLogging out... Session data cleared from memory.");
-    }
-
-    @Override
-    public void register() {
-        System.out.println("Customer registration handled by GymUserService.");
-
     }
 }

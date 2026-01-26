@@ -1,166 +1,104 @@
 package com.flipfit.business;
 
 import com.flipfit.bean.Gym;
+import com.flipfit.bean.Booking;
+import com.flipfit.database.LocalFileDatabase;
 import java.util.ArrayList;
-import java.util.*;
-import com.flipfit.bean.User;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class GymOwnerServiceImpl implements GymOwnerInterface {
-    // Shared collection for all gym data
     private static List<Gym> gymList = new ArrayList<>();
+
     static {
-        gymList.add(new Gym("G101", "PowerHouse Gym", "Bengaluru", true));
-        gymList.add(new Gym("G102", "FitLife Center", "Mumbai", false));
+        gymList = LocalFileDatabase.loadGyms();
     }
 
-    // CRITICAL: This method allows Admin and Customer to access the collection
     public static List<Gym> getGymList() {
         return gymList;
-    }
-    
-    @Override
-    public void addSlot(String gymId, String startTime, int seats) {
-        boolean gymFound = false;
-
-        for (Gym gym : gymList) {
-            if (gym.getGymId().equals(gymId)) {
-                gymFound = true;
-                gym.getSlots().add(startTime + " [" + seats + " seats]");
-                System.out.println("[SUCCESS] Slot added to " + gym.getGymName());
-                break;
-            }
-        }
-
-        if (!gymFound) {
-            System.out.println("[ERROR] Cannot add slot. Gym ID " + gymId + " does not exist.");
-        }
-    }
-    
-    @Override
-    public void updateProfile(String email, String newName, String newCity) {
-        // Accessing the central user database from the User Service
-        Map<String, User> userDatabase = GymUserServiceImpl.getUserMap();
-        
-        if (userDatabase.containsKey(email)) {
-            User owner = userDatabase.get(email);
-            owner.setName(newName);
-            owner.setCity(newCity);
-            // Updating the map with the modified object
-            userDatabase.put(email, owner);
-            System.out.println("\n[SUCCESS] Profile updated for Owner: " + email);
-        } else {
-            System.out.println("\n[ERROR] Owner record not found in the system.");
-        }
     }
 
     @Override
     public void registerGym(Gym gym) {
+        String gymId = LocalFileDatabase.generateGymId();
+        gym.setGymId(gymId);
+        gym.setApproved(false);
         gymList.add(gym);
-        System.out.println("Gym: " + gym.getGymName() + " registered and pending approval.");
+        LocalFileDatabase.saveGym(gym);
+        System.out.println("Gym: " + gym.getGymName() + " registered with ID: " + gymId + " and pending approval.");
     }
     
     @Override
     public List<Gym> viewMyGyms() {
         return gymList; 
     }
+    
+    @Override
+    public List<Gym> viewMyGyms(String ownerId) {
+        return gymList.stream()
+            .filter(gym -> gym.getGymOwnerId() != null && gym.getGymOwnerId().equals(ownerId))
+            .collect(Collectors.toList());
+    }
 
     @Override
     public void viewBookings() {
-        System.out.println("Displaying bookings for your gyms...");
+        List<Booking> bookings = LocalFileDatabase.loadBookings();
+        if (bookings.isEmpty()) {
+            System.out.println("No bookings found.");
+        } else {
+            System.out.println("\n--- All Bookings for Your Gyms ---");
+            for (Booking booking : bookings) {
+                System.out.println("Booking ID: " + booking.getBookingId() + 
+                                   " | User: " + booking.getUserId() + 
+                                   " | Gym: " + booking.getGymId() + 
+                                   " | Slot: " + booking.getSlotId() + 
+                                   " | Date: " + booking.getBookingDate() + 
+                                   " | Approval Status: " + booking.getStatus());
+            }
+        }
     }
     
     @Override
-    public void updateGymDetails(String gymId) {
-        Scanner sc = new Scanner(System.in);
-        boolean gymFound = false;
-
-        for (Gym gym : gymList) {
-            if (gym.getGymId().equals(gymId)) {
-                gymFound = true;
-                System.out.println("\n--- Editing Gym: " + gym.getGymName() + " ---");
-                System.out.println("1. Update Name/Location");
-                System.out.println("2. Update Existing Slot Seats");
-                System.out.println("3. Delete a Slot"); // New Option
-                System.out.print("Choice: ");
-                int choice = sc.nextInt();
-                sc.nextLine(); 
-
-                switch (choice) {
-                    case 1:
-                        System.out.print("Enter New Name: ");
-                        gym.setGymName(sc.nextLine());
-                        System.out.print("Enter New Location: ");
-                        gym.setLocation(sc.nextLine());
-                        System.out.println("[SUCCESS] Gym metadata updated.");
-                        break;
-                    case 2:
-                        updateExistingSlot(gym, sc);
-                        break;
-                    case 3:
-                        deleteExistingSlot(gym, sc);
-                        break;
-                    default:
-                        System.out.println("Invalid choice.");
-                }
-                return;
-            }
-        }
-
-        if (!gymFound) {
-            System.err.println("[ERROR] No gym found with ID: " + gymId);
-        }
-    }
-    
-    private void updateExistingSlot(Gym gym, Scanner sc) {
-        if (gym.getSlots().isEmpty()) {
-            System.out.println("[ERROR] This gym has no slots to update. Use 'Add Slot' first.");
-            return;
-        }
-
-        System.out.println("Current Slots: " + gym.getSlots());
-        System.out.print("Enter the Slot Time to modify (e.g., 9AM): ");
-        String timeToFind = sc.nextLine();
-
-        boolean slotUpdated = false;
-        List<String> currentSlots = gym.getSlots();
-
-        for (int i = 0; i < currentSlots.size(); i++) {
-            if (currentSlots.get(i).contains(timeToFind)) {
-                System.out.print("Enter New Seat Capacity for " + timeToFind + ": ");
-                int newSeats = sc.nextInt();
-                sc.nextLine();
-                
-                // Replaces the string at the specific index
-                currentSlots.set(i, timeToFind + " [" + newSeats + " seats]");
-                slotUpdated = true;
-                System.out.println("[SUCCESS] Slot seats updated.");
-                break;
-            }
-        }
-
-        if (!slotUpdated) {
-            System.err.println("[ERROR] Slot time '" + timeToFind + "' not found for this gym.");
-        }
-    }
-
-    private void deleteExistingSlot(Gym gym, Scanner sc) {
-        if (gym.getSlots().isEmpty()) {
-            System.out.println("[ERROR] No slots to delete.");
-            return;
-        }
-
-        System.out.println("Current Slots: " + gym.getSlots());
-        System.out.print("Enter Slot Time to REMOVE (e.g., 9AM): ");
-        String timeToRemove = sc.nextLine();
-
-        // removeIf returns true if an element was actually removed
-        boolean removed = gym.getSlots().removeIf(slot -> slot.contains(timeToRemove));
-
-        if (removed) {
-            System.out.println("[SUCCESS] Slot " + timeToRemove + " has been deleted.");
+    public void viewBookings(String ownerId) {
+        List<Booking> allBookings = LocalFileDatabase.loadBookings();
+        List<String> ownerGymIds = gymList.stream()
+            .filter(gym -> gym.getGymOwnerId() != null && gym.getGymOwnerId().equals(ownerId))
+            .map(Gym::getGymId)
+            .collect(Collectors.toList());
+        
+        List<Booking> ownerBookings = allBookings.stream()
+            .filter(booking -> ownerGymIds.contains(booking.getGymId()))
+            .collect(Collectors.toList());
+        
+        if (ownerBookings.isEmpty()) {
+            System.out.println("No bookings found for your gyms.");
         } else {
-            System.err.println("[ERROR] Slot time not found.");
+            System.out.println("\n--- Bookings for Your Gyms ---");
+            for (Booking booking : ownerBookings) {
+                System.out.println("Booking ID: " + booking.getBookingId() + 
+                                   " | User: " + booking.getUserId() + 
+                                   " | Gym: " + booking.getGymId() + 
+                                   " | Slot: " + booking.getSlotId() + 
+                                   " | Date: " + booking.getBookingDate() + 
+                                   " | Status: " + booking.getStatus());
+            }
         }
     }
-    
+
+    @Override
+    public void updateSchedule(String gymId) {
+        System.out.println("Updating schedule for Gym ID: " + gymId);
+        List<com.flipfit.bean.Slot> slots = LocalFileDatabase.loadSlots().stream()
+            .filter(slot -> slot.getGymId().equals(gymId))
+            .collect(Collectors.toList());
+        
+        if (slots.isEmpty()) {
+            System.out.println("No slots found for this gym.");
+        } else {
+            System.out.println("Current slots:");
+            for (com.flipfit.bean.Slot slot : slots) {
+                System.out.println(slot);
+            }
+        }
+    }
 }

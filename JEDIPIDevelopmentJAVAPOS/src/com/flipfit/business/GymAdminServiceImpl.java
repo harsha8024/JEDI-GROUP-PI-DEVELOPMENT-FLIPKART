@@ -2,79 +2,208 @@ package com.flipfit.business;
 
 import com.flipfit.bean.Gym;
 import com.flipfit.bean.User;
+import com.flipfit.bean.Booking;
+import com.flipfit.database.LocalFileDatabase;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class GymAdminServiceImpl implements GymAdminInterface {
 
     @Override
     public List<Gym> viewPendingApprovals() {
-        // Access shared list and filter for isApproved == false
+        // Accessing the shared list via the static getter
         return GymOwnerServiceImpl.getGymList().stream()
                 .filter(gym -> !gym.isApproved())
-                .toList();
+                .collect(Collectors.toList());
     }
 
     @Override
     public void approveGym(String gymId) {
-        GymOwnerServiceImpl.getGymList().stream()
-                .filter(gym -> gym.getGymId().equals(gymId))
-                .findFirst()
-                .ifPresentOrElse(
-                    gym -> {
-                        gym.setApproved(true);
-                        System.out.println("Gym " + gymId + " approved successfully!");
-                    },
-                    () -> System.out.println("Gym ID not found.")
-                );
+        List<Gym> allGyms = GymOwnerServiceImpl.getGymList();
+        for (Gym gym : allGyms) {
+            if (gym.getGymId().equals(gymId)) {
+                gym.setApproved(true);
+                LocalFileDatabase.updateGym(gym);
+                System.out.println("✓ Successfully approved " + gym.getGymName());
+                return;
+            }
+        }
+        System.out.println("Error: Gym ID " + gymId + " not found.");
     }
 
     @Override
     public void rejectGym(String gymId) {
-        // Remove the gym from the shared list if rejected
-        boolean removed = GymOwnerServiceImpl.getGymList()
-                .removeIf(gym -> gym.getGymId().equals(gymId));
+        List<Gym> allGyms = GymOwnerServiceImpl.getGymList();
+        Gym toRemove = null;
+        for (Gym gym : allGyms) {
+            if (gym.getGymId().equals(gymId)) {
+                toRemove = gym;
+                break;
+            }
+        }
         
-        if (removed) {
-            System.out.println("Gym " + gymId + " has been rejected and removed.");
+        if (toRemove != null) {
+            allGyms.remove(toRemove);
+            // Reload gyms and save without the rejected gym
+            List<Gym> updatedGyms = LocalFileDatabase.loadGyms().stream()
+                .filter(g -> !g.getGymId().equals(gymId))
+                .collect(Collectors.toList());
+            
+            // Rewrite the gym file
+            try {
+                java.io.PrintWriter writer = new java.io.PrintWriter(new java.io.FileWriter("database/gyms.txt"));
+                for (Gym gym : updatedGyms) {
+                    writer.println(gym.getGymId() + "|" + gym.getGymName() + "|" + 
+                                   gym.getLocation() + "|" + gym.getGymOwnerId() + "|" + gym.isApproved());
+                }
+                writer.close();
+                System.out.println("✓ Successfully rejected gym: " + toRemove.getGymName());
+            } catch (Exception e) {
+                System.out.println("Error rejecting gym: " + e.getMessage());
+            }
         } else {
-            System.out.println("Gym ID not found.");
+            System.out.println("Error: Gym ID " + gymId + " not found.");
         }
     }
 
     @Override
     public void viewAllGyms() {
-        List<Gym> gyms = GymOwnerServiceImpl.getGymList();
-        if (gyms.isEmpty()) {
+        List<Gym> allGyms = GymOwnerServiceImpl.getGymList();
+        
+        if (allGyms.isEmpty()) {
             System.out.println("No gyms registered in the system.");
         } else {
-            gyms.forEach(g -> System.out.println("ID: " + g.getGymId() + " | Name: " + g.getGymName() + " | Status: " + (g.isApproved() ? "Approved" : "Pending")));
-        }
-    }
-
-    @Override
-    public void viewAllUsers() {
-        Map<String, User> users = GymUserServiceImpl.getUserMap();
-        if (users.isEmpty()) {
-            System.out.println("No users registered.");
-        } else {
-            users.values().forEach(u -> System.out.println("Name: " + u.getName() + " | Email: " + u.getEmail() + " | City: " + u.getCity()));
+            System.out.println("\n========================================");
+            System.out.println("         ALL REGISTERED GYMS");
+            System.out.println("========================================");
+            for (Gym gym : allGyms) {
+                String status = gym.isApproved() ? "✓ APPROVED" : "⏳ PENDING";
+                System.out.println("ID: " + gym.getGymId() + 
+                                   " | Name: " + gym.getGymName() + 
+                                   " | Location: " + gym.getLocation() +
+                                   " | Owner: " + gym.getGymOwnerId() +
+                                   " | Status: " + status);
+            }
+            System.out.println("========================================");
+            System.out.println("Total Gyms: " + allGyms.size());
         }
     }
 
     @Override
     public void viewAllBookings() {
-        // This would typically access a shared booking list from Customer Service
-        System.out.println("Fetching all system-wide bookings...");
+        List<Booking> allBookings = LocalFileDatabase.loadBookings();
+        
+        if (allBookings.isEmpty()) {
+            System.out.println("No bookings found in the system.");
+        } else {
+            System.out.println("\n========================================");
+            System.out.println("          ALL BOOKINGS");
+            System.out.println("========================================");
+            for (Booking booking : allBookings) {
+                System.out.println("Booking ID: " + booking.getBookingId() + 
+                                   " | User: " + booking.getUserId() + 
+                                   " | Gym: " + booking.getGymId() + 
+                                   " | Slot: " + booking.getSlotId() + 
+                                   " | Date: " + booking.getBookingDate() + 
+                                   " | Status: " + booking.getStatus() +
+                                   " | Created: " + booking.getCreatedAt());
+            }
+            System.out.println("========================================");
+            System.out.println("Total Bookings: " + allBookings.size());
+        }
+    }
+
+    @Override
+    public void viewAllUsers() {
+        // Calling the static getter we implemented in GymUserServiceImpl
+        Map<String, User> users = GymUserServiceImpl.getUserMap();
+        
+        if (users == null || users.isEmpty()) {
+            System.out.println("No users registered in the system.");
+        } else {
+            System.out.println("\n========================================");
+            System.out.println("        ALL REGISTERED USERS");
+            System.out.println("========================================");
+            // Using Collection API values() to get all User objects from the Map
+            users.values().forEach(user -> {
+                String roleStr = user.getRole() != null ? user.getRole().getRoleName() : "N/A";
+                String activeStatus = user.isActive() ? "✓ Active" : "○ Inactive";
+                System.out.println("ID: " + user.getUserID() + 
+                                   " | Name: " + user.getName() + 
+                                   " | Email: " + user.getEmail() + 
+                                   " | City: " + user.getCity() +
+                                   " | Role: " + roleStr +
+                                   " | Status: " + activeStatus);
+            });
+            System.out.println("========================================");
+            System.out.println("Total Users: " + users.size());
+        }
     }
 
     @Override
     public void generateReports(int reportType) {
+        System.out.println("\n========================================");
+        System.out.println("          SYSTEM REPORT");
+        System.out.println("========================================");
+        
         switch (reportType) {
-            case 1 -> System.out.println("Report: Total Revenue generated is $5000.");
-            case 2 -> System.out.println("Report: 50 New Users registered this month.");
-            case 3 -> System.out.println("Report: Gym 'PowerHouse' has 90% utilization.");
-            default -> System.out.println("Invalid report type.");
+            case 1: // User Statistics
+                generateUserReport();
+                break;
+            case 2: // Gym Statistics
+                generateGymReport();
+                break;
+            case 3: // Booking Statistics
+                generateBookingReport();
+                break;
+            case 4: // Complete System Report
+                generateUserReport();
+                System.out.println();
+                generateGymReport();
+                System.out.println();
+                generateBookingReport();
+                break;
+            default:
+                System.out.println("Invalid report type.");
         }
+        System.out.println("========================================");
+    }
+
+    private void generateUserReport() {
+        Map<String, User> users = GymUserServiceImpl.getUserMap();
+        System.out.println("--- USER STATISTICS ---");
+        System.out.println("Total Users: " + users.size());
+        
+        long activeUsers = users.values().stream().filter(User::isActive).count();
+        System.out.println("Active Users: " + activeUsers);
+        System.out.println("Inactive Users: " + (users.size() - activeUsers));
+    }
+
+    private void generateGymReport() {
+        List<Gym> gyms = GymOwnerServiceImpl.getGymList();
+        System.out.println("--- GYM STATISTICS ---");
+        System.out.println("Total Gyms: " + gyms.size());
+        
+        long approvedGyms = gyms.stream().filter(Gym::isApproved).count();
+        System.out.println("Approved Gyms: " + approvedGyms);
+        System.out.println("Pending Gyms: " + (gyms.size() - approvedGyms));
+        
+        // Group by city
+        Map<String, Long> gymsByCity = gyms.stream()
+            .collect(Collectors.groupingBy(Gym::getLocation, Collectors.counting()));
+        System.out.println("Gyms by City: " + gymsByCity);
+    }
+
+    private void generateBookingReport() {
+        List<Booking> bookings = LocalFileDatabase.loadBookings();
+        System.out.println("--- BOOKING STATISTICS ---");
+        System.out.println("Total Bookings: " + bookings.size());
+        
+        long activeBookings = bookings.stream()
+            .filter(b -> b.getStatus().equals("ACTIVE"))
+            .count();
+        System.out.println("Active Bookings: " + activeBookings);
+        System.out.println("Cancelled Bookings: " + (bookings.size() - activeBookings));
     }
 }
