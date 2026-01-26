@@ -1,73 +1,80 @@
 package com.flipfit.business;
 
-import com.flipfit.bean.GymAdmin;
 import com.flipfit.bean.User;
+import com.flipfit.bean.Role;
+import com.flipfit.database.LocalFileDatabase;
 import java.util.HashMap;
 import java.util.Map;
 
 public class GymUserServiceImpl implements GymUserInterface {
-
+    // Centralized User Collection - loaded from file database
     private static Map<String, User> userDatabase = new HashMap<>();
-    
-    static {
-        System.out.println("Booting up system... Creating default Admin account.");
-        
-        // 1. Create the single Admin object
-        GymAdmin defaultAdmin = new GymAdmin();
-        defaultAdmin.setUserID("ADMIN-001");
-        defaultAdmin.setName("FlipFit Admin");
-        defaultAdmin.setEmail("admin@flipfit.com"); // The fixed email
-        defaultAdmin.setPassword("admin123");       // The fixed password
-        defaultAdmin.setCity("Headquarters");
-        defaultAdmin.setPhoneNumber("9999999999");
-        defaultAdmin.setRole(new Role("RO3", "Admin", "System Administrator"));
-        defaultAdmin.setActive(true);
 
-        // 2. Add it to the map immediately
-        userDatabase.put(defaultAdmin.getEmail(), defaultAdmin);
+    static {
+        // Load existing users from file on startup
+        userDatabase = LocalFileDatabase.loadUsers();
     }
 
+    // Static getter for Admin service access
     public static Map<String, User> getUserMap() {
         return userDatabase;
     }
 
     @Override
     public void register(User user) {
+        // Generate unique user ID
+        String userId = LocalFileDatabase.generateUserId();
+        user.setUserID(userId);
+        
+        // Set default role if not set
+        if (user.getRole() == null) {
+            Role role = new Role();
+            role.setRoleName("CUSTOMER");
+            role.setDescription("Regular gym customer");
+            user.setRole(role);
+        }
+        
+        // Set user as active
+        user.setActive(true);
+        
+        // Add to in-memory map
         userDatabase.put(user.getEmail(), user);
-        System.out.println("Registration successful for: " + user.getName());
+        
+        // Save to file
+        LocalFileDatabase.saveUser(user);
+        
+        System.out.println("Registration successful for: " + user.getName() + " (ID: " + userId + ")");
     }
 
     @Override
     public boolean login(String email, String password) {
         if (userDatabase.containsKey(email)) {
-            return userDatabase.get(email).getPassword().equals(password);
+            User user = userDatabase.get(email);
+            if (user.getPassword().equals(password)) {
+                user.setActive(true);
+                LocalFileDatabase.updateUser(user);
+                return true;
+            }
         }
         return false;
     }
 
     @Override
-    public boolean updatePassword(String email, String oldPassword, String newPassword) {
+    public void updatePassword(String email, String newPassword) {
         if (userDatabase.containsKey(email)) {
             User user = userDatabase.get(email);
-            
-            if (user.getPassword().equals(oldPassword)) {
-                user.setPassword(newPassword);
-                userDatabase.put(email, user); 
-                System.out.println("Password successfully updated for: " + email);
-                return true;
-            } else {
-                System.out.println("[Error] Old password does not match.");
-            }
+            user.setPassword(newPassword);
+            userDatabase.put(email, user);
+            LocalFileDatabase.updateUser(user);
+            System.out.println("Password updated successfully!");
         } else {
-            System.out.println("[Error] User not found.");
+            System.out.println("User not found!");
         }
-        return false;
     }
 
     @Override
     public void logout() {
         System.out.println("User logged out successfully.");
     }
-
 
 }
