@@ -298,9 +298,25 @@ public class FlipfitApplication {
 				    System.out.print("Enter New City: ");
 				    String newCity = scanner.nextLine();
 
-				    // Call the Service logic
-				 // This will no longer be red
-				    boolean success = customerService.updateProfile(emailToUpdate, newName, newPhone, newCity);
+            switch (roleChoice) {
+                case 1:
+                    // Pass 'email' so the customer service knows who is booking
+                    GymCustomerFlipFitMenu.showCustomerMenu(scanner, customerService);
+                    break;
+                case 2:
+                    // Pass 'email' so the owner can update their specific profile
+                    GymOwnerFlipFitMenu.showOwnerMenu(scanner, ownerService, email);
+                    break;
+                case 3:
+                    GymAdminFlipfitMenu.showAdminMenu(scanner, adminService);
+                    break;
+                default:
+                    System.out.println("Invalid selection.");
+            }
+        } else {
+            System.out.println("[ERROR] Login failed.");
+        }
+    }
 
 				    if (success) {
 				        System.out.println("Profile updated successfully in the system!");
