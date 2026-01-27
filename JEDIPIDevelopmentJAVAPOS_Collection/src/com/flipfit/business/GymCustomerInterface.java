@@ -1,11 +1,9 @@
 // TODO: Auto-generated Javadoc
 package com.flipfit.business;
 
-import com.flipfit.bean.User;
-import com.flipfit.exception.BookingFailedException;
-import com.flipfit.exception.RegistrationFailedException;
-import com.flipfit.exception.SlotNotAvailableException;
 import com.flipfit.bean.Slot;
+import com.flipfit.exception.BookingFailedException;
+import com.flipfit.exception.SlotNotAvailableException;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -17,6 +15,7 @@ import java.util.List;
  */
 public interface GymCustomerInterface {
 
+<<<<<<< Updated upstream
     /**
      * Register.
      *
@@ -78,5 +77,23 @@ public interface GymCustomerInterface {
      * @param date  the date
      * @return the available slots
      */
+=======
+    // REMOVED: register(User user) -> Moved to RegistrationInterface/GymUserInterface
+
+    // BROWSING (Stays)
+    void viewCenters(String city);
+    
+    void viewSlotsForGym(String gymId, LocalDate date);
+    
+>>>>>>> Stashed changes
     List<Slot> getAvailableSlots(String gymId, LocalDate date);
+
+    // BOOKING ACTIONS (Stays - acts as a wrapper for Booking/Payment services)
+    boolean bookSlot(String userId, String slotId, String gymId, LocalDate date) 
+        throws BookingFailedException, SlotNotAvailableException;
+    
+    boolean cancelBooking(String bookingId, String userId) 
+        throws BookingFailedException;
+    
+    void viewMyBookings(String userId);
 }
