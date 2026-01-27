@@ -1,3 +1,4 @@
+// TODO: Auto-generated Javadoc
 package com.flipfit.business;
 
 import com.flipfit.bean.*;
@@ -6,15 +7,35 @@ import com.flipfit.exception.ApprovalFailedException;
 
 import java.util.*;
 
+/**
+ * The Class GymAdminServiceImpl.
+ *
+ * @author team pi
+ * @ClassName "GymAdminServiceImpl"
+ */
 public class GymAdminServiceImpl implements GymAdminInterface {
 
+    /** The gym DAO. */
     private GymDAO gymDAO;
+
+    /** The booking DAO. */
     private BookingDAO bookingDAO;
+
+    /** The customer DAO. */
     private CustomerDAO customerDAO;
+
+    /** The gym owner DAO. */
     private GymOwnerDAO gymOwnerDAO;
+
+    /** The admin DAO. */
     private AdminDAO adminDAO;
+
+    /** The slot DAO. */
     private SlotDAO slotDAO;
 
+    /**
+     * Instantiates a new gym admin service impl.
+     */
     public GymAdminServiceImpl() {
         this.gymDAO = new GymDAO();
         this.bookingDAO = new BookingDAO();
@@ -24,11 +45,22 @@ public class GymAdminServiceImpl implements GymAdminInterface {
         this.slotDAO = new SlotDAO();
     }
 
+    /**
+     * View pending approvals.
+     *
+     * @return the list
+     */
     @Override
     public List<Gym> viewPendingApprovals() {
         return gymDAO.getPendingGyms();
     }
 
+    /**
+     * Approve gym.
+     *
+     * @param gymId the gym id
+     * @throws ApprovalFailedException the approval failed exception
+     */
     @Override
     public void approveGym(String gymId) throws ApprovalFailedException {
         if (!adminDAO.approveGym(gymId)) { //
@@ -37,6 +69,12 @@ public class GymAdminServiceImpl implements GymAdminInterface {
         System.out.println("✓ Successfully approved gym with ID: " + gymId);
     }
 
+    /**
+     * Reject gym.
+     *
+     * @param gymId the gym id
+     * @throws ApprovalFailedException the approval failed exception
+     */
     @Override
     public void rejectGym(String gymId) throws ApprovalFailedException {
         Gym gym = gymDAO.getGymById(gymId); //
@@ -49,6 +87,9 @@ public class GymAdminServiceImpl implements GymAdminInterface {
         System.out.println("✓ Successfully rejected and removed gym: " + gym.getGymName());
     }
 
+    /**
+     * View all gyms.
+     */
     @Override
     public void viewAllGyms() {
         List<Gym> allGyms = gymDAO.getAllGyms();
@@ -72,6 +113,9 @@ public class GymAdminServiceImpl implements GymAdminInterface {
         }
     }
 
+    /**
+     * View all bookings.
+     */
     @Override
     public void viewAllBookings() {
         List<Booking> allBookings = bookingDAO.getAllBookings();
@@ -96,18 +140,21 @@ public class GymAdminServiceImpl implements GymAdminInterface {
         }
     }
 
+    /**
+     * View all users.
+     */
     @Override
     public void viewAllUsers() {
         Map<String, User> allUsers = new HashMap<>();
-        
+
         // Gather all customers
         Map<String, GymCustomer> customers = customerDAO.getAllCustomers();
         allUsers.putAll(customers);
-        
+
         // Gather all gym owners
         Map<String, GymOwner> owners = gymOwnerDAO.getAllGymOwners();
         allUsers.putAll(owners);
-        
+
         // Gather all admins
         Map<String, GymAdmin> admins = adminDAO.getAllAdmins();
         allUsers.putAll(admins);
@@ -133,6 +180,11 @@ public class GymAdminServiceImpl implements GymAdminInterface {
         }
     }
 
+    /**
+     * Generate reports.
+     *
+     * @param reportType the report type
+     */
     @Override
     public void generateReports(int reportType) {
         System.out.println("\n========================================");
@@ -162,53 +214,62 @@ public class GymAdminServiceImpl implements GymAdminInterface {
         System.out.println("========================================");
     }
 
+    /**
+     * Generate user report.
+     */
     private void generateUserReport() {
         // Use AdminDAO's getUserCounts method
         Map<String, Integer> userCounts = adminDAO.getUserCounts();
-        
+
         int totalCustomers = userCounts.getOrDefault("customers", 0);
         int totalOwners = userCounts.getOrDefault("gym_owners", 0);
         int totalAdmins = userCounts.getOrDefault("admins", 0);
         int totalUsers = totalCustomers + totalOwners + totalAdmins;
-        
+
         System.out.println("--- USER STATISTICS ---");
         System.out.println("Total Users: " + totalUsers);
         System.out.println("  - Customers: " + totalCustomers);
         System.out.println("  - Gym Owners: " + totalOwners);
         System.out.println("  - Admins: " + totalAdmins);
-        
+
         // Count active users
         Map<String, GymCustomer> customers = customerDAO.getAllCustomers();
         Map<String, GymOwner> owners = gymOwnerDAO.getAllGymOwners();
         Map<String, GymAdmin> admins = adminDAO.getAllAdmins();
-        
+
         long activeCustomers = customers.values().stream().filter(GymCustomer::isActive).count();
         long activeOwners = owners.values().stream().filter(GymOwner::isActive).count();
         long activeAdmins = admins.values().stream().filter(GymAdmin::isActive).count();
         long totalActive = activeCustomers + activeOwners + activeAdmins;
-        
+
         System.out.println("Active Users: " + totalActive);
         System.out.println("Inactive Users: " + (totalUsers - totalActive));
     }
 
+    /**
+     * Generate gym report.
+     */
     private void generateGymReport() {
         List<Gym> gyms = gymDAO.getAllGyms();
         int pendingGymsCount = adminDAO.getPendingGymsCount();
-        
+
         System.out.println("--- GYM STATISTICS ---");
         System.out.println("Total Gyms: " + gyms.size());
         System.out.println("Approved Gyms: " + (gyms.size() - pendingGymsCount));
         System.out.println("Pending Gyms: " + pendingGymsCount);
-        
+
         // Inactive gym owners count
         int inactiveOwnersCount = adminDAO.getInactiveGymOwnersCount();
         System.out.println("Inactive Gym Owners: " + inactiveOwnersCount);
-        
+
         // Pending slots count
         int pendingSlotsCount = adminDAO.getPendingSlotsCount();
         System.out.println("Pending Slots: " + pendingSlotsCount);
     }
 
+    /**
+     * Generate booking report.
+     */
     private void generateBookingReport() {
         List<Booking> bookings = bookingDAO.getAllBookings();
         System.out.println("--- BOOKING STATISTICS ---");
@@ -220,14 +281,25 @@ public class GymAdminServiceImpl implements GymAdminInterface {
         System.out.println("Confirmed Bookings: " + activeBookings);
         System.out.println("Cancelled Bookings: " + (bookings.size() - activeBookings));
     }
-    
+
     // ==================== SLOT APPROVAL METHODS ====================
-    
+
+    /**
+     * View pending slots.
+     *
+     * @return the list
+     */
     @Override
     public List<Slot> viewPendingSlots() {
         return slotDAO.getPendingSlots();
     }
-    
+
+    /**
+     * Approve slot.
+     *
+     * @param slotId the slot id
+     * @throws ApprovalFailedException the approval failed exception
+     */
     @Override
     public void approveSlot(String slotId) throws ApprovalFailedException {
         if (!adminDAO.approveSlot(slotId)) { //
@@ -235,7 +307,13 @@ public class GymAdminServiceImpl implements GymAdminInterface {
         }
         System.out.println("✓ Successfully approved slot with ID: " + slotId);
     }
-    
+
+    /**
+     * Reject slot.
+     *
+     * @param slotId the slot id
+     * @throws ApprovalFailedException the approval failed exception
+     */
     @Override
     public void rejectSlot(String slotId) throws ApprovalFailedException {
         if (!adminDAO.rejectSlot(slotId)) { //
