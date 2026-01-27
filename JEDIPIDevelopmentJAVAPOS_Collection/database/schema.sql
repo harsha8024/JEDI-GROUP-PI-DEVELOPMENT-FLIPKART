@@ -172,17 +172,16 @@ CREATE TABLE IF NOT EXISTS notifications (
 -- ========================================
 -- VIEW: gym_customers (Deprecated - for backward compatibility)
 -- ========================================
-CREATE OR REPLACE VIEW gym_customers AS
+CREATE OR REPLACE VIEW view_gym_customers AS
 SELECT customer_id as user_id, name, email, phone_number, city, password, 
        'CUSTOMER' as role, is_active, created_at FROM customers;
 
 -- ========================================
 -- VIEW: gym_owners (Deprecated - for backward compatibility)
 -- ========================================
-CREATE OR REPLACE VIEW gym_owners AS
+CREATE OR REPLACE VIEW view_gym_owners AS
 SELECT owner_id as user_id, name, email, phone_number, city, password, 
        'OWNER' as role, is_active, created_at FROM gym_owners;
-
 -- ========================================
 -- TABLE: id_counters
 -- Stores auto-increment counters for ID generation
