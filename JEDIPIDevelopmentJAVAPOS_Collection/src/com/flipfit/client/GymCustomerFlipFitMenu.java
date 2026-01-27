@@ -1,6 +1,9 @@
 package com.flipfit.client;
 
 import com.flipfit.business.GymCustomerInterface;
+import com.flipfit.exception.BookingFailedException;
+import com.flipfit.exception.SlotNotAvailableException;
+
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Scanner;
@@ -115,9 +118,16 @@ public class GymCustomerFlipFitMenu {
             }
         }
         
-        customerService.bookSlot(currentUserId, slotId, gymId, date);
+        try {
+            boolean success = customerService.bookSlot(currentUserId, slotId, gymId, date);
+            if (success) {
+                System.out.println("\n✓ Slot booked successfully!");
+            }
+        } catch (BookingFailedException | SlotNotAvailableException e) {
+            System.out.println("\n[BOOKING FAILED] " + e.getMessage());
+        }
     }
-    
+
     private static void handleCancelBooking(Scanner scanner, GymCustomerInterface customerService) {
         if (currentUserId == null) {
             System.out.println("Please login first to cancel a booking.");
@@ -126,6 +136,14 @@ public class GymCustomerFlipFitMenu {
         
         System.out.print("Enter Booking ID to cancel: ");
         String bookingId = scanner.nextLine();
-        customerService.cancelBooking(bookingId, currentUserId);
+        
+        try {
+            boolean success = customerService.cancelBooking(bookingId, currentUserId);
+            if (success) {
+                System.out.println("\n✓ Booking cancelled successfully.");
+            }
+        } catch (BookingFailedException e) {
+            System.out.println("\n[CANCELLATION FAILED] " + e.getMessage());
+        }
     }
 }

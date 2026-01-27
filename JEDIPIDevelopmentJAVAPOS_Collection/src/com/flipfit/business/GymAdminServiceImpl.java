@@ -2,6 +2,8 @@ package com.flipfit.business;
 
 import com.flipfit.bean.*;
 import com.flipfit.dao.*;
+import com.flipfit.exception.ApprovalFailedException;
+
 import java.util.*;
 
 public class GymAdminServiceImpl implements GymAdminInterface {
@@ -28,26 +30,23 @@ public class GymAdminServiceImpl implements GymAdminInterface {
     }
 
     @Override
-    public void approveGym(String gymId) {
-        if (adminDAO.approveGym(gymId)) {
-            System.out.println("✓ Successfully approved gym with ID: " + gymId);
-        } else {
-            System.out.println("Error: Gym ID " + gymId + " not found or could not be approved.");
+    public void approveGym(String gymId) throws ApprovalFailedException {
+        if (!adminDAO.approveGym(gymId)) { //
+            throw new ApprovalFailedException("Gym ID " + gymId + " not found or could not be approved."); //
         }
+        System.out.println("✓ Successfully approved gym with ID: " + gymId);
     }
 
     @Override
-    public void rejectGym(String gymId) {
-        Gym gym = gymDAO.getGymById(gymId);
-        if (gym != null) {
-            if (adminDAO.rejectGym(gymId)) {
-                System.out.println("✓ Successfully rejected and removed gym: " + gym.getGymName());
-            } else {
-                System.out.println("Error rejecting gym: " + gymId);
-            }
-        } else {
-            System.out.println("Error: Gym ID " + gymId + " not found.");
+    public void rejectGym(String gymId) throws ApprovalFailedException {
+        Gym gym = gymDAO.getGymById(gymId); //
+        if (gym == null) {
+            throw new ApprovalFailedException("Error: Gym ID " + gymId + " not found."); //
         }
+        if (!adminDAO.rejectGym(gymId)) { //
+            throw new ApprovalFailedException("Database error: Could not remove gym " + gymId); //
+        }
+        System.out.println("✓ Successfully rejected and removed gym: " + gym.getGymName());
     }
 
     @Override
@@ -230,25 +229,18 @@ public class GymAdminServiceImpl implements GymAdminInterface {
     }
     
     @Override
-    public void approveSlot(String slotId) {
-        if (adminDAO.approveSlot(slotId)) {
-            System.out.println("✓ Successfully approved slot with ID: " + slotId);
-        } else {
-            System.out.println("Error: Slot ID " + slotId + " not found or could not be approved.");
+    public void approveSlot(String slotId) throws ApprovalFailedException {
+        if (!adminDAO.approveSlot(slotId)) { //
+            throw new ApprovalFailedException("Slot ID " + slotId + " could not be approved."); //
         }
+        System.out.println("✓ Successfully approved slot with ID: " + slotId);
     }
     
     @Override
-    public void rejectSlot(String slotId) {
-        Slot slot = slotDAO.getSlotById(slotId);
-        if (slot != null) {
-            if (adminDAO.rejectSlot(slotId)) {
-                System.out.println("✓ Successfully rejected and removed slot: " + slotId);
-            } else {
-                System.out.println("Error rejecting slot: " + slotId);
-            }
-        } else {
-            System.out.println("Error: Slot ID " + slotId + " not found.");
+    public void rejectSlot(String slotId) throws ApprovalFailedException {
+        if (!adminDAO.rejectSlot(slotId)) { //
+            throw new ApprovalFailedException("Slot ID " + slotId + " not found or could not be rejected."); //
         }
+        System.out.println("✓ Successfully rejected slot: " + slotId);
     }
 }

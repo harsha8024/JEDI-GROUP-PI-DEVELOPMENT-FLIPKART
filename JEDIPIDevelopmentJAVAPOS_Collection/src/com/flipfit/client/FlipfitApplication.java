@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.Scanner;
 import com.flipfit.bean.User;
 import com.flipfit.business.*;
+import com.flipfit.exception.RegistrationFailedException;
 
 public class FlipfitApplication {
     
@@ -91,6 +92,7 @@ public class FlipfitApplication {
         }
 
         // For regular users, validate from database
+        try {
         if (userService.login(email, password)) {
             // Get user details to retrieve ID and role
             Map<String, User> userMap = GymUserServiceImpl.getUserMap();
@@ -126,8 +128,11 @@ public class FlipfitApplication {
                     System.out.println("[ERROR] Unknown role: " + roleName);
             }
             
-        } else {
-            System.out.println("[ERROR] Invalid credentials.");
+        } 
+        }catch (com.flipfit.exception.UserNotFoundException e) {
+            System.out.println("\n[LOGIN ERROR] " + e.getMessage());
+        } catch (com.flipfit.exception.InvalidCredentialsException e) {
+            System.out.println("\n[AUTH ERROR] " + e.getMessage());
         }
     }
 
@@ -136,73 +141,57 @@ public class FlipfitApplication {
         System.out.println("         REGISTRATION");
         System.out.println("========================================");
         
-        // Ask for role first
         System.out.println("Select your role:");
         System.out.println("1. Customer (Book gym slots)");
         System.out.println("2. Gym Owner (Manage gyms and slots)");
         System.out.print("Enter your choice: ");
         
         int roleChoice = scanner.nextInt();
-        scanner.nextLine(); // Consume newline
+        scanner.nextLine(); 
         
         String roleName;
         switch (roleChoice) {
-            case 1:
-                roleName = "CUSTOMER";
-                break;
-            case 2:
-                roleName = "OWNER";
-                break;
+            case 1: roleName = "CUSTOMER"; break;
+            case 2: roleName = "OWNER"; break;
             default:
                 System.out.println("[ERROR] Invalid role selection!");
                 return;
         }
         
-        // Collect user details
         User newUser = new User();
         System.out.println("\n--- Enter Your Details ---");
-        System.out.print("Name: ");
-        newUser.setName(scanner.nextLine());
+        System.out.print("Name: "); newUser.setName(scanner.nextLine());
+        System.out.print("Email: "); newUser.setEmail(scanner.nextLine());
+        System.out.print("Password: "); newUser.setPassword(scanner.nextLine());
+        System.out.print("Phone Number: "); newUser.setPhoneNumber(scanner.nextLine());
+        System.out.print("City: "); newUser.setCity(scanner.nextLine());
         
-        System.out.print("Email: ");
-        newUser.setEmail(scanner.nextLine());
-        
-        System.out.print("Password: ");
-        newUser.setPassword(scanner.nextLine());
-        
-        System.out.print("Phone Number: ");
-        newUser.setPhoneNumber(scanner.nextLine());
-        
-        System.out.print("City: ");
-        newUser.setCity(scanner.nextLine());
-        
-        // Set role
         com.flipfit.bean.Role role = new com.flipfit.bean.Role();
         role.setRoleName(roleName);
         newUser.setRole(role);
         
-        // If gym owner, collect additional details
-        if (roleName.equals("OWNER")) {
-            com.flipfit.bean.GymOwner owner = new com.flipfit.bean.GymOwner();
-            owner.setName(newUser.getName());
-            owner.setEmail(newUser.getEmail());
-            owner.setPassword(newUser.getPassword());
-            owner.setPhoneNumber(newUser.getPhoneNumber());
-            owner.setCity(newUser.getCity());
-            owner.setRole(role);
-            
-            System.out.print("PAN Number: ");
-            owner.setPanNumber(scanner.nextLine());
-            
-            System.out.print("Aadhar Number: ");
-            owner.setAadharNumber(scanner.nextLine());
-            
-            userService.register(owner);
-            System.out.println("\n✓ Gym Owner registration successful!");
-            System.out.println("Note: Your account is pending admin approval.");
-        } else {
-            userService.register(newUser);
-            System.out.println("\n✓ Customer registration successful! You can now log in.");
+        try {
+            if (roleName.equals("OWNER")) {
+                com.flipfit.bean.GymOwner owner = new com.flipfit.bean.GymOwner();
+                // Mapping common fields
+                owner.setName(newUser.getName());
+                owner.setEmail(newUser.getEmail());
+                owner.setPassword(newUser.getPassword());
+                owner.setPhoneNumber(newUser.getPhoneNumber());
+                owner.setCity(newUser.getCity());
+                owner.setRole(role);
+                
+                System.out.print("PAN Number: "); owner.setPanNumber(scanner.nextLine());
+                System.out.print("Aadhar Number: "); owner.setAadharNumber(scanner.nextLine());
+                
+                userService.register(owner);
+                System.out.println("\n✓ Gym Owner registration successful! Pending admin approval.");
+            } else {
+                userService.register(newUser);
+                System.out.println("\n✓ Customer registration successful! You can now log in.");
+            }
+        } catch (RegistrationFailedException e) {
+            System.out.println("\n[REGISTRATION FAILED] " + e.getMessage());
         }
     }
 
