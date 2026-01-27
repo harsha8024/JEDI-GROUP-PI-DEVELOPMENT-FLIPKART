@@ -74,7 +74,7 @@ mysql -u root -p
 ```sql
 -- Create the database
 CREATE DATABASE IF NOT EXISTS flipfit_db;
-
+	
 -- Verify database was created
 SHOW DATABASES;
 
