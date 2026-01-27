@@ -11,13 +11,19 @@ import com.flipfit.exception.SlotNotAvailableException;
 import java.time.LocalDate;
 import java.util.List;
 
+/**
+ * The Class GymCustomerServiceImpl.
+ *
+ * @author team pi
+ * @ClassName "GymCustomerServiceImpl"
+ */
 public class GymCustomerServiceImpl implements GymCustomerInterface {
 
     // DAOs for read-only browsing operations
     private GymDAO gymDAO;
     private SlotDAO slotDAO;
     
-    // New Business Services for complex logic
+    // Business Services for complex logic delegation
     private BookingInterface bookingService;
     private PaymentInterface paymentService;
     private NotificationInterface notificationService;
@@ -26,14 +32,14 @@ public class GymCustomerServiceImpl implements GymCustomerInterface {
         this.gymDAO = new GymDAO();
         this.slotDAO = new SlotDAO();
         
-        // Initialize the new delegate services
+        // Initialize the delegate services
         this.bookingService = new BookingServiceImpl();
         this.paymentService = new PaymentServiceImpl();
         this.notificationService = new NotificationServiceImpl();
     }
 
     // -------------------------------------------------------------------------
-    // BROWSING OPERATIONS (Kept here for Customer Dashboard View)
+    // BROWSING OPERATIONS
     // -------------------------------------------------------------------------
 
     @Override
@@ -72,32 +78,31 @@ public class GymCustomerServiceImpl implements GymCustomerInterface {
     }
 
     // -------------------------------------------------------------------------
-    // COMPLEX TRANSACTIONS (Delegated to specialized services)
+    // BOOKING OPERATIONS (Delegated to specialized services)
     // -------------------------------------------------------------------------
 
     @Override
     public boolean bookSlot(String userId, String slotId, String gymId, LocalDate date) 
             throws BookingFailedException, SlotNotAvailableException {
         
-        // 1. Validate Slot Availability (Read Check)
+        // 1. Validate Slot Availability
         Slot targetSlot = slotDAO.getSlotById(slotId);
         if (targetSlot == null || targetSlot.getAvailableSeats() <= 0) {
             throw new SlotNotAvailableException("Slot " + slotId + " is full or does not exist.");
         }
 
-        // 2. Create Booking (Delegate to BookingService)
-        // BookingService handles conflict checks internally now
+        // 2. Create Booking via BookingService
         String bookingId = bookingService.addBooking(userId, slotId);
         
         if (bookingId != null) {
-            // 3. Process Payment (Delegate to PaymentService)
+            // 3. Process Payment via PaymentService
             boolean paymentSuccess = paymentService.processPayment(bookingId, 500.0, "UPI");
             
             if (paymentSuccess) {
-                // 4. Finalize Slot (Update Seats)
+                // 4. Update Seats in DB
                 slotDAO.decreaseAvailableSeats(slotId);
                 
-                // 5. Send Notification (Delegate to NotificationService)
+                // 5. Send Notification
                 notificationService.sendNotification(userId, 
                     "Booking Confirmed! ID: " + bookingId, 
                     "Booking Success"
@@ -117,26 +122,22 @@ public class GymCustomerServiceImpl implements GymCustomerInterface {
 
     @Override
     public boolean cancelBooking(String bookingId, String userId) throws BookingFailedException {
-        // 1. Validate Booking ownership
+        // 1. Validate Booking
         Booking targetBooking = bookingService.getBookingById(bookingId);
 
         if (targetBooking == null || !targetBooking.getUserId().equals(userId)) {
-            throw new BookingFailedException("Booking not found or you are not authorized to cancel it.");
+            throw new BookingFailedException("Booking not found or unauthorized.");
         }
         if ("CANCELLED".equalsIgnoreCase(targetBooking.getStatus())) {
             throw new BookingFailedException("Booking is already cancelled.");
         }
 
-        // 2. Perform Cancellation (Delegate to BookingService)
+        // 2. Perform Cancellation via BookingService
         if (bookingService.cancelBooking(bookingId)) {
-            // 3. Restore Seat
+            // 3. Restore Slot capacity
             slotDAO.increaseAvailableSeats(targetBooking.getSlotId());
             
-            // 4. Process Refund (Optional - Delegate to PaymentService)
-            // String paymentId = paymentService.getPaymentByBooking(bookingId).getId();
-            // paymentService.refundPayment(paymentId);
-
-            // 5. Send Notification (Delegate to NotificationService)
+            // 4. Notify User
             notificationService.sendNotification(userId, 
                 "Your booking " + bookingId + " has been successfully cancelled.", 
                 "Cancellation Success"
@@ -151,7 +152,6 @@ public class GymCustomerServiceImpl implements GymCustomerInterface {
 
     @Override
     public void viewMyBookings(String userId) {
-        // Delegate fetching logic to BookingService
         List<Booking> userBookings = bookingService.getBookingsByUserId(userId);
         
         if (userBookings.isEmpty()) {

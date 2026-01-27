@@ -15,15 +15,6 @@ import java.util.List;
  */
 public interface GymCustomerInterface {
 
-<<<<<<< Updated upstream
-    /**
-     * Register.
-     *
-     * @param user the user
-     * @throws RegistrationFailedException the registration failed exception
-     */
-    void register(User user) throws RegistrationFailedException;
-
     /**
      * View centers.
      *
@@ -38,6 +29,15 @@ public interface GymCustomerInterface {
      * @param date  the date
      */
     void viewSlotsForGym(String gymId, LocalDate date);
+
+    /**
+     * Gets the available slots.
+     *
+     * @param gymId the gym id
+     * @param date  the date
+     * @return the available slots
+     */
+    List<Slot> getAvailableSlots(String gymId, LocalDate date);
 
     /**
      * Book slot.
@@ -68,32 +68,5 @@ public interface GymCustomerInterface {
      *
      * @param userId the user id
      */
-    void viewMyBookings(String userId);
-
-    /**
-     * Gets the available slots.
-     *
-     * @param gymId the gym id
-     * @param date  the date
-     * @return the available slots
-     */
-=======
-    // REMOVED: register(User user) -> Moved to RegistrationInterface/GymUserInterface
-
-    // BROWSING (Stays)
-    void viewCenters(String city);
-    
-    void viewSlotsForGym(String gymId, LocalDate date);
-    
->>>>>>> Stashed changes
-    List<Slot> getAvailableSlots(String gymId, LocalDate date);
-
-    // BOOKING ACTIONS (Stays - acts as a wrapper for Booking/Payment services)
-    boolean bookSlot(String userId, String slotId, String gymId, LocalDate date) 
-        throws BookingFailedException, SlotNotAvailableException;
-    
-    boolean cancelBooking(String bookingId, String userId) 
-        throws BookingFailedException;
-    
     void viewMyBookings(String userId);
 }
