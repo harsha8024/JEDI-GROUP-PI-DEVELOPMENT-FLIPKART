@@ -4,8 +4,6 @@ import com.flipfit.bean.Booking;
 import com.flipfit.database.DatabaseConnection;
 
 import java.sql.*;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,7 +46,7 @@ public class BookingDAO {
      * Save a new booking to database
      */
     public boolean saveBooking(Booking booking) {
-        String sql = "INSERT INTO bookings (booking_id, user_id, slot_id, gym_id, booking_date, status, created_at) " +
+        String sql = "INSERT INTO bookings (booking_id, customer_id, slot_id, gym_id, booking_date, status, created_at) " +
                      "VALUES (?, ?, ?, ?, ?, ?, ?)";
         
         try (Connection conn = dbManager.getConnection();
@@ -113,11 +111,11 @@ public class BookingDAO {
     }
     
     /**
-     * Get bookings by user ID
+     * Get bookings by user ID (customer ID)
      */
     public List<Booking> getBookingsByUserId(String userId) {
         List<Booking> bookings = new ArrayList<>();
-        String sql = "SELECT * FROM bookings WHERE user_id = ? ORDER BY created_at DESC";
+        String sql = "SELECT * FROM bookings WHERE customer_id = ? ORDER BY created_at DESC";
         
         try (Connection conn = dbManager.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -179,11 +177,11 @@ public class BookingDAO {
     }
     
     /**
-     * Get active bookings by user ID
+     * Get active bookings by user ID (customer ID)
      */
     public List<Booking> getActiveBookingsByUserId(String userId) {
         List<Booking> bookings = new ArrayList<>();
-        String sql = "SELECT * FROM bookings WHERE user_id = ? AND status = 'CONFIRMED' ORDER BY created_at DESC";
+        String sql = "SELECT * FROM bookings WHERE customer_id = ? AND status = 'CONFIRMED' ORDER BY created_at DESC";
         
         try (Connection conn = dbManager.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -265,7 +263,7 @@ public class BookingDAO {
     private Booking mapResultSetToBooking(ResultSet rs) throws SQLException {
         Booking booking = new Booking();
         booking.setBookingId(rs.getString("booking_id"));
-        booking.setUserId(rs.getString("user_id"));
+        booking.setUserId(rs.getString("customer_id"));
         booking.setSlotId(rs.getString("slot_id"));
         booking.setGymId(rs.getString("gym_id"));
         booking.setBookingDate(rs.getDate("booking_date").toLocalDate());
