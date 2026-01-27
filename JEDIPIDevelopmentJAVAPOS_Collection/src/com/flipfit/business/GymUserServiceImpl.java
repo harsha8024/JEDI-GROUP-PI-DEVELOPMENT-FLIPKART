@@ -97,7 +97,9 @@ public class GymUserServiceImpl implements GymUserInterface {
         owner.setPhoneNumber(user.getPhoneNumber());
         owner.setCity(user.getCity());
         owner.setPassword(user.getPassword());
-        owner.setActive(false); // Gym owners need admin approval
+        // Make gym owner active immediately so they can login after registration.
+        // Gym and slot approvals remain handled by admin separately.
+        owner.setActive(true);
         
         // Set PAN and Aadhar if available
         if (user instanceof GymOwner) {
@@ -111,7 +113,7 @@ public class GymUserServiceImpl implements GymUserInterface {
         
         if (gymOwnerDAO.saveGymOwner(owner)) {
             System.out.println("Gym Owner registration successful: " + owner.getName() + " (ID: " + ownerId + ")");
-            System.out.println("Note: Account is pending admin approval.");
+            System.out.println("You can now log in. Note: Gyms and slots you create may still require admin approval.");
         } else {
             System.err.println("Gym Owner registration failed for: " + owner.getName());
         }
