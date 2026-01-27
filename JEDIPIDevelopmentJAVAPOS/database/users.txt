@@ -1,2 +1,3 @@
 USR1001|Hello|abcd@gmail.com||Bangalore|abcd|CUSTOMER|true
+USR1002|Bob|bob@abc.com||Louisiana|123|CUSTOMER|true
 USR1000|Om|abc@gmail.com||Bangalore|abcd|CUSTOMER|true
