@@ -1,3 +1,4 @@
+// TODO: Auto-generated Javadoc
 package com.flipfit.dao;
 
 import com.flipfit.bean.Booking;
@@ -9,31 +10,39 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Data Access Object for Booking entity
- * Handles all database operations related to bookings
+ * The Class BookingDAO.
+ *
+ * @author team pi
+ * @ClassName "BookingDAO"
  */
 public class BookingDAO {
-    
+
+    /** The db manager. */
     private DatabaseConnection dbManager;
-    
+
+    /**
+     * Instantiates a new booking DAO.
+     */
     public BookingDAO() {
         this.dbManager = DatabaseConnection.getInstance();
     }
-    
+
     /**
-     * Generate new booking ID from database counter
+     * Generate booking id.
+     *
+     * @return the string
      */
     public synchronized String generateBookingId() {
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement updateStmt = conn.prepareStatement(SQLConstants.UPDATE_COUNTER);
-             PreparedStatement selectStmt = conn.prepareStatement(SQLConstants.SELECT_COUNTER)) {
-            
+                PreparedStatement updateStmt = conn.prepareStatement(SQLConstants.UPDATE_COUNTER);
+                PreparedStatement selectStmt = conn.prepareStatement(SQLConstants.SELECT_COUNTER)) {
+
             updateStmt.setString(1, "BOOKING");
             updateStmt.executeUpdate();
-            
+
             selectStmt.setString(1, "BOOKING");
             ResultSet rs = selectStmt.executeQuery();
-            
+
             if (rs.next()) {
                 int id = rs.getInt("current_value");
                 return "BKG" + id;
@@ -43,14 +52,17 @@ public class BookingDAO {
         }
         return null;
     }
-    
+
     /**
-     * Save a new booking to database
+     * Save booking.
+     *
+     * @param booking the booking
+     * @return true, if successful
      */
     public boolean saveBooking(Booking booking) {
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.INSERT_BOOKING)) {
-            
+                PreparedStatement pstmt = conn.prepareStatement(SQLConstants.INSERT_BOOKING)) {
+
             pstmt.setString(1, booking.getBookingId());
             pstmt.setString(2, booking.getUserId());
             pstmt.setString(3, booking.getSlotId());
@@ -58,26 +70,29 @@ public class BookingDAO {
             pstmt.setDate(5, Date.valueOf(booking.getBookingDate()));
             pstmt.setString(6, booking.getStatus());
             pstmt.setTimestamp(7, Timestamp.valueOf(booking.getCreatedAt()));
-            
+
             int rowsAffected = pstmt.executeUpdate();
             return rowsAffected > 0;
-            
+
         } catch (SQLException e) {
             System.err.println("Error saving booking: " + e.getMessage());
             return false;
         }
     }
-    
+
     /**
-     * Get booking by ID
+     * Gets the booking by id.
+     *
+     * @param bookingId the booking id
+     * @return the booking by id
      */
     public Booking getBookingById(String bookingId) {
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.SELECT_BOOKING_BY_ID)) {
-            
+                PreparedStatement pstmt = conn.prepareStatement(SQLConstants.SELECT_BOOKING_BY_ID)) {
+
             pstmt.setString(1, bookingId);
             ResultSet rs = pstmt.executeQuery();
-            
+
             if (rs.next()) {
                 return mapResultSetToBooking(rs);
             }
@@ -86,17 +101,19 @@ public class BookingDAO {
         }
         return null;
     }
-    
+
     /**
-     * Get all bookings
+     * Gets the all bookings.
+     *
+     * @return the all bookings
      */
     public List<Booking> getAllBookings() {
         List<Booking> bookings = new ArrayList<>();
-        
+
         try (Connection conn = dbManager.getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(SQLConstants.SELECT_ALL_BOOKINGS)) {
-            
+                Statement stmt = conn.createStatement();
+                ResultSet rs = stmt.executeQuery(SQLConstants.SELECT_ALL_BOOKINGS)) {
+
             while (rs.next()) {
                 bookings.add(mapResultSetToBooking(rs));
             }
@@ -105,19 +122,22 @@ public class BookingDAO {
         }
         return bookings;
     }
-    
+
     /**
-     * Get bookings by user ID (customer ID)
+     * Gets the bookings by user id.
+     *
+     * @param userId the user id
+     * @return the bookings by user id
      */
     public List<Booking> getBookingsByUserId(String userId) {
         List<Booking> bookings = new ArrayList<>();
-        
+
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.SELECT_BOOKINGS_BY_CUSTOMER_ID)) {
-            
+                PreparedStatement pstmt = conn.prepareStatement(SQLConstants.SELECT_BOOKINGS_BY_CUSTOMER_ID)) {
+
             pstmt.setString(1, userId);
             ResultSet rs = pstmt.executeQuery();
-            
+
             while (rs.next()) {
                 bookings.add(mapResultSetToBooking(rs));
             }
@@ -126,19 +146,22 @@ public class BookingDAO {
         }
         return bookings;
     }
-    
+
     /**
-     * Get bookings by gym ID
+     * Gets the bookings by gym id.
+     *
+     * @param gymId the gym id
+     * @return the bookings by gym id
      */
     public List<Booking> getBookingsByGymId(String gymId) {
         List<Booking> bookings = new ArrayList<>();
-        
+
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.SELECT_BOOKINGS_BY_GYM_ID)) {
-            
+                PreparedStatement pstmt = conn.prepareStatement(SQLConstants.SELECT_BOOKINGS_BY_GYM_ID)) {
+
             pstmt.setString(1, gymId);
             ResultSet rs = pstmt.executeQuery();
-            
+
             while (rs.next()) {
                 bookings.add(mapResultSetToBooking(rs));
             }
@@ -147,19 +170,22 @@ public class BookingDAO {
         }
         return bookings;
     }
-    
+
     /**
-     * Get bookings by slot ID
+     * Gets the bookings by slot id.
+     *
+     * @param slotId the slot id
+     * @return the bookings by slot id
      */
     public List<Booking> getBookingsBySlotId(String slotId) {
         List<Booking> bookings = new ArrayList<>();
-        
+
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.SELECT_BOOKINGS_BY_SLOT_ID)) {
-            
+                PreparedStatement pstmt = conn.prepareStatement(SQLConstants.SELECT_BOOKINGS_BY_SLOT_ID)) {
+
             pstmt.setString(1, slotId);
             ResultSet rs = pstmt.executeQuery();
-            
+
             while (rs.next()) {
                 bookings.add(mapResultSetToBooking(rs));
             }
@@ -168,19 +194,22 @@ public class BookingDAO {
         }
         return bookings;
     }
-    
+
     /**
-     * Get active bookings by user ID (customer ID)
+     * Gets the active bookings by user id.
+     *
+     * @param userId the user id
+     * @return the active bookings by user id
      */
     public List<Booking> getActiveBookingsByUserId(String userId) {
         List<Booking> bookings = new ArrayList<>();
-        
+
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.SELECT_ACTIVE_BOOKINGS_BY_CUSTOMER_ID)) {
-            
+                PreparedStatement pstmt = conn.prepareStatement(SQLConstants.SELECT_ACTIVE_BOOKINGS_BY_CUSTOMER_ID)) {
+
             pstmt.setString(1, userId);
             ResultSet rs = pstmt.executeQuery();
-            
+
             while (rs.next()) {
                 bookings.add(mapResultSetToBooking(rs));
             }
@@ -189,62 +218,75 @@ public class BookingDAO {
         }
         return bookings;
     }
-    
+
     /**
-     * Update existing booking
+     * Update booking.
+     *
+     * @param booking the booking
+     * @return true, if successful
      */
     public boolean updateBooking(Booking booking) {
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.UPDATE_BOOKING_STATUS)) {
-            
+                PreparedStatement pstmt = conn.prepareStatement(SQLConstants.UPDATE_BOOKING_STATUS)) {
+
             pstmt.setString(1, booking.getStatus());
             pstmt.setString(2, booking.getBookingId());
-            
+
             int rowsAffected = pstmt.executeUpdate();
             return rowsAffected > 0;
-            
+
         } catch (SQLException e) {
             System.err.println("Error updating booking: " + e.getMessage());
             return false;
         }
     }
-    
+
     /**
-     * Cancel booking
+     * Cancel booking.
+     *
+     * @param bookingId the booking id
+     * @return true, if successful
      */
     public boolean cancelBooking(String bookingId) {
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.CANCEL_BOOKING)) {
-            
+                PreparedStatement pstmt = conn.prepareStatement(SQLConstants.CANCEL_BOOKING)) {
+
             pstmt.setString(1, bookingId);
             int rowsAffected = pstmt.executeUpdate();
             return rowsAffected > 0;
-            
+
         } catch (SQLException e) {
             System.err.println("Error cancelling booking: " + e.getMessage());
             return false;
         }
     }
-    
+
     /**
-     * Delete booking by ID
+     * Delete booking.
+     *
+     * @param bookingId the booking id
+     * @return true, if successful
      */
     public boolean deleteBooking(String bookingId) {
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.DELETE_BOOKING)) {
-            
+                PreparedStatement pstmt = conn.prepareStatement(SQLConstants.DELETE_BOOKING)) {
+
             pstmt.setString(1, bookingId);
             int rowsAffected = pstmt.executeUpdate();
             return rowsAffected > 0;
-            
+
         } catch (SQLException e) {
             System.err.println("Error deleting booking: " + e.getMessage());
             return false;
         }
     }
-    
+
     /**
-     * Map ResultSet to Booking object
+     * Map result set to booking.
+     *
+     * @param rs the rs
+     * @return the booking
+     * @throws SQLException the SQL exception
      */
     private Booking mapResultSetToBooking(ResultSet rs) throws SQLException {
         Booking booking = new Booking();

@@ -1,3 +1,4 @@
+// TODO: Auto-generated Javadoc
 package com.flipfit.utils;
 
 import com.flipfit.bean.*;
@@ -8,41 +9,70 @@ import java.time.LocalTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * The Class LocalFileDatabase.
+ *
+ * @author team pi
+ * @ClassName "LocalFileDatabase"
+ */
 public class LocalFileDatabase {
-    
+
+    /** The Constant DB_FOLDER. */
     private static final String DB_FOLDER = "database";
+
+    /** The Constant USERS_FILE. */
     private static final String USERS_FILE = DB_FOLDER + "/users.txt";
+
+    /** The Constant GYMS_FILE. */
     private static final String GYMS_FILE = DB_FOLDER + "/gyms.txt";
+
+    /** The Constant SLOTS_FILE. */
     private static final String SLOTS_FILE = DB_FOLDER + "/slots.txt";
+
+    /** The Constant BOOKINGS_FILE. */
     private static final String BOOKINGS_FILE = DB_FOLDER + "/bookings.txt";
+
+    /** The Constant COUNTERS_FILE. */
     private static final String COUNTERS_FILE = DB_FOLDER + "/counters.txt";
 
+    /** The user id counter. */
     private static AtomicInteger userIdCounter = new AtomicInteger(1000);
+
+    /** The gym id counter. */
     private static AtomicInteger gymIdCounter = new AtomicInteger(2000);
+
+    /** The slot id counter. */
     private static AtomicInteger slotIdCounter = new AtomicInteger(3000);
+
+    /** The booking id counter. */
     private static AtomicInteger bookingIdCounter = new AtomicInteger(4000);
-    
+
     static {
         initializeDatabase();
         loadCounters();
     }
-    
+
     /**
-     * Initialize database folder and files
+     * Initialize database.
      */
     private static void initializeDatabase() {
         File dbFolder = new File(DB_FOLDER);
         if (!dbFolder.exists()) {
             dbFolder.mkdirs();
         }
-        
+
         createFileIfNotExists(USERS_FILE);
         createFileIfNotExists(GYMS_FILE);
         createFileIfNotExists(SLOTS_FILE);
         createFileIfNotExists(BOOKINGS_FILE);
         createFileIfNotExists(COUNTERS_FILE);
     }
-    
+
+    /**
+     * Creates the file if not exists.
+     *
+     * @param filepath the filepath
+     */
     private static void createFileIfNotExists(String filepath) {
         File file = new File(filepath);
         if (!file.exists()) {
@@ -53,9 +83,9 @@ public class LocalFileDatabase {
             }
         }
     }
-    
+
     /**
-     * Load ID counters from file
+     * Load counters.
      */
     private static void loadCounters() {
         try (BufferedReader reader = new BufferedReader(new FileReader(COUNTERS_FILE))) {
@@ -82,9 +112,9 @@ public class LocalFileDatabase {
         } catch (IOException e) {
         }
     }
-    
+
     /**
-     * Save ID counters to file
+     * Save counters.
      */
     private static void saveCounters() {
         try (PrintWriter writer = new PrintWriter(new FileWriter(COUNTERS_FILE))) {
@@ -96,20 +126,24 @@ public class LocalFileDatabase {
             System.err.println("Error saving counters");
         }
     }
-    
+
     // ==================== USER OPERATIONS ====================
-    
+
     /**
-     * Generate new user ID
+     * Generate user id.
+     *
+     * @return the string
      */
     public static String generateUserId() {
         String id = "USR" + userIdCounter.getAndIncrement();
         saveCounters();
         return id;
     }
-    
+
     /**
-     * Save user to file
+     * Save user.
+     *
+     * @param user the user
      */
     public static void saveUser(User user) {
         try (PrintWriter writer = new PrintWriter(new FileWriter(USERS_FILE, true))) {
@@ -118,9 +152,11 @@ public class LocalFileDatabase {
             System.err.println("Error saving user: " + e.getMessage());
         }
     }
-    
+
     /**
-     * Load all users from file
+     * Load users.
+     *
+     * @return the map
      */
     public static Map<String, User> loadUsers() {
         Map<String, User> users = new HashMap<>();
@@ -139,16 +175,23 @@ public class LocalFileDatabase {
         }
         return users;
     }
-    
+
     /**
-     * Update user in file
+     * Update user.
+     *
+     * @param updatedUser the updated user
      */
     public static void updateUser(User updatedUser) {
         Map<String, User> users = loadUsers();
         users.put(updatedUser.getEmail(), updatedUser);
         saveAllUsers(users);
     }
-    
+
+    /**
+     * Save all users.
+     *
+     * @param users the users
+     */
     private static void saveAllUsers(Map<String, User> users) {
         try (PrintWriter writer = new PrintWriter(new FileWriter(USERS_FILE))) {
             for (User user : users.values()) {
@@ -158,20 +201,32 @@ public class LocalFileDatabase {
             System.err.println("Error saving all users: " + e.getMessage());
         }
     }
-    
+
+    /**
+     * User to string.
+     *
+     * @param user the user
+     * @return the string
+     */
     private static String userToString(User user) {
         return String.join("|",
-            user.getUserID() != null ? user.getUserID() : "",
-            user.getName() != null ? user.getName() : "",
-            user.getEmail() != null ? user.getEmail() : "",
-            user.getPhoneNumber() != null ? user.getPhoneNumber() : "",
-            user.getCity() != null ? user.getCity() : "",
-            user.getPassword() != null ? user.getPassword() : "",
-            user.getRole() != null && user.getRole().getRoleName() != null ? user.getRole().getRoleName() : "CUSTOMER",
-            String.valueOf(user.isActive())
-        );
+                user.getUserID() != null ? user.getUserID() : "",
+                user.getName() != null ? user.getName() : "",
+                user.getEmail() != null ? user.getEmail() : "",
+                user.getPhoneNumber() != null ? user.getPhoneNumber() : "",
+                user.getCity() != null ? user.getCity() : "",
+                user.getPassword() != null ? user.getPassword() : "",
+                user.getRole() != null && user.getRole().getRoleName() != null ? user.getRole().getRoleName()
+                        : "CUSTOMER",
+                String.valueOf(user.isActive()));
     }
-    
+
+    /**
+     * String to user.
+     *
+     * @param line the line
+     * @return the user
+     */
     private static User stringToUser(String line) {
         try {
             String[] parts = line.split("\\|");
@@ -183,11 +238,11 @@ public class LocalFileDatabase {
                 user.setPhoneNumber(parts[3]);
                 user.setCity(parts[4]);
                 user.setPassword(parts[5]);
-                
+
                 Role role = new Role();
                 role.setRoleName(parts[6]);
                 user.setRole(role);
-                
+
                 user.setActive(Boolean.parseBoolean(parts[7]));
                 return user;
             }
@@ -196,20 +251,24 @@ public class LocalFileDatabase {
         }
         return null;
     }
-    
+
     // ==================== GYM OPERATIONS ====================
-    
+
     /**
-     * Generate new gym ID
+     * Generate gym id.
+     *
+     * @return the string
      */
     public static String generateGymId() {
         String id = "GYM" + gymIdCounter.getAndIncrement();
         saveCounters();
         return id;
     }
-    
+
     /**
-     * Save gym to file
+     * Save gym.
+     *
+     * @param gym the gym
      */
     public static void saveGym(Gym gym) {
         try (PrintWriter writer = new PrintWriter(new FileWriter(GYMS_FILE, true))) {
@@ -218,9 +277,11 @@ public class LocalFileDatabase {
             System.err.println("Error saving gym: " + e.getMessage());
         }
     }
-    
+
     /**
-     * Load all gyms from file
+     * Load gyms.
+     *
+     * @return the list
      */
     public static List<Gym> loadGyms() {
         List<Gym> gyms = new ArrayList<>();
@@ -239,9 +300,11 @@ public class LocalFileDatabase {
         }
         return gyms;
     }
-    
+
     /**
-     * Update gym in file
+     * Update gym.
+     *
+     * @param updatedGym the updated gym
      */
     public static void updateGym(Gym updatedGym) {
         List<Gym> gyms = loadGyms();
@@ -253,7 +316,12 @@ public class LocalFileDatabase {
         }
         saveAllGyms(gyms);
     }
-    
+
+    /**
+     * Save all gyms.
+     *
+     * @param gyms the gyms
+     */
     private static void saveAllGyms(List<Gym> gyms) {
         try (PrintWriter writer = new PrintWriter(new FileWriter(GYMS_FILE))) {
             for (Gym gym : gyms) {
@@ -263,17 +331,28 @@ public class LocalFileDatabase {
             System.err.println("Error saving all gyms: " + e.getMessage());
         }
     }
-    
+
+    /**
+     * Gym to string.
+     *
+     * @param gym the gym
+     * @return the string
+     */
     private static String gymToString(Gym gym) {
         return String.join("|",
-            gym.getGymId() != null ? gym.getGymId() : "",
-            gym.getGymName() != null ? gym.getGymName() : "",
-            gym.getLocation() != null ? gym.getLocation() : "",
-            gym.getGymOwnerId() != null ? gym.getGymOwnerId() : "",
-            String.valueOf(gym.isApproved())
-        );
+                gym.getGymId() != null ? gym.getGymId() : "",
+                gym.getGymName() != null ? gym.getGymName() : "",
+                gym.getLocation() != null ? gym.getLocation() : "",
+                gym.getGymOwnerId() != null ? gym.getGymOwnerId() : "",
+                String.valueOf(gym.isApproved()));
     }
-    
+
+    /**
+     * String to gym.
+     *
+     * @param line the line
+     * @return the gym
+     */
     private static Gym stringToGym(String line) {
         try {
             String[] parts = line.split("\\|");
@@ -291,20 +370,24 @@ public class LocalFileDatabase {
         }
         return null;
     }
-    
+
     // ==================== SLOT OPERATIONS ====================
-    
+
     /**
-     * Generate new slot ID
+     * Generate slot id.
+     *
+     * @return the string
      */
     public static String generateSlotId() {
         String id = "SLT" + slotIdCounter.getAndIncrement();
         saveCounters();
         return id;
     }
-    
+
     /**
-     * Save slot to file
+     * Save slot.
+     *
+     * @param slot the slot
      */
     public static void saveSlot(Slot slot) {
         try (PrintWriter writer = new PrintWriter(new FileWriter(SLOTS_FILE, true))) {
@@ -313,9 +396,11 @@ public class LocalFileDatabase {
             System.err.println("Error saving slot: " + e.getMessage());
         }
     }
-    
+
     /**
-     * Load all slots from file
+     * Load slots.
+     *
+     * @return the list
      */
     public static List<Slot> loadSlots() {
         List<Slot> slots = new ArrayList<>();
@@ -334,9 +419,11 @@ public class LocalFileDatabase {
         }
         return slots;
     }
-    
+
     /**
-     * Update slot in file
+     * Update slot.
+     *
+     * @param updatedSlot the updated slot
      */
     public static void updateSlot(Slot updatedSlot) {
         List<Slot> slots = loadSlots();
@@ -348,7 +435,12 @@ public class LocalFileDatabase {
         }
         saveAllSlots(slots);
     }
-    
+
+    /**
+     * Save all slots.
+     *
+     * @param slots the slots
+     */
     private static void saveAllSlots(List<Slot> slots) {
         try (PrintWriter writer = new PrintWriter(new FileWriter(SLOTS_FILE))) {
             for (Slot slot : slots) {
@@ -358,18 +450,29 @@ public class LocalFileDatabase {
             System.err.println("Error saving all slots: " + e.getMessage());
         }
     }
-    
+
+    /**
+     * Slot to string.
+     *
+     * @param slot the slot
+     * @return the string
+     */
     private static String slotToString(Slot slot) {
         return String.join("|",
-            slot.getSlotId() != null ? slot.getSlotId() : "",
-            slot.getGymId() != null ? slot.getGymId() : "",
-            slot.getStartTime() != null ? slot.getStartTime().toString() : "",
-            slot.getEndTime() != null ? slot.getEndTime().toString() : "",
-            String.valueOf(slot.getCapacity()),
-            String.valueOf(slot.getAvailableSeats())
-        );
+                slot.getSlotId() != null ? slot.getSlotId() : "",
+                slot.getGymId() != null ? slot.getGymId() : "",
+                slot.getStartTime() != null ? slot.getStartTime().toString() : "",
+                slot.getEndTime() != null ? slot.getEndTime().toString() : "",
+                String.valueOf(slot.getCapacity()),
+                String.valueOf(slot.getAvailableSeats()));
     }
-    
+
+    /**
+     * String to slot.
+     *
+     * @param line the line
+     * @return the slot
+     */
     private static Slot stringToSlot(String line) {
         try {
             String[] parts = line.split("\\|");
@@ -388,20 +491,24 @@ public class LocalFileDatabase {
         }
         return null;
     }
-    
+
     // ==================== BOOKING OPERATIONS ====================
-    
+
     /**
-     * Generate new booking ID
+     * Generate booking id.
+     *
+     * @return the string
      */
     public static String generateBookingId() {
         String id = "BKG" + bookingIdCounter.getAndIncrement();
         saveCounters();
         return id;
     }
-    
+
     /**
-     * Save booking to file
+     * Save booking.
+     *
+     * @param booking the booking
      */
     public static void saveBooking(Booking booking) {
         try (PrintWriter writer = new PrintWriter(new FileWriter(BOOKINGS_FILE, true))) {
@@ -410,9 +517,11 @@ public class LocalFileDatabase {
             System.err.println("Error saving booking: " + e.getMessage());
         }
     }
-    
+
     /**
-     * Load all bookings from file
+     * Load bookings.
+     *
+     * @return the list
      */
     public static List<Booking> loadBookings() {
         List<Booking> bookings = new ArrayList<>();
@@ -431,9 +540,11 @@ public class LocalFileDatabase {
         }
         return bookings;
     }
-    
+
     /**
-     * Update booking in file
+     * Update booking.
+     *
+     * @param updatedBooking the updated booking
      */
     public static void updateBooking(Booking updatedBooking) {
         List<Booking> bookings = loadBookings();
@@ -445,16 +556,23 @@ public class LocalFileDatabase {
         }
         saveAllBookings(bookings);
     }
-    
+
     /**
-     * Delete booking from file
+     * Delete booking.
+     *
+     * @param bookingId the booking id
      */
     public static void deleteBooking(String bookingId) {
         List<Booking> bookings = loadBookings();
         bookings.removeIf(b -> b.getBookingId().equals(bookingId));
         saveAllBookings(bookings);
     }
-    
+
+    /**
+     * Save all bookings.
+     *
+     * @param bookings the bookings
+     */
     private static void saveAllBookings(List<Booking> bookings) {
         try (PrintWriter writer = new PrintWriter(new FileWriter(BOOKINGS_FILE))) {
             for (Booking booking : bookings) {
@@ -464,19 +582,30 @@ public class LocalFileDatabase {
             System.err.println("Error saving all bookings: " + e.getMessage());
         }
     }
-    
+
+    /**
+     * Booking to string.
+     *
+     * @param booking the booking
+     * @return the string
+     */
     private static String bookingToString(Booking booking) {
         return String.join("|",
-            booking.getBookingId() != null ? booking.getBookingId() : "",
-            booking.getUserId() != null ? booking.getUserId() : "",
-            booking.getSlotId() != null ? booking.getSlotId() : "",
-            booking.getGymId() != null ? booking.getGymId() : "",
-            booking.getBookingDate() != null ? booking.getBookingDate().toString() : "",
-            booking.getStatus() != null ? booking.getStatus() : "",
-            booking.getCreatedAt() != null ? booking.getCreatedAt().toString() : ""
-        );
+                booking.getBookingId() != null ? booking.getBookingId() : "",
+                booking.getUserId() != null ? booking.getUserId() : "",
+                booking.getSlotId() != null ? booking.getSlotId() : "",
+                booking.getGymId() != null ? booking.getGymId() : "",
+                booking.getBookingDate() != null ? booking.getBookingDate().toString() : "",
+                booking.getStatus() != null ? booking.getStatus() : "",
+                booking.getCreatedAt() != null ? booking.getCreatedAt().toString() : "");
     }
-    
+
+    /**
+     * String to booking.
+     *
+     * @param line the line
+     * @return the booking
+     */
     private static Booking stringToBooking(String line) {
         try {
             String[] parts = line.split("\\|");

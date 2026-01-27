@@ -1,3 +1,4 @@
+// TODO: Auto-generated Javadoc
 package com.flipfit.client;
 
 import com.flipfit.business.GymCustomerInterface;
@@ -8,14 +9,34 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Scanner;
 
+/**
+ * The Class GymCustomerFlipFitMenu.
+ *
+ * @author team pi
+ * @ClassName "GymCustomerFlipFitMenu"
+ */
 public class GymCustomerFlipFitMenu {
-    
+
+    /** The current user id. */
     private static String currentUserId = null;
 
+    /**
+     * Show customer menu.
+     *
+     * @param scanner         the scanner
+     * @param customerService the customer service
+     */
     public static void showCustomerMenu(Scanner scanner, GymCustomerInterface customerService) {
         showCustomerMenu(scanner, customerService, null);
     }
 
+    /**
+     * Show customer menu.
+     *
+     * @param scanner         the scanner
+     * @param customerService the customer service
+     * @param userId          the user id
+     */
     public static void showCustomerMenu(Scanner scanner, GymCustomerInterface customerService, String userId) {
         currentUserId = userId;
         boolean back = false;
@@ -71,13 +92,19 @@ public class GymCustomerFlipFitMenu {
             }
         }
     }
-    
+
+    /**
+     * Handle view slots.
+     *
+     * @param scanner         the scanner
+     * @param customerService the customer service
+     */
     private static void handleViewSlots(Scanner scanner, GymCustomerInterface customerService) {
         System.out.print("Enter Gym ID: ");
         String gymId = scanner.nextLine();
         System.out.print("Enter Date (yyyy-MM-dd) or press Enter for today: ");
         String dateStr = scanner.nextLine();
-        
+
         LocalDate date;
         if (dateStr.trim().isEmpty()) {
             date = LocalDate.now();
@@ -89,23 +116,29 @@ public class GymCustomerFlipFitMenu {
                 date = LocalDate.now();
             }
         }
-        
+
         customerService.viewSlotsForGym(gymId, date);
     }
-    
+
+    /**
+     * Handle book slot.
+     *
+     * @param scanner         the scanner
+     * @param customerService the customer service
+     */
     private static void handleBookSlot(Scanner scanner, GymCustomerInterface customerService) {
         if (currentUserId == null) {
             System.out.println("Please login first to book a slot.");
             return;
         }
-        
+
         System.out.print("Enter Gym ID: ");
         String gymId = scanner.nextLine();
         System.out.print("Enter Slot ID: ");
         String slotId = scanner.nextLine();
         System.out.print("Enter Date (yyyy-MM-dd) or press Enter for today: ");
         String dateStr = scanner.nextLine();
-        
+
         LocalDate date;
         if (dateStr.trim().isEmpty()) {
             date = LocalDate.now();
@@ -117,7 +150,7 @@ public class GymCustomerFlipFitMenu {
                 date = LocalDate.now();
             }
         }
-        
+
         try {
             boolean success = customerService.bookSlot(currentUserId, slotId, gymId, date);
             if (success) {
@@ -128,15 +161,21 @@ public class GymCustomerFlipFitMenu {
         }
     }
 
+    /**
+     * Handle cancel booking.
+     *
+     * @param scanner         the scanner
+     * @param customerService the customer service
+     */
     private static void handleCancelBooking(Scanner scanner, GymCustomerInterface customerService) {
         if (currentUserId == null) {
             System.out.println("Please login first to cancel a booking.");
             return;
         }
-        
+
         System.out.print("Enter Booking ID to cancel: ");
         String bookingId = scanner.nextLine();
-        
+
         try {
             boolean success = customerService.cancelBooking(bookingId, currentUserId);
             if (success) {

@@ -1,3 +1,4 @@
+// TODO: Auto-generated Javadoc
 package com.flipfit.client;
 
 import com.flipfit.bean.Notification;
@@ -9,18 +10,26 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * Notification DAO CRUD Operations Demo
- * Demonstrates Create, Read, Update, Delete operations
+ * The Class NotificationClientApp.
+ *
+ * @author team pi
+ * @ClassName "NotificationClientApp"
  */
 public class NotificationClientApp {
+
+  /**
+   * The main method.
+   *
+   * @param args the arguments
+   */
   public static void main(String[] args) {
     NotificationDAO notificationDAO = new NotificationDAO();
     CustomerDAO customerDAO = new CustomerDAO();
-    
+
     System.out.println("========================================");
     System.out.println("  NOTIFICATION DAO CRUD OPERATIONS");
     System.out.println("========================================\n");
-    
+
     // Setup: Create a customer
     System.out.println("--- Setting up test data ---");
     GymCustomer customer = new GymCustomer();
@@ -36,7 +45,7 @@ public class NotificationClientApp {
     customer.setRole(customerRole);
     customerDAO.saveCustomer(customer);
     System.out.println("✓ Customer created: " + customerId);
-    
+
     // ==================== CREATE ====================
     System.out.println("\n--- CREATE Operation ---");
     Notification notification = new Notification();
@@ -47,7 +56,7 @@ public class NotificationClientApp {
     notification.setMessage("Thank you for registering. Start booking your gym slots now.");
     notification.setRead(false);
     notification.setCreatedAt(LocalDateTime.now());
-    
+
     boolean created = notificationDAO.saveNotification(notification);
     if (created) {
       System.out.println("✓ Notification created successfully!");
@@ -59,7 +68,7 @@ public class NotificationClientApp {
     } else {
       System.out.println("✗ Failed to create notification.");
     }
-    
+
     // Create another notification
     Notification notification2 = new Notification();
     String notificationId2 = notificationDAO.generateNotificationId();
@@ -71,10 +80,10 @@ public class NotificationClientApp {
     notification2.setCreatedAt(LocalDateTime.now());
     notificationDAO.saveNotification(notification2);
     System.out.println("✓ Second notification created: " + notificationId2);
-    
+
     // ==================== READ ====================
     System.out.println("\n--- READ Operations ---");
-    
+
     // Read by ID
     System.out.println("\n1. Read by ID:");
     Notification retrievedById = notificationDAO.getNotificationById(notificationId);
@@ -87,76 +96,72 @@ public class NotificationClientApp {
     } else {
       System.out.println("✗ Notification not found by ID");
     }
-    
+
     // Read All Notifications
     System.out.println("\n2. Read All Notifications:");
     List<Notification> allNotifications = notificationDAO.getAllNotifications();
     System.out.println("✓ Total notifications in database: " + allNotifications.size());
-    
+
     // Read Notifications by User
     System.out.println("\n3. Read Notifications by User ID:");
     List<Notification> userNotifications = notificationDAO.getNotificationsByUserId(customerId);
     System.out.println("✓ Total notifications for user: " + userNotifications.size());
-    userNotifications.forEach(n -> 
-      System.out.println("  - " + n.getTitle() + " | Read: " + n.isRead())
-    );
-    
+    userNotifications.forEach(n -> System.out.println("  - " + n.getTitle() + " | Read: " + n.isRead()));
+
     // Read Unread Notifications
     System.out.println("\n4. Read Unread Notifications:");
     List<Notification> unreadNotifications = notificationDAO.getUnreadNotificationsByUserId(customerId);
     System.out.println("✓ Unread notifications: " + unreadNotifications.size());
-    unreadNotifications.forEach(n -> 
-      System.out.println("  - " + n.getTitle())
-    );
-    
+    unreadNotifications.forEach(n -> System.out.println("  - " + n.getTitle()));
+
     // Get Unread Count
     System.out.println("\n5. Get Unread Notification Count:");
     int unreadCount = notificationDAO.getUnreadNotificationCount(customerId);
     System.out.println("✓ Unread count: " + unreadCount);
-    
+
     // ==================== UPDATE ====================
     System.out.println("\n--- UPDATE Operations ---");
-    
+
     // Mark Single Notification as Read
     System.out.println("\n1. Mark single notification as read:");
     boolean markedRead = notificationDAO.markAsRead(notificationId);
     if (markedRead) {
       System.out.println("✓ Notification marked as read successfully!");
-      
+
       // Verify
       Notification readNotification = notificationDAO.getNotificationById(notificationId);
       System.out.println("  Read Status: " + readNotification.isRead());
-      
+
       // Check updated unread count
       int newUnreadCount = notificationDAO.getUnreadNotificationCount(customerId);
       System.out.println("  New unread count: " + newUnreadCount);
     } else {
       System.out.println("✗ Failed to mark notification as read.");
     }
-    
+
     // Mark All Notifications as Read
     System.out.println("\n2. Mark all notifications as read:");
     boolean allMarkedRead = notificationDAO.markAllAsReadForUser(customerId);
     if (allMarkedRead) {
       System.out.println("✓ All notifications marked as read successfully!");
-      
+
       // Verify
       int finalUnreadCount = notificationDAO.getUnreadNotificationCount(customerId);
       System.out.println("  Final unread count: " + finalUnreadCount);
     } else {
       System.out.println("✗ Failed to mark all notifications as read.");
     }
-    
+
     // ==================== DELETE ====================
     System.out.println("\n--- DELETE Operations ---");
-    
+
     // Delete Single Notification
     System.out.println("\n1. Delete single notification:");
     System.out.println("Deleting notification with ID: " + notificationId);
     boolean deleted = notificationDAO.deleteNotification(notificationId);
     if (deleted) {
       System.out.println("✓ Notification deleted successfully!");
-      
+
       // Verify deletion
       Notification deletedNotif = notificationDAO.getNotificationById(notificationId);
       if (deletedNotif == null) {
@@ -165,23 +170,23 @@ public class NotificationClientApp {
     } else {
       System.out.println("✗ Failed to delete notification.");
     }
-    
+
     // Delete All Notifications for User
     System.out.println("\n2. Delete all notifications for user:");
     boolean allDeleted = notificationDAO.deleteAllNotificationsForUser(customerId);
     if (allDeleted) {
       System.out.println("✓ All notifications deleted for user!");
-      
+
       // Verify
       List<Notification> remainingNotifs = notificationDAO.getNotificationsByUserId(customerId);
       System.out.println("  Remaining notifications: " + remainingNotifs.size());
     } else {
       System.out.println("✗ Failed to delete notifications.");
     }
-    
+
     // Cleanup
     customerDAO.deleteCustomer(customerId);
-    
+
     System.out.println("\n========================================");
     System.out.println("  CRUD OPERATIONS COMPLETED");
     System.out.println("========================================");

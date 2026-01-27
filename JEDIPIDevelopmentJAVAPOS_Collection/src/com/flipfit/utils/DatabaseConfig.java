@@ -1,3 +1,4 @@
+// TODO: Auto-generated Javadoc
 package com.flipfit.utils;
 
 import java.io.FileInputStream;
@@ -6,29 +7,43 @@ import java.io.InputStream;
 import java.util.Properties;
 
 /**
- * Database Configuration Class
- * Loads and manages database connection properties from database.properties file
+ * The Class DatabaseConfig.
+ *
+ * @author team pi
+ * @ClassName "DatabaseConfig"
  */
 public class DatabaseConfig {
-    
+
+    /** The Constant PROPERTIES_FILE. */
     private static final String PROPERTIES_FILE = "database/database.properties";
+
+    /** The properties. */
     private static Properties properties = new Properties();
+
+    /** The loaded. */
     private static boolean loaded = false;
-    
+
+    /** The Constant DB_URL. */
     // Configuration keys
     private static final String DB_URL = "db.url";
+
+    /** The Constant DB_USERNAME. */
     private static final String DB_USERNAME = "db.username";
+
+    /** The Constant DB_PASSWORD. */
     private static final String DB_PASSWORD = "db.password";
+
+    /** The Constant DB_DRIVER. */
     private static final String DB_DRIVER = "db.driver";
-    
+
     /**
-     * Load database properties from file
+     * Load properties.
      */
     private static void loadProperties() {
         if (loaded) {
             return;
         }
-        
+
         try (InputStream input = new FileInputStream(PROPERTIES_FILE)) {
             properties.load(input);
             loaded = true;
@@ -39,60 +54,72 @@ public class DatabaseConfig {
             setDefaultProperties();
         }
     }
-    
+
     /**
-     * Set default properties if file is not found
+     * Sets the default properties.
      */
     private static void setDefaultProperties() {
-        properties.setProperty(DB_URL, "jdbc:mysql://localhost:3306/flipfit_db?useSSL=false&serverTimezone=Asia/Kolkata");
+        properties.setProperty(DB_URL,
+                "jdbc:mysql://localhost:3306/flipfit_db?useSSL=false&serverTimezone=Asia/Kolkata");
         properties.setProperty(DB_USERNAME, "root");
         properties.setProperty(DB_PASSWORD, "");
         properties.setProperty(DB_DRIVER, "com.mysql.cj.jdbc.Driver");
         loaded = true;
     }
-    
+
     /**
-     * Get database URL
+     * Gets the url.
+     *
+     * @return the url
      */
     public static String getUrl() {
         loadProperties();
         return properties.getProperty(DB_URL);
     }
-    
+
     /**
-     * Get database username
+     * Gets the username.
+     *
+     * @return the username
      */
     public static String getUsername() {
         loadProperties();
         return properties.getProperty(DB_USERNAME);
     }
-    
+
     /**
-     * Get database password
+     * Gets the password.
+     *
+     * @return the password
      */
     public static String getPassword() {
         loadProperties();
         return properties.getProperty(DB_PASSWORD);
     }
-    
+
     /**
-     * Get JDBC driver class name
+     * Gets the driver.
+     *
+     * @return the driver
      */
     public static String getDriver() {
         loadProperties();
         return properties.getProperty(DB_DRIVER);
     }
-    
+
     /**
-     * Get specific property by key
+     * Gets the property.
+     *
+     * @param key the key
+     * @return the property
      */
     public static String getProperty(String key) {
         loadProperties();
         return properties.getProperty(key);
     }
-    
+
     /**
-     * Display current configuration (for debugging)
+     * Display config.
      */
     public static void displayConfig() {
         loadProperties();

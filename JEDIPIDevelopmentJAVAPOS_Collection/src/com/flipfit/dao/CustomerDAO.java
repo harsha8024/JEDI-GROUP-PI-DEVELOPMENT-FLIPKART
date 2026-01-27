@@ -1,3 +1,4 @@
+// TODO: Auto-generated Javadoc
 package com.flipfit.dao;
 
 import com.flipfit.bean.GymCustomer;
@@ -10,31 +11,39 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Data Access Object for Customer entity
- * Handles all database operations related to gym customers
+ * The Class CustomerDAO.
+ *
+ * @author team pi
+ * @ClassName "CustomerDAO"
  */
 public class CustomerDAO {
-    
+
+    /** The db manager. */
     private DatabaseConnection dbManager;
-    
+
+    /**
+     * Instantiates a new customer DAO.
+     */
     public CustomerDAO() {
         this.dbManager = DatabaseConnection.getInstance();
     }
-    
+
     /**
-     * Generate new customer ID from database counter
+     * Generate customer id.
+     *
+     * @return the string
      */
     public synchronized String generateCustomerId() {
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement updateStmt = conn.prepareStatement(SQLConstants.UPDATE_COUNTER);
-             PreparedStatement selectStmt = conn.prepareStatement(SQLConstants.SELECT_COUNTER)) {
-            
+                PreparedStatement updateStmt = conn.prepareStatement(SQLConstants.UPDATE_COUNTER);
+                PreparedStatement selectStmt = conn.prepareStatement(SQLConstants.SELECT_COUNTER)) {
+
             updateStmt.setString(1, "CUSTOMER");
             updateStmt.executeUpdate();
-            
+
             selectStmt.setString(1, "CUSTOMER");
             ResultSet rs = selectStmt.executeQuery();
-            
+
             if (rs.next()) {
                 int id = rs.getInt("current_value");
                 return "CUST" + id;
@@ -44,14 +53,17 @@ public class CustomerDAO {
         }
         return null;
     }
-    
+
     /**
-     * Save a new customer to database
+     * Save customer.
+     *
+     * @param customer the customer
+     * @return true, if successful
      */
     public boolean saveCustomer(GymCustomer customer) {
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.INSERT_CUSTOMER)) {
-            
+                PreparedStatement pstmt = conn.prepareStatement(SQLConstants.INSERT_CUSTOMER)) {
+
             pstmt.setString(1, customer.getUserID());
             pstmt.setString(2, customer.getName());
             pstmt.setString(3, customer.getEmail());
@@ -59,26 +71,29 @@ public class CustomerDAO {
             pstmt.setString(5, customer.getCity());
             pstmt.setString(6, customer.getPassword());
             pstmt.setBoolean(7, customer.isActive());
-            
+
             int rowsAffected = pstmt.executeUpdate();
             return rowsAffected > 0;
-            
+
         } catch (SQLException e) {
             System.err.println("Error saving customer: " + e.getMessage());
             return false;
         }
     }
-    
+
     /**
-     * Get customer by email
+     * Gets the customer by email.
+     *
+     * @param email the email
+     * @return the customer by email
      */
     public GymCustomer getCustomerByEmail(String email) {
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.SELECT_CUSTOMER_BY_EMAIL)) {
-            
+                PreparedStatement pstmt = conn.prepareStatement(SQLConstants.SELECT_CUSTOMER_BY_EMAIL)) {
+
             pstmt.setString(1, email);
             ResultSet rs = pstmt.executeQuery();
-            
+
             if (rs.next()) {
                 return mapResultSetToCustomer(rs);
             }
@@ -87,17 +102,20 @@ public class CustomerDAO {
         }
         return null;
     }
-    
+
     /**
-     * Get customer by ID
+     * Gets the customer by id.
+     *
+     * @param customerId the customer id
+     * @return the customer by id
      */
     public GymCustomer getCustomerById(String customerId) {
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.SELECT_CUSTOMER_BY_ID)) {
-            
+                PreparedStatement pstmt = conn.prepareStatement(SQLConstants.SELECT_CUSTOMER_BY_ID)) {
+
             pstmt.setString(1, customerId);
             ResultSet rs = pstmt.executeQuery();
-            
+
             if (rs.next()) {
                 return mapResultSetToCustomer(rs);
             }
@@ -106,17 +124,19 @@ public class CustomerDAO {
         }
         return null;
     }
-    
+
     /**
-     * Get all customers
+     * Gets the all customers.
+     *
+     * @return the all customers
      */
     public Map<String, GymCustomer> getAllCustomers() {
         Map<String, GymCustomer> customers = new HashMap<>();
-        
+
         try (Connection conn = dbManager.getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(SQLConstants.SELECT_ALL_CUSTOMERS)) {
-            
+                Statement stmt = conn.createStatement();
+                ResultSet rs = stmt.executeQuery(SQLConstants.SELECT_ALL_CUSTOMERS)) {
+
             while (rs.next()) {
                 GymCustomer customer = mapResultSetToCustomer(rs);
                 customers.put(customer.getEmail(), customer);
@@ -126,57 +146,66 @@ public class CustomerDAO {
         }
         return customers;
     }
-    
+
     /**
-     * Update existing customer
+     * Update customer.
+     *
+     * @param customer the customer
+     * @return true, if successful
      */
     public boolean updateCustomer(GymCustomer customer) {
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.UPDATE_CUSTOMER)) {
-            
+                PreparedStatement pstmt = conn.prepareStatement(SQLConstants.UPDATE_CUSTOMER)) {
+
             pstmt.setString(1, customer.getName());
             pstmt.setString(2, customer.getPhoneNumber());
             pstmt.setString(3, customer.getCity());
             pstmt.setString(4, customer.getPassword());
             pstmt.setBoolean(5, customer.isActive());
             pstmt.setString(6, customer.getEmail());
-            
+
             int rowsAffected = pstmt.executeUpdate();
             return rowsAffected > 0;
-            
+
         } catch (SQLException e) {
             System.err.println("Error updating customer: " + e.getMessage());
             return false;
         }
     }
-    
+
     /**
-     * Delete customer by ID
+     * Delete customer.
+     *
+     * @param customerId the customer id
+     * @return true, if successful
      */
     public boolean deleteCustomer(String customerId) {
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.DELETE_CUSTOMER)) {
-            
+                PreparedStatement pstmt = conn.prepareStatement(SQLConstants.DELETE_CUSTOMER)) {
+
             pstmt.setString(1, customerId);
             int rowsAffected = pstmt.executeUpdate();
             return rowsAffected > 0;
-            
+
         } catch (SQLException e) {
             System.err.println("Error deleting customer: " + e.getMessage());
             return false;
         }
     }
-    
+
     /**
-     * Check if email exists
+     * Email exists.
+     *
+     * @param email the email
+     * @return true, if successful
      */
     public boolean emailExists(String email) {
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.COUNT_CUSTOMER_BY_EMAIL)) {
-            
+                PreparedStatement pstmt = conn.prepareStatement(SQLConstants.COUNT_CUSTOMER_BY_EMAIL)) {
+
             pstmt.setString(1, email);
             ResultSet rs = pstmt.executeQuery();
-            
+
             if (rs.next()) {
                 return rs.getInt(1) > 0;
             }
@@ -185,9 +214,13 @@ public class CustomerDAO {
         }
         return false;
     }
-    
+
     /**
-     * Map ResultSet to GymCustomer object
+     * Map result set to customer.
+     *
+     * @param rs the rs
+     * @return the gym customer
+     * @throws SQLException the SQL exception
      */
     private GymCustomer mapResultSetToCustomer(ResultSet rs) throws SQLException {
         GymCustomer customer = new GymCustomer();
@@ -197,13 +230,13 @@ public class CustomerDAO {
         customer.setPhoneNumber(rs.getString("phone_number"));
         customer.setCity(rs.getString("city"));
         customer.setPassword(rs.getString("password"));
-        
+
         Role role = new Role();
         role.setRoleName("CUSTOMER");
         customer.setRole(role);
-        
+
         customer.setActive(rs.getBoolean("is_active"));
-        
+
         return customer;
     }
 }

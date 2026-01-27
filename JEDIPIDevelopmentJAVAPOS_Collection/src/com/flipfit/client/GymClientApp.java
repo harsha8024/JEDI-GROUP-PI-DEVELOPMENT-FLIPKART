@@ -1,3 +1,4 @@
+// TODO: Auto-generated Javadoc
 package com.flipfit.client;
 
 import com.flipfit.bean.Gym;
@@ -8,18 +9,26 @@ import com.flipfit.dao.GymOwnerDAO;
 import java.util.List;
 
 /**
- * Gym DAO CRUD Operations Demo
- * Demonstrates Create, Read, Update, Delete operations
+ * The Class GymClientApp.
+ *
+ * @author team pi
+ * @ClassName "GymClientApp"
  */
 public class GymClientApp {
+
+  /**
+   * The main method.
+   *
+   * @param args the arguments
+   */
   public static void main(String[] args) {
     GymDAO gymDAO = new GymDAO();
     GymOwnerDAO gymOwnerDAO = new GymOwnerDAO();
-    
+
     System.out.println("========================================");
     System.out.println("  GYM DAO CRUD OPERATIONS DEMO");
     System.out.println("========================================\n");
-    
+
     // First, create a gym owner for the gym
     System.out.println("--- Setting up Gym Owner ---");
     GymOwner owner = new GymOwner();
@@ -37,7 +46,7 @@ public class GymClientApp {
     owner.setRole(ownerRole);
     gymOwnerDAO.saveGymOwner(owner);
     System.out.println("✓ Gym Owner created with ID: " + ownerId);
-    
+
     // ==================== CREATE ====================
     System.out.println("\n--- CREATE Operation ---");
     Gym gym = new Gym();
@@ -47,7 +56,7 @@ public class GymClientApp {
     gym.setLocation("Koramangala, Bangalore");
     gym.setGymOwnerId(ownerId);
     gym.setApproved(false); // Gyms start as unapproved
-    
+
     boolean created = gymDAO.saveGym(gym);
     if (created) {
       System.out.println("✓ Gym created successfully!");
@@ -59,10 +68,10 @@ public class GymClientApp {
     } else {
       System.out.println("✗ Failed to create gym.");
     }
-    
+
     // ==================== READ ====================
     System.out.println("\n--- READ Operations ---");
-    
+
     // Read by ID
     System.out.println("\n1. Read by ID:");
     Gym retrievedById = gymDAO.getGymById(gymId);
@@ -75,46 +84,43 @@ public class GymClientApp {
     } else {
       System.out.println("✗ Gym not found by ID");
     }
-    
+
     // Read All Gyms
     System.out.println("\n2. Read All Gyms:");
     List<Gym> allGyms = gymDAO.getAllGyms();
     System.out.println("✓ Total gyms in database: " + allGyms.size());
-    allGyms.forEach(g -> 
-      System.out.println("  - " + g.getGymName() + " | " + g.getLocation() + " | Approved: " + g.isApproved())
-    );
-    
+    allGyms.forEach(
+        g -> System.out.println("  - " + g.getGymName() + " | " + g.getLocation() + " | Approved: " + g.isApproved()));
+
     // Get Gyms by Owner
     System.out.println("\n3. Read Gyms by Owner ID:");
     List<Gym> ownerGyms = gymDAO.getGymsByOwnerId(ownerId);
     System.out.println("✓ Total gyms for owner: " + ownerGyms.size());
-    ownerGyms.forEach(g -> 
-      System.out.println("  - " + g.getGymName() + " (" + g.getGymId() + ")")
-    );
-    
+    ownerGyms.forEach(g -> System.out.println("  - " + g.getGymName() + " (" + g.getGymId() + ")"));
+
     // Get Pending Gyms
     System.out.println("\n4. Read Pending Gyms:");
     List<Gym> pendingGyms = gymDAO.getPendingGyms();
     System.out.println("✓ Pending gyms: " + pendingGyms.size());
-    
+
     // Get Approved Gyms
     System.out.println("\n5. Read Approved Gyms:");
     List<Gym> approvedGyms = gymDAO.getApprovedGyms();
     System.out.println("✓ Approved gyms: " + approvedGyms.size());
-    
+
     // ==================== UPDATE ====================
     System.out.println("\n--- UPDATE Operations ---");
-    
+
     // Update Gym Details
     System.out.println("\n1. Update Gym Details:");
     if (retrievedById != null) {
       retrievedById.setGymName("PowerFit Gym Premium");
       retrievedById.setLocation("Indiranagar, Bangalore");
-      
+
       boolean updated = gymDAO.updateGym(retrievedById);
       if (updated) {
         System.out.println("✓ Gym details updated successfully!");
-        
+
         // Verify update
         Gym updatedGym = gymDAO.getGymById(gymId);
         System.out.println("  Updated Name: " + updatedGym.getGymName());
@@ -123,27 +129,27 @@ public class GymClientApp {
         System.out.println("✗ Failed to update gym details.");
       }
     }
-    
+
     // Approve Gym
     System.out.println("\n2. Approve Gym:");
     boolean approved = gymDAO.approveGym(gymId);
     if (approved) {
       System.out.println("✓ Gym approved successfully!");
-      
+
       // Verify approval
       Gym approvedGym = gymDAO.getGymById(gymId);
       System.out.println("  Approval Status: " + approvedGym.isApproved());
     } else {
       System.out.println("✗ Failed to approve gym.");
     }
-    
+
     // ==================== DELETE ====================
     System.out.println("\n--- DELETE Operation ---");
     System.out.println("Deleting gym with ID: " + gymId);
     boolean deleted = gymDAO.deleteGym(gymId);
     if (deleted) {
       System.out.println("✓ Gym deleted successfully!");
-      
+
       // Verify deletion
       Gym deletedGym = gymDAO.getGymById(gymId);
       if (deletedGym == null) {
@@ -152,10 +158,10 @@ public class GymClientApp {
     } else {
       System.out.println("✗ Failed to delete gym.");
     }
-    
+
     // Cleanup: Delete owner
     gymOwnerDAO.deleteGymOwner(ownerId);
-    
+
     System.out.println("\n========================================");
     System.out.println("  CRUD OPERATIONS COMPLETED");
     System.out.println("========================================");

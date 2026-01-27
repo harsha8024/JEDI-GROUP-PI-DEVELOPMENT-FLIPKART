@@ -1,3 +1,4 @@
+// TODO: Auto-generated Javadoc
 package com.flipfit.client;
 
 import com.flipfit.bean.Gym;
@@ -8,8 +9,20 @@ import com.flipfit.exception.ApprovalFailedException;
 import java.util.List;
 import java.util.Scanner;
 
+/**
+ * The Class GymAdminFlipfitMenu.
+ *
+ * @author team pi
+ * @ClassName "GymAdminFlipfitMenu"
+ */
 public class GymAdminFlipfitMenu {
 
+    /**
+     * Show admin menu.
+     *
+     * @param scanner      the scanner
+     * @param adminService the admin service
+     */
     public static void showAdminMenu(Scanner scanner, GymAdminInterface adminService) {
         boolean back = false;
 
@@ -52,7 +65,7 @@ public class GymAdminFlipfitMenu {
                     System.out.print("Enter Gym ID to reject: ");
                     String rejectId = scanner.nextLine();
                     try {
-                        adminService.rejectGym(rejectId); 
+                        adminService.rejectGym(rejectId);
                     } catch (ApprovalFailedException e) {
                         System.out.println("[ADMIN ERROR] " + e.getMessage());
                     }
@@ -74,7 +87,7 @@ public class GymAdminFlipfitMenu {
                     String rejectSlotId = scanner.nextLine();
                     try {
                         adminService.rejectSlot(rejectSlotId);
-                        // Successful message is usually handled inside the serviceImpl, 
+                        // Successful message is usually handled inside the serviceImpl,
                         // but we catch the failure here.
                     } catch (ApprovalFailedException e) {
                         System.out.println("\n[ADMIN ACTION FAILED] " + e.getMessage());
@@ -104,33 +117,46 @@ public class GymAdminFlipfitMenu {
         }
     }
 
+    /**
+     * View pending gyms.
+     *
+     * @param adminService the admin service
+     */
     private static void viewPendingGyms(GymAdminInterface adminService) {
         List<Gym> pendingGyms = adminService.viewPendingApprovals();
         if (pendingGyms.isEmpty()) {
             System.out.println("\nNo gyms currently awaiting approval.");
         } else {
             System.out.println("\n--- Pending Gym Approvals ---");
-            pendingGyms.forEach(gym -> 
-                System.out.println("ID: " + gym.getGymId() + " | Name: " + gym.getGymName() + " | Location: " + gym.getLocation() + " | Owner: " + gym.getGymOwnerId())
-            );
+            pendingGyms.forEach(gym -> System.out.println("ID: " + gym.getGymId() + " | Name: " + gym.getGymName()
+                    + " | Location: " + gym.getLocation() + " | Owner: " + gym.getGymOwnerId()));
         }
     }
-    
+
+    /**
+     * View pending slots.
+     *
+     * @param adminService the admin service
+     */
     private static void viewPendingSlots(GymAdminInterface adminService) {
         List<Slot> pendingSlots = adminService.viewPendingSlots();
         if (pendingSlots.isEmpty()) {
             System.out.println("\nNo slots currently awaiting approval.");
         } else {
             System.out.println("\n--- Pending Slot Approvals ---");
-            pendingSlots.forEach(slot -> 
-                System.out.println("Slot ID: " + slot.getSlotId() + 
-                                 " | Gym: " + slot.getGymId() + 
-                                 " | Time: " + slot.getStartTime() + " - " + slot.getEndTime() + 
-                                 " | Capacity: " + slot.getCapacity())
-            );
+            pendingSlots.forEach(slot -> System.out.println("Slot ID: " + slot.getSlotId() +
+                    " | Gym: " + slot.getGymId() +
+                    " | Time: " + slot.getStartTime() + " - " + slot.getEndTime() +
+                    " | Capacity: " + slot.getCapacity()));
         }
     }
 
+    /**
+     * Handle generate reports.
+     *
+     * @param scanner      the scanner
+     * @param adminService the admin service
+     */
     private static void handleGenerateReports(Scanner scanner, GymAdminInterface adminService) {
         System.out.println("\n--- Report Generation ---");
         System.out.println("1. User Statistics Report");
@@ -140,7 +166,7 @@ public class GymAdminFlipfitMenu {
         System.out.print("Select report type: ");
         int reportType = scanner.nextInt();
         scanner.nextLine();
-        
+
         adminService.generateReports(reportType);
     }
 }
