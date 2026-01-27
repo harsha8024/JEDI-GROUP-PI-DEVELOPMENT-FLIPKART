@@ -11,6 +11,7 @@ public class GymAdminServiceImpl implements GymAdminInterface {
     private CustomerDAO customerDAO;
     private GymOwnerDAO gymOwnerDAO;
     private AdminDAO adminDAO;
+    private SlotDAO slotDAO;
 
     public GymAdminServiceImpl() {
         this.gymDAO = new GymDAO();
@@ -18,6 +19,7 @@ public class GymAdminServiceImpl implements GymAdminInterface {
         this.customerDAO = new CustomerDAO();
         this.gymOwnerDAO = new GymOwnerDAO();
         this.adminDAO = new AdminDAO();
+        this.slotDAO = new SlotDAO();
     }
 
     @Override
@@ -202,6 +204,10 @@ public class GymAdminServiceImpl implements GymAdminInterface {
         // Inactive gym owners count
         int inactiveOwnersCount = adminDAO.getInactiveGymOwnersCount();
         System.out.println("Inactive Gym Owners: " + inactiveOwnersCount);
+        
+        // Pending slots count
+        int pendingSlotsCount = adminDAO.getPendingSlotsCount();
+        System.out.println("Pending Slots: " + pendingSlotsCount);
     }
 
     private void generateBookingReport() {
@@ -214,5 +220,35 @@ public class GymAdminServiceImpl implements GymAdminInterface {
                 .count();
         System.out.println("Confirmed Bookings: " + activeBookings);
         System.out.println("Cancelled Bookings: " + (bookings.size() - activeBookings));
+    }
+    
+    // ==================== SLOT APPROVAL METHODS ====================
+    
+    @Override
+    public List<Slot> viewPendingSlots() {
+        return slotDAO.getPendingSlots();
+    }
+    
+    @Override
+    public void approveSlot(String slotId) {
+        if (adminDAO.approveSlot(slotId)) {
+            System.out.println("✓ Successfully approved slot with ID: " + slotId);
+        } else {
+            System.out.println("Error: Slot ID " + slotId + " not found or could not be approved.");
+        }
+    }
+    
+    @Override
+    public void rejectSlot(String slotId) {
+        Slot slot = slotDAO.getSlotById(slotId);
+        if (slot != null) {
+            if (adminDAO.rejectSlot(slotId)) {
+                System.out.println("✓ Successfully rejected and removed slot: " + slotId);
+            } else {
+                System.out.println("Error rejecting slot: " + slotId);
+            }
+        } else {
+            System.out.println("Error: Slot ID " + slotId + " not found.");
+        }
     }
 }

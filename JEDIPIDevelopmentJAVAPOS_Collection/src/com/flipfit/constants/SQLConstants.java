@@ -50,15 +50,19 @@ public class SQLConstants {
     public static final String DELETE_GYM = "DELETE FROM gyms WHERE gym_id = ?";
     
     // ==================== SLOT QUERIES ====================
-    public static final String INSERT_SLOT = "INSERT INTO slots (slot_id, gym_id, start_time, end_time, capacity, available_seats) VALUES (?, ?, ?, ?, ?, ?)";
+    public static final String INSERT_SLOT = "INSERT INTO slots (slot_id, gym_id, start_time, end_time, capacity, available_seats, is_approved) VALUES (?, ?, ?, ?, ?, ?, ?)";
     public static final String SELECT_SLOT_BY_ID = "SELECT * FROM slots WHERE slot_id = ?";
     public static final String SELECT_ALL_SLOTS = "SELECT * FROM slots ORDER BY start_time";
     public static final String SELECT_SLOTS_BY_GYM_ID = "SELECT * FROM slots WHERE gym_id = ? ORDER BY start_time";
-    public static final String SELECT_AVAILABLE_SLOTS_BY_GYM_ID = "SELECT * FROM slots WHERE gym_id = ? AND available_seats > 0 ORDER BY start_time";
+    public static final String SELECT_AVAILABLE_SLOTS_BY_GYM_ID = "SELECT * FROM slots WHERE gym_id = ? AND available_seats > 0 AND is_approved = 1 ORDER BY start_time";
+    public static final String SELECT_PENDING_SLOTS = "SELECT * FROM slots WHERE is_approved = 0 ORDER BY created_at";
+    public static final String APPROVE_SLOT = "UPDATE slots SET is_approved = 1 WHERE slot_id = ?";
+    public static final String REJECT_SLOT = "DELETE FROM slots WHERE slot_id = ?";
     public static final String UPDATE_SLOT = "UPDATE slots SET start_time = ?, end_time = ?, capacity = ?, available_seats = ? WHERE slot_id = ?";
     public static final String DECREASE_AVAILABLE_SEATS = "UPDATE slots SET available_seats = available_seats - 1 WHERE slot_id = ? AND available_seats > 0";
     public static final String INCREASE_AVAILABLE_SEATS = "UPDATE slots SET available_seats = available_seats + 1 WHERE slot_id = ? AND available_seats < capacity";
     public static final String DELETE_SLOT = "DELETE FROM slots WHERE slot_id = ?";
+    public static final String COUNT_PENDING_SLOTS = "SELECT COUNT(*) FROM slots WHERE is_approved = 0";
     
     // ==================== BOOKING QUERIES ====================
     public static final String INSERT_BOOKING = "INSERT INTO bookings (booking_id, customer_id, slot_id, gym_id, booking_date, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)";

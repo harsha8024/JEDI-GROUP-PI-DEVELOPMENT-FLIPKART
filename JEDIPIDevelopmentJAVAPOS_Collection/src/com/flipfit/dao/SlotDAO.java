@@ -57,6 +57,7 @@ public class SlotDAO {
             pstmt.setTime(4, Time.valueOf(slot.getEndTime()));
             pstmt.setInt(5, slot.getCapacity());
             pstmt.setInt(6, slot.getAvailableSeats());
+            pstmt.setBoolean(7, slot.isApproved());
             
             int rowsAffected = pstmt.executeUpdate();
             return rowsAffected > 0;
@@ -231,6 +232,26 @@ public class SlotDAO {
         slot.setEndTime(rs.getTime("end_time").toLocalTime());
         slot.setCapacity(rs.getInt("capacity"));
         slot.setAvailableSeats(rs.getInt("available_seats"));
+        slot.setApproved(rs.getBoolean("is_approved"));
         return slot;
+    }
+    
+    /**
+     * Get all pending (unapproved) slots
+     */
+    public List<Slot> getPendingSlots() {
+        List<Slot> slots = new ArrayList<>();
+        
+        try (Connection conn = dbManager.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(SQLConstants.SELECT_PENDING_SLOTS)) {
+            
+            while (rs.next()) {
+                slots.add(mapResultSetToSlot(rs));
+            }
+        } catch (SQLException e) {
+            System.err.println("Error getting pending slots: " + e.getMessage());
+        }
+        return slots;
     }
 }

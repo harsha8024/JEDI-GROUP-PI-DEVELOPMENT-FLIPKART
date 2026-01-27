@@ -10,6 +10,7 @@ public class Slot {
 	private LocalTime endTime;
 	private int capacity;
 	private int availableSeats;
+	private boolean isApproved;
 	
 	public Slot() {
 		
@@ -23,6 +24,7 @@ public class Slot {
 		this.endTime = endTime;
 		this.capacity = capacity;
 		this.availableSeats = availableSeats;
+		this.isApproved = false;
 	}
 	
 	public String getSlotId() {
@@ -72,11 +74,19 @@ public class Slot {
 	public void setAvailableSeats(int availableSeats) {
 		this.availableSeats = availableSeats;
 	}
+	
+	public boolean isApproved() {
+		return isApproved;
+	}
+	
+	public void setApproved(boolean isApproved) {
+		this.isApproved = isApproved;
+	}
 
 	@Override
 	public String toString() {
 		return "Slot [slotId=" + slotId + ", gymId=" + gymId + ", startTime=" + startTime + ", endTime=" + endTime
-				+ ", capacity=" + capacity + ", availableSeats=" + availableSeats + "]";
+				+ ", capacity=" + capacity + ", availableSeats=" + availableSeats + ", isApproved=" + isApproved + "]";
 	}
 	
 }

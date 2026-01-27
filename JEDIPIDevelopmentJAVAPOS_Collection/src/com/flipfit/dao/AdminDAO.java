@@ -384,5 +384,59 @@ public class AdminDAO {
         
         return admin;
     }
+    
+    // ==================== SLOT MANAGEMENT METHODS ====================
+    
+    /**
+     * Approve a slot
+     */
+    public boolean approveSlot(String slotId) {
+        try (Connection conn = dbManager.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.APPROVE_SLOT)) {
+            
+            pstmt.setString(1, slotId);
+            int rowsAffected = pstmt.executeUpdate();
+            return rowsAffected > 0;
+            
+        } catch (SQLException e) {
+            System.err.println("Error approving slot: " + e.getMessage());
+            return false;
+        }
+    }
+    
+    /**
+     * Reject (delete) a slot
+     */
+    public boolean rejectSlot(String slotId) {
+        try (Connection conn = dbManager.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.REJECT_SLOT)) {
+            
+            pstmt.setString(1, slotId);
+            int rowsAffected = pstmt.executeUpdate();
+            return rowsAffected > 0;
+            
+        } catch (SQLException e) {
+            System.err.println("Error rejecting slot: " + e.getMessage());
+            return false;
+        }
+    }
+    
+    /**
+     * Get count of pending slots
+     */
+    public int getPendingSlotsCount() {
+        try (Connection conn = dbManager.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(SQLConstants.COUNT_PENDING_SLOTS)) {
+            
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            System.err.println("Error getting pending slots count: " + e.getMessage());
+        }
+        return 0;
+    }
 }
+
 
