@@ -95,4 +95,16 @@ public class SQLConstants {
     public static final String MARK_ALL_NOTIFICATIONS_AS_READ = "UPDATE notifications SET is_read = TRUE WHERE user_id = ?";
     public static final String DELETE_NOTIFICATION = "DELETE FROM notifications WHERE notification_id = ?";
     public static final String DELETE_ALL_NOTIFICATIONS_BY_USER_ID = "DELETE FROM notifications WHERE user_id = ?";
+    
+    // ==================== ADMIN MANAGEMENT QUERIES ====================
+    public static final String REJECT_GYM = "UPDATE gyms SET is_approved = FALSE WHERE gym_id = ?";
+    public static final String ACTIVATE_GYM_OWNER = "UPDATE gym_owners SET is_active = TRUE WHERE owner_id = ?";
+    public static final String DEACTIVATE_GYM_OWNER = "UPDATE gym_owners SET is_active = FALSE WHERE owner_id = ?";
+    public static final String ACTIVATE_CUSTOMER = "UPDATE customers SET is_active = TRUE WHERE customer_id = ?";
+    public static final String DEACTIVATE_CUSTOMER = "UPDATE customers SET is_active = FALSE WHERE customer_id = ?";
+    public static final String COUNT_ALL_CUSTOMERS = "SELECT COUNT(*) as count FROM customers";
+    public static final String COUNT_ALL_GYM_OWNERS = "SELECT COUNT(*) as count FROM gym_owners";
+    public static final String COUNT_ALL_ADMINS = "SELECT COUNT(*) as count FROM admins";
+    public static final String COUNT_PENDING_GYMS = "SELECT COUNT(*) as count FROM gyms WHERE is_approved = FALSE";
+    public static final String COUNT_INACTIVE_GYM_OWNERS = "SELECT COUNT(*) as count FROM gym_owners WHERE is_active = FALSE";
 }

@@ -192,10 +192,8 @@ public class AdminDAO {
      * Approve a gym (admin action)
      */
     public boolean approveGym(String gymId) {
-        String sql = "UPDATE gyms SET is_approved = TRUE WHERE gym_id = ?";
-        
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.APPROVE_GYM)) {
             
             pstmt.setString(1, gymId);
             int rowsAffected = pstmt.executeUpdate();
@@ -211,10 +209,8 @@ public class AdminDAO {
      * Reject a gym (admin action)
      */
     public boolean rejectGym(String gymId) {
-        String sql = "UPDATE gyms SET is_approved = FALSE WHERE gym_id = ?";
-        
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.REJECT_GYM)) {
             
             pstmt.setString(1, gymId);
             int rowsAffected = pstmt.executeUpdate();
@@ -230,10 +226,8 @@ public class AdminDAO {
      * Approve a gym owner (admin action)
      */
     public boolean approveGymOwner(String ownerId) {
-        String sql = "UPDATE gym_owners SET is_active = TRUE WHERE owner_id = ?";
-        
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.ACTIVATE_GYM_OWNER)) {
             
             pstmt.setString(1, ownerId);
             int rowsAffected = pstmt.executeUpdate();
@@ -249,10 +243,8 @@ public class AdminDAO {
      * Deactivate a gym owner (admin action)
      */
     public boolean deactivateGymOwner(String ownerId) {
-        String sql = "UPDATE gym_owners SET is_active = FALSE WHERE owner_id = ?";
-        
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.DEACTIVATE_GYM_OWNER)) {
             
             pstmt.setString(1, ownerId);
             int rowsAffected = pstmt.executeUpdate();
@@ -268,10 +260,8 @@ public class AdminDAO {
      * Approve a customer (admin action)
      */
     public boolean approveCustomer(String customerId) {
-        String sql = "UPDATE customers SET is_active = TRUE WHERE customer_id = ?";
-        
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.ACTIVATE_CUSTOMER)) {
             
             pstmt.setString(1, customerId);
             int rowsAffected = pstmt.executeUpdate();
@@ -287,10 +277,8 @@ public class AdminDAO {
      * Deactivate a customer (admin action)
      */
     public boolean deactivateCustomer(String customerId) {
-        String sql = "UPDATE customers SET is_active = FALSE WHERE customer_id = ?";
-        
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.DEACTIVATE_CUSTOMER)) {
             
             pstmt.setString(1, customerId);
             int rowsAffected = pstmt.executeUpdate();
@@ -308,25 +296,23 @@ public class AdminDAO {
     public Map<String, Integer> getUserCounts() {
         Map<String, Integer> counts = new HashMap<>();
         
-        try (Connection conn = dbManager.getConnection()) {
+        try (Connection conn = dbManager.getConnection();
+             Statement stmt = conn.createStatement()) {
+            
             // Count customers
-            String customerSql = "SELECT COUNT(*) as count FROM customers";
-            Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery(customerSql);
+            ResultSet rs = stmt.executeQuery(SQLConstants.COUNT_ALL_CUSTOMERS);
             if (rs.next()) {
                 counts.put("customers", rs.getInt("count"));
             }
             
             // Count gym owners
-            String ownerSql = "SELECT COUNT(*) as count FROM gym_owners";
-            rs = stmt.executeQuery(ownerSql);
+            rs = stmt.executeQuery(SQLConstants.COUNT_ALL_GYM_OWNERS);
             if (rs.next()) {
                 counts.put("gym_owners", rs.getInt("count"));
             }
             
             // Count admins
-            String adminSql = "SELECT COUNT(*) as count FROM admins";
-            rs = stmt.executeQuery(adminSql);
+            rs = stmt.executeQuery(SQLConstants.COUNT_ALL_ADMINS);
             if (rs.next()) {
                 counts.put("admins", rs.getInt("count"));
             }
@@ -348,11 +334,9 @@ public class AdminDAO {
      * Get count of pending gyms
      */
     public int getPendingGymsCount() {
-        String sql = "SELECT COUNT(*) as count FROM gyms WHERE is_approved = FALSE";
-        
         try (Connection conn = dbManager.getConnection();
              Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+             ResultSet rs = stmt.executeQuery(SQLConstants.COUNT_PENDING_GYMS)) {
             
             if (rs.next()) {
                 return rs.getInt("count");
@@ -367,11 +351,9 @@ public class AdminDAO {
      * Get count of inactive gym owners
      */
     public int getInactiveGymOwnersCount() {
-        String sql = "SELECT COUNT(*) as count FROM gym_owners WHERE is_active = FALSE";
-        
         try (Connection conn = dbManager.getConnection();
              Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+             ResultSet rs = stmt.executeQuery(SQLConstants.COUNT_INACTIVE_GYM_OWNERS)) {
             
             if (rs.next()) {
                 return rs.getInt("count");

@@ -1,24 +1,23 @@
 package com.flipfit.business;
 
-import com.flipfit.bean.Gym;
-import com.flipfit.bean.User;
-import com.flipfit.bean.Booking;
-import com.flipfit.dao.GymDAO;
-import com.flipfit.dao.BookingDAO;
-import com.flipfit.dao.UserDAO;
-import java.util.List;
-import java.util.Map;
+import com.flipfit.bean.*;
+import com.flipfit.dao.*;
+import java.util.*;
 
 public class GymAdminServiceImpl implements GymAdminInterface {
 
     private GymDAO gymDAO;
     private BookingDAO bookingDAO;
-    private UserDAO userDAO;
+    private CustomerDAO customerDAO;
+    private GymOwnerDAO gymOwnerDAO;
+    private AdminDAO adminDAO;
 
     public GymAdminServiceImpl() {
         this.gymDAO = new GymDAO();
         this.bookingDAO = new BookingDAO();
-        this.userDAO = new UserDAO();
+        this.customerDAO = new CustomerDAO();
+        this.gymOwnerDAO = new GymOwnerDAO();
+        this.adminDAO = new AdminDAO();
     }
 
     @Override
@@ -28,7 +27,7 @@ public class GymAdminServiceImpl implements GymAdminInterface {
 
     @Override
     public void approveGym(String gymId) {
-        if (gymDAO.approveGym(gymId)) {
+        if (adminDAO.approveGym(gymId)) {
             System.out.println("✓ Successfully approved gym with ID: " + gymId);
         } else {
             System.out.println("Error: Gym ID " + gymId + " not found or could not be approved.");
@@ -39,10 +38,10 @@ public class GymAdminServiceImpl implements GymAdminInterface {
     public void rejectGym(String gymId) {
         Gym gym = gymDAO.getGymById(gymId);
         if (gym != null) {
-            if (gymDAO.deleteGym(gymId)) {
+            if (adminDAO.rejectGym(gymId)) {
                 System.out.println("✓ Successfully rejected and removed gym: " + gym.getGymName());
             } else {
-                System.out.println("Error deleting gym: " + gymId);
+                System.out.println("Error rejecting gym: " + gymId);
             }
         } else {
             System.out.println("Error: Gym ID " + gymId + " not found.");
@@ -98,15 +97,27 @@ public class GymAdminServiceImpl implements GymAdminInterface {
 
     @Override
     public void viewAllUsers() {
-        Map<String, User> users = userDAO.getAllUsers();
+        Map<String, User> allUsers = new HashMap<>();
+        
+        // Gather all customers
+        Map<String, GymCustomer> customers = customerDAO.getAllCustomers();
+        allUsers.putAll(customers);
+        
+        // Gather all gym owners
+        Map<String, GymOwner> owners = gymOwnerDAO.getAllGymOwners();
+        allUsers.putAll(owners);
+        
+        // Gather all admins
+        Map<String, GymAdmin> admins = adminDAO.getAllAdmins();
+        allUsers.putAll(admins);
 
-        if (users == null || users.isEmpty()) {
+        if (allUsers.isEmpty()) {
             System.out.println("No users registered in the system.");
         } else {
             System.out.println("\n========================================");
             System.out.println("        ALL REGISTERED USERS");
             System.out.println("========================================");
-            users.values().forEach(user -> {
+            allUsers.values().forEach(user -> {
                 String roleStr = user.getRole() != null ? user.getRole().getRoleName() : "N/A";
                 String activeStatus = user.isActive() ? "✓ Active" : "○ Inactive";
                 System.out.println("ID: " + user.getUserID() +
@@ -117,7 +128,7 @@ public class GymAdminServiceImpl implements GymAdminInterface {
                         " | Status: " + activeStatus);
             });
             System.out.println("========================================");
-            System.out.println("Total Users: " + users.size());
+            System.out.println("Total Users: " + allUsers.size());
         }
     }
 
@@ -151,23 +162,46 @@ public class GymAdminServiceImpl implements GymAdminInterface {
     }
 
     private void generateUserReport() {
-        Map<String, User> users = userDAO.getAllUsers();
+        // Use AdminDAO's getUserCounts method
+        Map<String, Integer> userCounts = adminDAO.getUserCounts();
+        
+        int totalCustomers = userCounts.getOrDefault("customers", 0);
+        int totalOwners = userCounts.getOrDefault("gym_owners", 0);
+        int totalAdmins = userCounts.getOrDefault("admins", 0);
+        int totalUsers = totalCustomers + totalOwners + totalAdmins;
+        
         System.out.println("--- USER STATISTICS ---");
-        System.out.println("Total Users: " + users.size());
-
-        long activeUsers = users.values().stream().filter(User::isActive).count();
-        System.out.println("Active Users: " + activeUsers);
-        System.out.println("Inactive Users: " + (users.size() - activeUsers));
+        System.out.println("Total Users: " + totalUsers);
+        System.out.println("  - Customers: " + totalCustomers);
+        System.out.println("  - Gym Owners: " + totalOwners);
+        System.out.println("  - Admins: " + totalAdmins);
+        
+        // Count active users
+        Map<String, GymCustomer> customers = customerDAO.getAllCustomers();
+        Map<String, GymOwner> owners = gymOwnerDAO.getAllGymOwners();
+        Map<String, GymAdmin> admins = adminDAO.getAllAdmins();
+        
+        long activeCustomers = customers.values().stream().filter(GymCustomer::isActive).count();
+        long activeOwners = owners.values().stream().filter(GymOwner::isActive).count();
+        long activeAdmins = admins.values().stream().filter(GymAdmin::isActive).count();
+        long totalActive = activeCustomers + activeOwners + activeAdmins;
+        
+        System.out.println("Active Users: " + totalActive);
+        System.out.println("Inactive Users: " + (totalUsers - totalActive));
     }
 
     private void generateGymReport() {
         List<Gym> gyms = gymDAO.getAllGyms();
+        int pendingGymsCount = adminDAO.getPendingGymsCount();
+        
         System.out.println("--- GYM STATISTICS ---");
         System.out.println("Total Gyms: " + gyms.size());
-
-        long approvedGyms = gyms.stream().filter(Gym::isApproved).count();
-        System.out.println("Approved Gyms: " + approvedGyms);
-        System.out.println("Pending Gyms: " + (gyms.size() - approvedGyms));
+        System.out.println("Approved Gyms: " + (gyms.size() - pendingGymsCount));
+        System.out.println("Pending Gyms: " + pendingGymsCount);
+        
+        // Inactive gym owners count
+        int inactiveOwnersCount = adminDAO.getInactiveGymOwnersCount();
+        System.out.println("Inactive Gym Owners: " + inactiveOwnersCount);
     }
 
     private void generateBookingReport() {
