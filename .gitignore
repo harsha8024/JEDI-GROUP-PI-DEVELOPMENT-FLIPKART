@@ -8,8 +8,11 @@
 # Ignore system files
 .DS_Store
 **/.DS_Store
+
 # Ignore project requirement PDF
 JEDIPIDevelopmentJAVAPOS_Collection/JEDI Program 2023 June - Project requirement.pdf
 
 # Ignore prod.txt
 JEDIPIDevelopmentJAVAPOS_Collection/prod.txt
+
+JEDIPIDevelopmentJAVAPOS_Collection/database/database.properties
