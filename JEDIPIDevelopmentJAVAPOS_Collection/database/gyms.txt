@@ -1,1 +1,2 @@
 GYM2000|Cult Fit |Bangalore|USR1001|true
+GYM2001|Fit24|Bengaluru|USR1002|false
