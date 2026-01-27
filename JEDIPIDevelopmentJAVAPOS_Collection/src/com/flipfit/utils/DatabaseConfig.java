@@ -1,4 +1,4 @@
-package com.flipfit.database;
+package com.flipfit.utils;
 
 import java.io.FileInputStream;
 import java.io.IOException;

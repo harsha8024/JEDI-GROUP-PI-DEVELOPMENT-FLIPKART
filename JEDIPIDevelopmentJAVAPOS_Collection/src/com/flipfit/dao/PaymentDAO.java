@@ -1,7 +1,7 @@
 package com.flipfit.dao;
 
 import com.flipfit.bean.Payment;
-import com.flipfit.database.DatabaseConnection;
+import com.flipfit.utils.DatabaseConnection;
 
 import java.math.BigDecimal;
 import java.sql.*;

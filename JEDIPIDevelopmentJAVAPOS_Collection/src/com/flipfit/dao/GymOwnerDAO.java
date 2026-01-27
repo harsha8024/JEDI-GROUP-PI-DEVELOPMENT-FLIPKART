@@ -2,7 +2,7 @@ package com.flipfit.dao;
 
 import com.flipfit.bean.GymOwner;
 import com.flipfit.bean.Role;
-import com.flipfit.database.DatabaseConnection;
+import com.flipfit.utils.DatabaseConnection;
 
 import java.sql.*;
 import java.util.HashMap;

@@ -1,4 +1,4 @@
-package com.flipfit.database;
+package com.flipfit.utils;
 
 import com.flipfit.bean.*;
 import com.flipfit.business.*;

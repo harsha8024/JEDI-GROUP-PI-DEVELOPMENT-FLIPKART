@@ -108,21 +108,21 @@ public class CustomerClientApp {
     }
     
     // ==================== DELETE ====================
-    System.out.println("\n--- DELETE Operation ---");
-    System.out.println("Deleting customer with ID: " + customerId);
-    boolean deleted = customerDAO.deleteCustomer(customerId);
-    if (deleted) {
-      System.out.println("✓ Customer deleted successfully!");
-      
-      // Verify deletion
-      GymCustomer deletedCustomer = customerDAO.getCustomerById(customerId);
-      if (deletedCustomer == null) {
-        System.out.println("✓ Verified: Customer no longer exists in database");
-      }
-    } else {
-      System.out.println("✗ Failed to delete customer.");
-    }
-    
+//    System.out.println("\n--- DELETE Operation ---");
+//    System.out.println("Deleting customer with ID: " + customerId);
+//    boolean deleted = customerDAO.deleteCustomer(customerId);
+//    if (deleted) {
+//      System.out.println("✓ Customer deleted successfully!");
+//      
+//      // Verify deletion
+//      GymCustomer deletedCustomer = customerDAO.getCustomerById(customerId);
+//      if (deletedCustomer == null) {
+//        System.out.println("✓ Verified: Customer no longer exists in database");
+//      }
+//    } else {
+//      System.out.println("✗ Failed to delete customer.");
+//    }
+//    
     System.out.println("\n========================================");
     System.out.println("  CRUD OPERATIONS COMPLETED");
     System.out.println("========================================");
