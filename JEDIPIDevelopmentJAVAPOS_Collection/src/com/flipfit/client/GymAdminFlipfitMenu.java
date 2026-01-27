@@ -3,6 +3,8 @@ package com.flipfit.client;
 import com.flipfit.bean.Gym;
 import com.flipfit.bean.Slot;
 import com.flipfit.business.GymAdminInterface;
+import com.flipfit.exception.ApprovalFailedException;
+
 import java.util.List;
 import java.util.Scanner;
 
@@ -39,12 +41,21 @@ public class GymAdminFlipfitMenu {
                 case 2:
                     System.out.print("Enter Gym ID to approve: ");
                     String approveId = scanner.nextLine();
-                    adminService.approveGym(approveId);
+                    try {
+                        adminService.approveGym(approveId);
+                    } catch (ApprovalFailedException e) {
+                        System.out.println("[ADMIN ERROR] " + e.getMessage());
+                    }
                     break;
+
                 case 3:
                     System.out.print("Enter Gym ID to reject: ");
                     String rejectId = scanner.nextLine();
-                    adminService.rejectGym(rejectId); 
+                    try {
+                        adminService.rejectGym(rejectId); 
+                    } catch (ApprovalFailedException e) {
+                        System.out.println("[ADMIN ERROR] " + e.getMessage());
+                    }
                     break;
                 case 4:
                     viewPendingSlots(adminService);
@@ -52,12 +63,22 @@ public class GymAdminFlipfitMenu {
                 case 5:
                     System.out.print("Enter Slot ID to approve: ");
                     String approveSlotId = scanner.nextLine();
-                    adminService.approveSlot(approveSlotId);
+                    try {
+                        adminService.approveSlot(approveSlotId);
+                    } catch (ApprovalFailedException e) {
+                        System.out.println("[ADMIN ERROR] " + e.getMessage());
+                    }
                     break;
                 case 6:
                     System.out.print("Enter Slot ID to reject: ");
                     String rejectSlotId = scanner.nextLine();
-                    adminService.rejectSlot(rejectSlotId);
+                    try {
+                        adminService.rejectSlot(rejectSlotId);
+                        // Successful message is usually handled inside the serviceImpl, 
+                        // but we catch the failure here.
+                    } catch (ApprovalFailedException e) {
+                        System.out.println("\n[ADMIN ACTION FAILED] " + e.getMessage());
+                    }
                     break;
                 case 7:
                     System.out.println("\n--- All Registered Gyms ---");

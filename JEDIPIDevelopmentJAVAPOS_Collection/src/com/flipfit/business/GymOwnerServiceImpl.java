@@ -5,6 +5,9 @@ import com.flipfit.bean.Booking;
 import com.flipfit.dao.GymDAO;
 import com.flipfit.dao.BookingDAO;
 import com.flipfit.dao.SlotDAO;
+import com.flipfit.exception.RegistrationFailedException;
+import com.flipfit.exception.UserNotFoundException;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,7 +29,7 @@ public class GymOwnerServiceImpl implements GymOwnerInterface {
     }
 
     @Override
-    public void registerGym(Gym gym) {
+    public void registerGym(Gym gym) throws RegistrationFailedException {
         String gymId = gymDAO.generateGymId();
         gym.setGymId(gymId);
         gym.setApproved(false);
@@ -34,7 +37,7 @@ public class GymOwnerServiceImpl implements GymOwnerInterface {
         if (gymDAO.saveGym(gym)) {
             System.out.println("Gym: " + gym.getGymName() + " registered with ID: " + gymId + " and pending approval.");
         } else {
-            System.err.println("Gym registration failed.");
+            throw new RegistrationFailedException("Error: Failed to register gym " + gym.getGymName());
         }
     }
 
@@ -44,8 +47,10 @@ public class GymOwnerServiceImpl implements GymOwnerInterface {
     }
 
     @Override
-    public List<Gym> viewMyGyms(String ownerId) {
-        return gymDAO.getGymsByOwnerId(ownerId);
+    public List<Gym> viewMyGyms(String ownerId) throws UserNotFoundException {
+        List<Gym> gyms = gymDAO.getGymsByOwnerId(ownerId);
+        if(gyms == null) throw new UserNotFoundException("Owner ID not found.");
+        return gyms;
     }
 
     @Override

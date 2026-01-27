@@ -2,6 +2,8 @@ package com.flipfit.business;
 
 import com.flipfit.bean.Slot;
 import com.flipfit.dao.SlotDAO;
+import com.flipfit.exception.RegistrationFailedException;
+
 import java.time.LocalTime;
 import java.util.List;
 
@@ -14,7 +16,7 @@ public class SlotServiceImpl implements SlotServiceInterface {
     }
 
     @Override
-    public void createSlot(String gymId, LocalTime startTime, LocalTime endTime, int capacity) {
+    public void createSlot(String gymId, LocalTime startTime, LocalTime endTime, int capacity) throws RegistrationFailedException {
         String slotId = slotDAO.generateSlotId();
 
         Slot slot = new Slot();
@@ -26,10 +28,9 @@ public class SlotServiceImpl implements SlotServiceInterface {
         slot.setAvailableSeats(capacity);
 
         if (slotDAO.saveSlot(slot)) {
-            System.out.println("✓ Slot created successfully: " + slotId +
-                    " (" + startTime + " - " + endTime + ")");
+            System.out.println("✓ Slot created successfully: " + slotId);
         } else {
-            System.err.println("Slot creation failed.");
+            throw new RegistrationFailedException("Error: Failed to create slot for Gym ID: " + gymId);
         }
     }
 

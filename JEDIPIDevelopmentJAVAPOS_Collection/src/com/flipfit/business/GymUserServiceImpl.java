@@ -3,6 +3,8 @@ package com.flipfit.business;
 import com.flipfit.bean.*;
 import com.flipfit.dao.CustomerDAO;
 import com.flipfit.dao.GymOwnerDAO;
+import com.flipfit.exception.InvalidCredentialsException;
+import com.flipfit.exception.UserNotFoundException;
 import com.flipfit.dao.AdminDAO;
 import java.util.Map;
 import java.util.HashMap;
@@ -144,40 +146,29 @@ public class GymUserServiceImpl implements GymUserInterface {
     }
 
     @Override
-    public boolean login(String email, String password) {
-        // Try to find user in customers first
-        GymCustomer customer = customerDAO.getCustomerByEmail(email);
-        if (customer != null && customer.getPassword().equals(password)) {
-            if (customer.isActive()) {
-                System.out.println("Login successful: " + customer.getName() + " (Customer)");
-                return true;
-            } else {
-                System.out.println("Account is inactive. Please contact admin.");
-                return false;
-            }
-        }
-        
-        // Try gym owners
-        GymOwner owner = gymOwnerDAO.getGymOwnerByEmail(email);
-        if (owner != null && owner.getPassword().equals(password)) {
-            if (owner.isActive()) {
-                System.out.println("Login successful: " + owner.getName() + " (Gym Owner)");
-                return true;
-            } else {
-                System.out.println("Account is pending approval or inactive. Please contact admin.");
-                return false;
-            }
-        }
-        
-        // Try admins
-        GymAdmin admin = adminDAO.getAdminByEmail(email);
-        if (admin != null && admin.getPassword().equals(password)) {
-            System.out.println("Login successful: " + admin.getName() + " (Admin)");
+    public boolean login(String email, String password) throws UserNotFoundException, InvalidCredentialsException {
+        // Checking across all user types
+        GymCustomer customer = customerDAO.getCustomerByEmail(email); //
+        if (customer != null) {
+            if (!customer.getPassword().equals(password)) throw new InvalidCredentialsException("Incorrect password."); //
+            if (!customer.isActive()) throw new InvalidCredentialsException("Account is inactive."); //
             return true;
         }
-        
-        System.out.println("Invalid email or password.");
-        return false;
+
+        GymOwner owner = gymOwnerDAO.getGymOwnerByEmail(email); //
+        if (owner != null) {
+            if (!owner.getPassword().equals(password)) throw new InvalidCredentialsException("Incorrect password."); //
+            if (!owner.isActive()) throw new InvalidCredentialsException("Owner account pending approval."); //
+            return true;
+        }
+
+        GymAdmin admin = adminDAO.getAdminByEmail(email); //
+        if (admin != null) {
+            if (!admin.getPassword().equals(password)) throw new InvalidCredentialsException("Incorrect password."); //
+            return true;
+        }
+
+        throw new UserNotFoundException("No user found with email: " + email); //
     }
 
     @Override

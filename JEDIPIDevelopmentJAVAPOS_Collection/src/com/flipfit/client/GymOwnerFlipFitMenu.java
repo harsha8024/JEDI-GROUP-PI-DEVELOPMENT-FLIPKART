@@ -3,6 +3,9 @@ package com.flipfit.client;
 import com.flipfit.bean.Gym;
 import com.flipfit.business.GymOwnerInterface;
 import com.flipfit.business.SlotServiceImpl;
+import com.flipfit.exception.RegistrationFailedException;
+import com.flipfit.exception.UserNotFoundException;
+
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -72,44 +75,47 @@ public class GymOwnerFlipFitMenu {
     }
     
     private static void handleRegisterGym(Scanner scanner, GymOwnerInterface ownerService) {
-        if (currentOwnerId == null) {
-            System.out.println("Warning: No owner ID set. Please login properly.");
-        }
-        
         Gym newGym = new Gym();
         System.out.print("Enter Gym Name: "); 
         newGym.setGymName(scanner.nextLine());
-        System.out.print("Enter Location (City): "); 
+        System.out.print("Enter Location: "); 
         newGym.setLocation(scanner.nextLine());
         newGym.setGymOwnerId(currentOwnerId);
-        newGym.setApproved(false); // Default to pending
         
-        ownerService.registerGym(newGym);
+        try {
+            ownerService.registerGym(newGym);
+        } catch (RegistrationFailedException e) {
+            System.out.println("[REGISTRATION ERROR] " + e.getMessage());
+        }
     }
     
     private static void handleViewMyGyms(GymOwnerInterface ownerService) {
         List<Gym> myGyms;
-        if (currentOwnerId != null) {
-            myGyms = ownerService.viewMyGyms(currentOwnerId);
-        } else {
-            myGyms = ownerService.viewMyGyms();
-        }
-        
-        if (myGyms.isEmpty()) {
-            System.out.println("No gyms registered under your account.");
-        } else {
-            System.out.println("\n========================================");
-            System.out.println("           MY GYMS");
-            System.out.println("========================================");
-            myGyms.forEach(g -> {
-                String status = g.isApproved() ? "✓ APPROVED" : "⏳ PENDING";
-                System.out.println("ID: " + g.getGymId() + 
-                                   " | Name: " + g.getGymName() + 
-                                   " | Location: " + g.getLocation() + 
-                                   " | Status: " + status);
-            });
-            System.out.println("========================================");
-            System.out.println("Total: " + myGyms.size() + " gyms");
+        try {
+            if (currentOwnerId != null) {
+                myGyms = ownerService.viewMyGyms(currentOwnerId);
+            } else {
+                myGyms = ownerService.viewMyGyms();
+            }
+            
+            if (myGyms.isEmpty()) {
+                System.out.println("No gyms registered under your account.");
+            } else {
+                System.out.println("\n========================================");
+                System.out.println("           MY GYMS");
+                System.out.println("========================================");
+                myGyms.forEach(g -> {
+                    String status = g.isApproved() ? "✓ APPROVED" : "⏳ PENDING";
+                    System.out.println("ID: " + g.getGymId() + 
+                                       " | Name: " + g.getGymName() + 
+                                       " | Location: " + g.getLocation() + 
+                                       " | Status: " + status);
+                });
+                System.out.println("========================================");
+                System.out.println("Total: " + myGyms.size() + " gyms");
+            }
+        } catch (UserNotFoundException e) {
+            System.out.println("\n[ERROR] Could not retrieve gyms: " + e.getMessage());
         }
     }
     
