@@ -2,6 +2,7 @@ package com.flipfit.dao;
 
 import com.flipfit.bean.GymOwner;
 import com.flipfit.bean.Role;
+import com.flipfit.constants.SQLConstants;
 import com.flipfit.utils.DatabaseConnection;
 
 import java.sql.*;
@@ -24,14 +25,15 @@ public class GymOwnerDAO {
      * Generate new owner ID from database counter
      */
     public synchronized String generateOwnerId() {
-        String sql = "UPDATE id_counters SET current_value = current_value + 1 WHERE counter_name = 'OWNER'";
-        String selectSql = "SELECT current_value FROM id_counters WHERE counter_name = 'OWNER'";
-        
         try (Connection conn = dbManager.getConnection();
-             Statement stmt = conn.createStatement()) {
+             PreparedStatement updateStmt = conn.prepareStatement(SQLConstants.UPDATE_COUNTER);
+             PreparedStatement selectStmt = conn.prepareStatement(SQLConstants.SELECT_COUNTER)) {
             
-            stmt.executeUpdate(sql);
-            ResultSet rs = stmt.executeQuery(selectSql);
+            updateStmt.setString(1, "OWNER");
+            updateStmt.executeUpdate();
+            
+            selectStmt.setString(1, "OWNER");
+            ResultSet rs = selectStmt.executeQuery();
             
             if (rs.next()) {
                 int id = rs.getInt("current_value");
@@ -47,11 +49,8 @@ public class GymOwnerDAO {
      * Save a new gym owner to database
      */
     public boolean saveGymOwner(GymOwner owner) {
-        String sql = "INSERT INTO gym_owners (owner_id, name, email, phone_number, city, password, " +
-                     "pan_number, aadhar_number, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.INSERT_GYM_OWNER)) {
             
             pstmt.setString(1, owner.getUserID());
             pstmt.setString(2, owner.getName());
@@ -76,10 +75,8 @@ public class GymOwnerDAO {
      * Get gym owner by email
      */
     public GymOwner getGymOwnerByEmail(String email) {
-        String sql = "SELECT * FROM gym_owners WHERE email = ?";
-        
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.SELECT_GYM_OWNER_BY_EMAIL)) {
             
             pstmt.setString(1, email);
             ResultSet rs = pstmt.executeQuery();
@@ -97,10 +94,8 @@ public class GymOwnerDAO {
      * Get gym owner by ID
      */
     public GymOwner getGymOwnerById(String ownerId) {
-        String sql = "SELECT * FROM gym_owners WHERE owner_id = ?";
-        
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.SELECT_GYM_OWNER_BY_ID)) {
             
             pstmt.setString(1, ownerId);
             ResultSet rs = pstmt.executeQuery();
@@ -119,11 +114,10 @@ public class GymOwnerDAO {
      */
     public Map<String, GymOwner> getAllGymOwners() {
         Map<String, GymOwner> owners = new HashMap<>();
-        String sql = "SELECT * FROM gym_owners";
         
         try (Connection conn = dbManager.getConnection();
              Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+             ResultSet rs = stmt.executeQuery(SQLConstants.SELECT_ALL_GYM_OWNERS)) {
             
             while (rs.next()) {
                 GymOwner owner = mapResultSetToGymOwner(rs);
@@ -139,11 +133,8 @@ public class GymOwnerDAO {
      * Update existing gym owner
      */
     public boolean updateGymOwner(GymOwner owner) {
-        String sql = "UPDATE gym_owners SET name = ?, phone_number = ?, city = ?, password = ?, " +
-                     "pan_number = ?, aadhar_number = ?, is_active = ? WHERE email = ?";
-        
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.UPDATE_GYM_OWNER)) {
             
             pstmt.setString(1, owner.getName());
             pstmt.setString(2, owner.getPhoneNumber());
@@ -167,10 +158,8 @@ public class GymOwnerDAO {
      * Delete gym owner by ID
      */
     public boolean deleteGymOwner(String ownerId) {
-        String sql = "DELETE FROM gym_owners WHERE owner_id = ?";
-        
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.DELETE_GYM_OWNER)) {
             
             pstmt.setString(1, ownerId);
             int rowsAffected = pstmt.executeUpdate();
@@ -186,10 +175,8 @@ public class GymOwnerDAO {
      * Check if email exists
      */
     public boolean emailExists(String email) {
-        String sql = "SELECT COUNT(*) FROM gym_owners WHERE email = ?";
-        
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.COUNT_GYM_OWNER_BY_EMAIL)) {
             
             pstmt.setString(1, email);
             ResultSet rs = pstmt.executeQuery();

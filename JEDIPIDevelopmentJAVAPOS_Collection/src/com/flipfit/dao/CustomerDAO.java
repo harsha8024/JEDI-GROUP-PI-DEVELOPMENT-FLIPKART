@@ -2,6 +2,7 @@ package com.flipfit.dao;
 
 import com.flipfit.bean.GymCustomer;
 import com.flipfit.bean.Role;
+import com.flipfit.constants.SQLConstants;
 import com.flipfit.utils.DatabaseConnection;
 
 import java.sql.*;
@@ -24,14 +25,15 @@ public class CustomerDAO {
      * Generate new customer ID from database counter
      */
     public synchronized String generateCustomerId() {
-        String sql = "UPDATE id_counters SET current_value = current_value + 1 WHERE counter_name = 'CUSTOMER'";
-        String selectSql = "SELECT current_value FROM id_counters WHERE counter_name = 'CUSTOMER'";
-        
         try (Connection conn = dbManager.getConnection();
-             Statement stmt = conn.createStatement()) {
+             PreparedStatement updateStmt = conn.prepareStatement(SQLConstants.UPDATE_COUNTER);
+             PreparedStatement selectStmt = conn.prepareStatement(SQLConstants.SELECT_COUNTER)) {
             
-            stmt.executeUpdate(sql);
-            ResultSet rs = stmt.executeQuery(selectSql);
+            updateStmt.setString(1, "CUSTOMER");
+            updateStmt.executeUpdate();
+            
+            selectStmt.setString(1, "CUSTOMER");
+            ResultSet rs = selectStmt.executeQuery();
             
             if (rs.next()) {
                 int id = rs.getInt("current_value");
@@ -47,11 +49,8 @@ public class CustomerDAO {
      * Save a new customer to database
      */
     public boolean saveCustomer(GymCustomer customer) {
-        String sql = "INSERT INTO customers (customer_id, name, email, phone_number, city, password, is_active) " +
-                     "VALUES (?, ?, ?, ?, ?, ?, ?)";
-        
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.INSERT_CUSTOMER)) {
             
             pstmt.setString(1, customer.getUserID());
             pstmt.setString(2, customer.getName());
@@ -74,10 +73,8 @@ public class CustomerDAO {
      * Get customer by email
      */
     public GymCustomer getCustomerByEmail(String email) {
-        String sql = "SELECT * FROM customers WHERE email = ?";
-        
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.SELECT_CUSTOMER_BY_EMAIL)) {
             
             pstmt.setString(1, email);
             ResultSet rs = pstmt.executeQuery();
@@ -95,10 +92,8 @@ public class CustomerDAO {
      * Get customer by ID
      */
     public GymCustomer getCustomerById(String customerId) {
-        String sql = "SELECT * FROM customers WHERE customer_id = ?";
-        
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.SELECT_CUSTOMER_BY_ID)) {
             
             pstmt.setString(1, customerId);
             ResultSet rs = pstmt.executeQuery();
@@ -117,11 +112,10 @@ public class CustomerDAO {
      */
     public Map<String, GymCustomer> getAllCustomers() {
         Map<String, GymCustomer> customers = new HashMap<>();
-        String sql = "SELECT * FROM customers";
         
         try (Connection conn = dbManager.getConnection();
              Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+             ResultSet rs = stmt.executeQuery(SQLConstants.SELECT_ALL_CUSTOMERS)) {
             
             while (rs.next()) {
                 GymCustomer customer = mapResultSetToCustomer(rs);
@@ -137,11 +131,8 @@ public class CustomerDAO {
      * Update existing customer
      */
     public boolean updateCustomer(GymCustomer customer) {
-        String sql = "UPDATE customers SET name = ?, phone_number = ?, city = ?, password = ?, " +
-                     "is_active = ? WHERE email = ?";
-        
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.UPDATE_CUSTOMER)) {
             
             pstmt.setString(1, customer.getName());
             pstmt.setString(2, customer.getPhoneNumber());
@@ -163,10 +154,8 @@ public class CustomerDAO {
      * Delete customer by ID
      */
     public boolean deleteCustomer(String customerId) {
-        String sql = "DELETE FROM customers WHERE customer_id = ?";
-        
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.DELETE_CUSTOMER)) {
             
             pstmt.setString(1, customerId);
             int rowsAffected = pstmt.executeUpdate();
@@ -182,10 +171,8 @@ public class CustomerDAO {
      * Check if email exists
      */
     public boolean emailExists(String email) {
-        String sql = "SELECT COUNT(*) FROM customers WHERE email = ?";
-        
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.COUNT_CUSTOMER_BY_EMAIL)) {
             
             pstmt.setString(1, email);
             ResultSet rs = pstmt.executeQuery();

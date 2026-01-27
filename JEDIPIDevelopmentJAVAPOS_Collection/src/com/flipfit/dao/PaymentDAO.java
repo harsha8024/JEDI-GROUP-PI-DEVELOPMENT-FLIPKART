@@ -1,11 +1,11 @@
 package com.flipfit.dao;
 
 import com.flipfit.bean.Payment;
+import com.flipfit.constants.SQLConstants;
 import com.flipfit.utils.DatabaseConnection;
 
 import java.math.BigDecimal;
 import java.sql.*;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,14 +25,15 @@ public class PaymentDAO {
      * Generate new payment ID from database counter
      */
     public synchronized String generatePaymentId() {
-        String sql = "UPDATE id_counters SET current_value = current_value + 1 WHERE counter_name = 'PAYMENT'";
-        String selectSql = "SELECT current_value FROM id_counters WHERE counter_name = 'PAYMENT'";
-        
         try (Connection conn = dbManager.getConnection();
-             Statement stmt = conn.createStatement()) {
+             PreparedStatement updateStmt = conn.prepareStatement(SQLConstants.UPDATE_COUNTER);
+             PreparedStatement selectStmt = conn.prepareStatement(SQLConstants.SELECT_COUNTER)) {
             
-            stmt.executeUpdate(sql);
-            ResultSet rs = stmt.executeQuery(selectSql);
+            updateStmt.setString(1, "PAYMENT");
+            updateStmt.executeUpdate();
+            
+            selectStmt.setString(1, "PAYMENT");
+            ResultSet rs = selectStmt.executeQuery();
             
             if (rs.next()) {
                 int id = rs.getInt("current_value");
@@ -48,11 +49,8 @@ public class PaymentDAO {
      * Save a new payment to database
      */
     public boolean savePayment(Payment payment) {
-        String sql = "INSERT INTO payments (payment_id, booking_id, customer_id, amount, payment_method, payment_status, payment_date) " +
-                     "VALUES (?, ?, ?, ?, ?, ?, ?)";
-        
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.INSERT_PAYMENT)) {
             
             pstmt.setString(1, payment.getPaymentId());
             pstmt.setString(2, payment.getBookingId());
@@ -75,10 +73,8 @@ public class PaymentDAO {
      * Get payment by ID
      */
     public Payment getPaymentById(String paymentId) {
-        String sql = "SELECT * FROM payments WHERE payment_id = ?";
-        
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.SELECT_PAYMENT_BY_ID)) {
             
             pstmt.setString(1, paymentId);
             ResultSet rs = pstmt.executeQuery();
@@ -96,10 +92,8 @@ public class PaymentDAO {
      * Get payment by booking ID
      */
     public Payment getPaymentByBookingId(String bookingId) {
-        String sql = "SELECT * FROM payments WHERE booking_id = ?";
-        
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.SELECT_PAYMENT_BY_BOOKING_ID)) {
             
             pstmt.setString(1, bookingId);
             ResultSet rs = pstmt.executeQuery();
@@ -118,11 +112,10 @@ public class PaymentDAO {
      */
     public List<Payment> getAllPayments() {
         List<Payment> payments = new ArrayList<>();
-        String sql = "SELECT * FROM payments ORDER BY payment_date DESC";
         
         try (Connection conn = dbManager.getConnection();
              Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+             ResultSet rs = stmt.executeQuery(SQLConstants.SELECT_ALL_PAYMENTS)) {
             
             while (rs.next()) {
                 payments.add(mapResultSetToPayment(rs));
@@ -138,10 +131,9 @@ public class PaymentDAO {
      */
     public List<Payment> getPaymentsByUserId(String userId) {
         List<Payment> payments = new ArrayList<>();
-        String sql = "SELECT * FROM payments WHERE customer_id = ? ORDER BY payment_date DESC";
         
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.SELECT_PAYMENTS_BY_CUSTOMER_ID)) {
             
             pstmt.setString(1, userId);
             ResultSet rs = pstmt.executeQuery();
@@ -160,10 +152,9 @@ public class PaymentDAO {
      */
     public List<Payment> getSuccessfulPaymentsByUserId(String userId) {
         List<Payment> payments = new ArrayList<>();
-        String sql = "SELECT * FROM payments WHERE customer_id = ? AND payment_status = 'SUCCESS' ORDER BY payment_date DESC";
         
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.SELECT_SUCCESSFUL_PAYMENTS_BY_CUSTOMER_ID)) {
             
             pstmt.setString(1, userId);
             ResultSet rs = pstmt.executeQuery();
@@ -181,10 +172,8 @@ public class PaymentDAO {
      * Update payment status
      */
     public boolean updatePaymentStatus(String paymentId, String status) {
-        String sql = "UPDATE payments SET payment_status = ? WHERE payment_id = ?";
-        
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.UPDATE_PAYMENT_STATUS)) {
             
             pstmt.setString(1, status);
             pstmt.setString(2, paymentId);
@@ -202,10 +191,8 @@ public class PaymentDAO {
      * Delete payment by ID
      */
     public boolean deletePayment(String paymentId) {
-        String sql = "DELETE FROM payments WHERE payment_id = ?";
-        
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.DELETE_PAYMENT)) {
             
             pstmt.setString(1, paymentId);
             int rowsAffected = pstmt.executeUpdate();
@@ -221,10 +208,8 @@ public class PaymentDAO {
      * Get total payment amount by user ID (customer ID)
      */
     public BigDecimal getTotalPaymentByUserId(String userId) {
-        String sql = "SELECT SUM(amount) as total FROM payments WHERE customer_id = ? AND payment_status = 'SUCCESS'";
-        
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.CALCULATE_TOTAL_REVENUE_BY_CUSTOMER)) {
             
             pstmt.setString(1, userId);
             ResultSet rs = pstmt.executeQuery();

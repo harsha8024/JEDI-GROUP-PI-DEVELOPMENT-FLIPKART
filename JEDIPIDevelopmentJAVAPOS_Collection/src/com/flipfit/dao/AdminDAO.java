@@ -2,6 +2,7 @@ package com.flipfit.dao;
 
 import com.flipfit.bean.GymAdmin;
 import com.flipfit.bean.Role;
+import com.flipfit.constants.SQLConstants;
 import com.flipfit.utils.DatabaseConnection;
 
 import java.sql.*;
@@ -24,14 +25,15 @@ public class AdminDAO {
      * Generate new admin ID from database counter
      */
     public synchronized String generateAdminId() {
-        String sql = "UPDATE id_counters SET current_value = current_value + 1 WHERE counter_name = 'ADMIN'";
-        String selectSql = "SELECT current_value FROM id_counters WHERE counter_name = 'ADMIN'";
-        
         try (Connection conn = dbManager.getConnection();
-             Statement stmt = conn.createStatement()) {
+             PreparedStatement updateStmt = conn.prepareStatement(SQLConstants.UPDATE_COUNTER);
+             PreparedStatement selectStmt = conn.prepareStatement(SQLConstants.SELECT_COUNTER)) {
             
-            stmt.executeUpdate(sql);
-            ResultSet rs = stmt.executeQuery(selectSql);
+            updateStmt.setString(1, "ADMIN");
+            updateStmt.executeUpdate();
+            
+            selectStmt.setString(1, "ADMIN");
+            ResultSet rs = selectStmt.executeQuery();
             
             if (rs.next()) {
                 int id = rs.getInt("current_value");
@@ -47,11 +49,8 @@ public class AdminDAO {
      * Save a new admin to database
      */
     public boolean saveAdmin(GymAdmin admin) {
-        String sql = "INSERT INTO admins (admin_id, name, email, phone_number, city, password, is_active) " +
-                     "VALUES (?, ?, ?, ?, ?, ?, ?)";
-        
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.INSERT_ADMIN)) {
             
             pstmt.setString(1, admin.getUserID());
             pstmt.setString(2, admin.getName());
@@ -74,10 +73,8 @@ public class AdminDAO {
      * Get admin by email
      */
     public GymAdmin getAdminByEmail(String email) {
-        String sql = "SELECT * FROM admins WHERE email = ?";
-        
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.SELECT_ADMIN_BY_EMAIL)) {
             
             pstmt.setString(1, email);
             ResultSet rs = pstmt.executeQuery();
@@ -95,10 +92,8 @@ public class AdminDAO {
      * Get admin by ID
      */
     public GymAdmin getAdminById(String adminId) {
-        String sql = "SELECT * FROM admins WHERE admin_id = ?";
-        
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.SELECT_ADMIN_BY_ID)) {
             
             pstmt.setString(1, adminId);
             ResultSet rs = pstmt.executeQuery();
@@ -117,11 +112,10 @@ public class AdminDAO {
      */
     public Map<String, GymAdmin> getAllAdmins() {
         Map<String, GymAdmin> admins = new HashMap<>();
-        String sql = "SELECT * FROM admins";
         
         try (Connection conn = dbManager.getConnection();
              Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+             ResultSet rs = stmt.executeQuery(SQLConstants.SELECT_ALL_ADMINS)) {
             
             while (rs.next()) {
                 GymAdmin admin = mapResultSetToAdmin(rs);
@@ -137,11 +131,8 @@ public class AdminDAO {
      * Update existing admin
      */
     public boolean updateAdmin(GymAdmin admin) {
-        String sql = "UPDATE admins SET name = ?, phone_number = ?, city = ?, password = ?, " +
-                     "is_active = ? WHERE email = ?";
-        
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.UPDATE_ADMIN)) {
             
             pstmt.setString(1, admin.getName());
             pstmt.setString(2, admin.getPhoneNumber());
@@ -163,10 +154,8 @@ public class AdminDAO {
      * Delete admin by ID
      */
     public boolean deleteAdmin(String adminId) {
-        String sql = "DELETE FROM admins WHERE admin_id = ?";
-        
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.DELETE_ADMIN)) {
             
             pstmt.setString(1, adminId);
             int rowsAffected = pstmt.executeUpdate();
@@ -182,10 +171,8 @@ public class AdminDAO {
      * Check if email exists
      */
     public boolean emailExists(String email) {
-        String sql = "SELECT COUNT(*) FROM admins WHERE email = ?";
-        
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.COUNT_ADMIN_BY_EMAIL)) {
             
             pstmt.setString(1, email);
             ResultSet rs = pstmt.executeQuery();
@@ -197,6 +184,202 @@ public class AdminDAO {
             System.err.println("Error checking email existence: " + e.getMessage());
         }
         return false;
+    }
+    
+    // ==================== ADMIN-SPECIFIC ACTIONS ====================
+    
+    /**
+     * Approve a gym (admin action)
+     */
+    public boolean approveGym(String gymId) {
+        String sql = "UPDATE gyms SET is_approved = TRUE WHERE gym_id = ?";
+        
+        try (Connection conn = dbManager.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            
+            pstmt.setString(1, gymId);
+            int rowsAffected = pstmt.executeUpdate();
+            return rowsAffected > 0;
+            
+        } catch (SQLException e) {
+            System.err.println("Error approving gym: " + e.getMessage());
+            return false;
+        }
+    }
+    
+    /**
+     * Reject a gym (admin action)
+     */
+    public boolean rejectGym(String gymId) {
+        String sql = "UPDATE gyms SET is_approved = FALSE WHERE gym_id = ?";
+        
+        try (Connection conn = dbManager.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            
+            pstmt.setString(1, gymId);
+            int rowsAffected = pstmt.executeUpdate();
+            return rowsAffected > 0;
+            
+        } catch (SQLException e) {
+            System.err.println("Error rejecting gym: " + e.getMessage());
+            return false;
+        }
+    }
+    
+    /**
+     * Approve a gym owner (admin action)
+     */
+    public boolean approveGymOwner(String ownerId) {
+        String sql = "UPDATE gym_owners SET is_active = TRUE WHERE owner_id = ?";
+        
+        try (Connection conn = dbManager.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            
+            pstmt.setString(1, ownerId);
+            int rowsAffected = pstmt.executeUpdate();
+            return rowsAffected > 0;
+            
+        } catch (SQLException e) {
+            System.err.println("Error approving gym owner: " + e.getMessage());
+            return false;
+        }
+    }
+    
+    /**
+     * Deactivate a gym owner (admin action)
+     */
+    public boolean deactivateGymOwner(String ownerId) {
+        String sql = "UPDATE gym_owners SET is_active = FALSE WHERE owner_id = ?";
+        
+        try (Connection conn = dbManager.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            
+            pstmt.setString(1, ownerId);
+            int rowsAffected = pstmt.executeUpdate();
+            return rowsAffected > 0;
+            
+        } catch (SQLException e) {
+            System.err.println("Error deactivating gym owner: " + e.getMessage());
+            return false;
+        }
+    }
+    
+    /**
+     * Approve a customer (admin action)
+     */
+    public boolean approveCustomer(String customerId) {
+        String sql = "UPDATE customers SET is_active = TRUE WHERE customer_id = ?";
+        
+        try (Connection conn = dbManager.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            
+            pstmt.setString(1, customerId);
+            int rowsAffected = pstmt.executeUpdate();
+            return rowsAffected > 0;
+            
+        } catch (SQLException e) {
+            System.err.println("Error approving customer: " + e.getMessage());
+            return false;
+        }
+    }
+    
+    /**
+     * Deactivate a customer (admin action)
+     */
+    public boolean deactivateCustomer(String customerId) {
+        String sql = "UPDATE customers SET is_active = FALSE WHERE customer_id = ?";
+        
+        try (Connection conn = dbManager.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            
+            pstmt.setString(1, customerId);
+            int rowsAffected = pstmt.executeUpdate();
+            return rowsAffected > 0;
+            
+        } catch (SQLException e) {
+            System.err.println("Error deactivating customer: " + e.getMessage());
+            return false;
+        }
+    }
+    
+    /**
+     * Get count of all users (customers + gym owners + admins)
+     */
+    public Map<String, Integer> getUserCounts() {
+        Map<String, Integer> counts = new HashMap<>();
+        
+        try (Connection conn = dbManager.getConnection()) {
+            // Count customers
+            String customerSql = "SELECT COUNT(*) as count FROM customers";
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(customerSql);
+            if (rs.next()) {
+                counts.put("customers", rs.getInt("count"));
+            }
+            
+            // Count gym owners
+            String ownerSql = "SELECT COUNT(*) as count FROM gym_owners";
+            rs = stmt.executeQuery(ownerSql);
+            if (rs.next()) {
+                counts.put("gym_owners", rs.getInt("count"));
+            }
+            
+            // Count admins
+            String adminSql = "SELECT COUNT(*) as count FROM admins";
+            rs = stmt.executeQuery(adminSql);
+            if (rs.next()) {
+                counts.put("admins", rs.getInt("count"));
+            }
+            
+            // Total count
+            int total = counts.getOrDefault("customers", 0) + 
+                       counts.getOrDefault("gym_owners", 0) + 
+                       counts.getOrDefault("admins", 0);
+            counts.put("total", total);
+            
+        } catch (SQLException e) {
+            System.err.println("Error getting user counts: " + e.getMessage());
+        }
+        
+        return counts;
+    }
+    
+    /**
+     * Get count of pending gyms
+     */
+    public int getPendingGymsCount() {
+        String sql = "SELECT COUNT(*) as count FROM gyms WHERE is_approved = FALSE";
+        
+        try (Connection conn = dbManager.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            
+            if (rs.next()) {
+                return rs.getInt("count");
+            }
+        } catch (SQLException e) {
+            System.err.println("Error getting pending gyms count: " + e.getMessage());
+        }
+        return 0;
+    }
+    
+    /**
+     * Get count of inactive gym owners
+     */
+    public int getInactiveGymOwnersCount() {
+        String sql = "SELECT COUNT(*) as count FROM gym_owners WHERE is_active = FALSE";
+        
+        try (Connection conn = dbManager.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            
+            if (rs.next()) {
+                return rs.getInt("count");
+            }
+        } catch (SQLException e) {
+            System.err.println("Error getting inactive gym owners count: " + e.getMessage());
+        }
+        return 0;
     }
     
     /**
@@ -220,3 +403,4 @@ public class AdminDAO {
         return admin;
     }
 }
+

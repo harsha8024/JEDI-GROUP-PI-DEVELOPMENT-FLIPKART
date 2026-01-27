@@ -1,6 +1,7 @@
 package com.flipfit.dao;
 
 import com.flipfit.bean.Booking;
+import com.flipfit.constants.SQLConstants;
 import com.flipfit.utils.DatabaseConnection;
 
 import java.sql.*;
@@ -23,14 +24,15 @@ public class BookingDAO {
      * Generate new booking ID from database counter
      */
     public synchronized String generateBookingId() {
-        String sql = "UPDATE id_counters SET current_value = current_value + 1 WHERE counter_name = 'BOOKING'";
-        String selectSql = "SELECT current_value FROM id_counters WHERE counter_name = 'BOOKING'";
-        
         try (Connection conn = dbManager.getConnection();
-             Statement stmt = conn.createStatement()) {
+             PreparedStatement updateStmt = conn.prepareStatement(SQLConstants.UPDATE_COUNTER);
+             PreparedStatement selectStmt = conn.prepareStatement(SQLConstants.SELECT_COUNTER)) {
             
-            stmt.executeUpdate(sql);
-            ResultSet rs = stmt.executeQuery(selectSql);
+            updateStmt.setString(1, "BOOKING");
+            updateStmt.executeUpdate();
+            
+            selectStmt.setString(1, "BOOKING");
+            ResultSet rs = selectStmt.executeQuery();
             
             if (rs.next()) {
                 int id = rs.getInt("current_value");
@@ -46,11 +48,8 @@ public class BookingDAO {
      * Save a new booking to database
      */
     public boolean saveBooking(Booking booking) {
-        String sql = "INSERT INTO bookings (booking_id, customer_id, slot_id, gym_id, booking_date, status, created_at) " +
-                     "VALUES (?, ?, ?, ?, ?, ?, ?)";
-        
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.INSERT_BOOKING)) {
             
             pstmt.setString(1, booking.getBookingId());
             pstmt.setString(2, booking.getUserId());
@@ -73,10 +72,8 @@ public class BookingDAO {
      * Get booking by ID
      */
     public Booking getBookingById(String bookingId) {
-        String sql = "SELECT * FROM bookings WHERE booking_id = ?";
-        
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.SELECT_BOOKING_BY_ID)) {
             
             pstmt.setString(1, bookingId);
             ResultSet rs = pstmt.executeQuery();
@@ -95,11 +92,10 @@ public class BookingDAO {
      */
     public List<Booking> getAllBookings() {
         List<Booking> bookings = new ArrayList<>();
-        String sql = "SELECT * FROM bookings ORDER BY created_at DESC";
         
         try (Connection conn = dbManager.getConnection();
              Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+             ResultSet rs = stmt.executeQuery(SQLConstants.SELECT_ALL_BOOKINGS)) {
             
             while (rs.next()) {
                 bookings.add(mapResultSetToBooking(rs));
@@ -115,10 +111,9 @@ public class BookingDAO {
      */
     public List<Booking> getBookingsByUserId(String userId) {
         List<Booking> bookings = new ArrayList<>();
-        String sql = "SELECT * FROM bookings WHERE customer_id = ? ORDER BY created_at DESC";
         
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.SELECT_BOOKINGS_BY_CUSTOMER_ID)) {
             
             pstmt.setString(1, userId);
             ResultSet rs = pstmt.executeQuery();
@@ -137,10 +132,9 @@ public class BookingDAO {
      */
     public List<Booking> getBookingsByGymId(String gymId) {
         List<Booking> bookings = new ArrayList<>();
-        String sql = "SELECT * FROM bookings WHERE gym_id = ? ORDER BY created_at DESC";
         
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.SELECT_BOOKINGS_BY_GYM_ID)) {
             
             pstmt.setString(1, gymId);
             ResultSet rs = pstmt.executeQuery();
@@ -159,10 +153,9 @@ public class BookingDAO {
      */
     public List<Booking> getBookingsBySlotId(String slotId) {
         List<Booking> bookings = new ArrayList<>();
-        String sql = "SELECT * FROM bookings WHERE slot_id = ? ORDER BY created_at DESC";
         
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.SELECT_BOOKINGS_BY_SLOT_ID)) {
             
             pstmt.setString(1, slotId);
             ResultSet rs = pstmt.executeQuery();
@@ -181,10 +174,9 @@ public class BookingDAO {
      */
     public List<Booking> getActiveBookingsByUserId(String userId) {
         List<Booking> bookings = new ArrayList<>();
-        String sql = "SELECT * FROM bookings WHERE customer_id = ? AND status = 'CONFIRMED' ORDER BY created_at DESC";
         
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.SELECT_ACTIVE_BOOKINGS_BY_CUSTOMER_ID)) {
             
             pstmt.setString(1, userId);
             ResultSet rs = pstmt.executeQuery();
@@ -202,10 +194,8 @@ public class BookingDAO {
      * Update existing booking
      */
     public boolean updateBooking(Booking booking) {
-        String sql = "UPDATE bookings SET status = ? WHERE booking_id = ?";
-        
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.UPDATE_BOOKING_STATUS)) {
             
             pstmt.setString(1, booking.getStatus());
             pstmt.setString(2, booking.getBookingId());
@@ -223,10 +213,8 @@ public class BookingDAO {
      * Cancel booking
      */
     public boolean cancelBooking(String bookingId) {
-        String sql = "UPDATE bookings SET status = 'CANCELLED' WHERE booking_id = ?";
-        
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.CANCEL_BOOKING)) {
             
             pstmt.setString(1, bookingId);
             int rowsAffected = pstmt.executeUpdate();
@@ -242,10 +230,8 @@ public class BookingDAO {
      * Delete booking by ID
      */
     public boolean deleteBooking(String bookingId) {
-        String sql = "DELETE FROM bookings WHERE booking_id = ?";
-        
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.DELETE_BOOKING)) {
             
             pstmt.setString(1, bookingId);
             int rowsAffected = pstmt.executeUpdate();

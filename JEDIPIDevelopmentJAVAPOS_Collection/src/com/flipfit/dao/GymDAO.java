@@ -1,6 +1,7 @@
 package com.flipfit.dao;
 
 import com.flipfit.bean.Gym;
+import com.flipfit.constants.SQLConstants;
 import com.flipfit.utils.DatabaseConnection;
 
 import java.sql.*;
@@ -23,14 +24,15 @@ public class GymDAO {
      * Generate new gym ID from database counter
      */
     public synchronized String generateGymId() {
-        String sql = "UPDATE id_counters SET current_value = current_value + 1 WHERE counter_name = 'GYM'";
-        String selectSql = "SELECT current_value FROM id_counters WHERE counter_name = 'GYM'";
-        
         try (Connection conn = dbManager.getConnection();
-             Statement stmt = conn.createStatement()) {
+             PreparedStatement updateStmt = conn.prepareStatement(SQLConstants.UPDATE_COUNTER);
+             PreparedStatement selectStmt = conn.prepareStatement(SQLConstants.SELECT_COUNTER)) {
             
-            stmt.executeUpdate(sql);
-            ResultSet rs = stmt.executeQuery(selectSql);
+            updateStmt.setString(1, "GYM");
+            updateStmt.executeUpdate();
+            
+            selectStmt.setString(1, "GYM");
+            ResultSet rs = selectStmt.executeQuery();
             
             if (rs.next()) {
                 int id = rs.getInt("current_value");
@@ -46,11 +48,8 @@ public class GymDAO {
      * Save a new gym to database
      */
     public boolean saveGym(Gym gym) {
-        String sql = "INSERT INTO gyms (gym_id, gym_name, location, gym_owner_id, is_approved) " +
-                     "VALUES (?, ?, ?, ?, ?)";
-        
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.INSERT_GYM)) {
             
             pstmt.setString(1, gym.getGymId());
             pstmt.setString(2, gym.getGymName());
@@ -71,10 +70,8 @@ public class GymDAO {
      * Get gym by ID
      */
     public Gym getGymById(String gymId) {
-        String sql = "SELECT * FROM gyms WHERE gym_id = ?";
-        
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.SELECT_GYM_BY_ID)) {
             
             pstmt.setString(1, gymId);
             ResultSet rs = pstmt.executeQuery();
@@ -93,11 +90,10 @@ public class GymDAO {
      */
     public List<Gym> getAllGyms() {
         List<Gym> gyms = new ArrayList<>();
-        String sql = "SELECT * FROM gyms";
         
         try (Connection conn = dbManager.getConnection();
              Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+             ResultSet rs = stmt.executeQuery(SQLConstants.SELECT_ALL_GYMS)) {
             
             while (rs.next()) {
                 gyms.add(mapResultSetToGym(rs));
@@ -113,10 +109,9 @@ public class GymDAO {
      */
     public List<Gym> getGymsByOwnerId(String ownerId) {
         List<Gym> gyms = new ArrayList<>();
-        String sql = "SELECT * FROM gyms WHERE gym_owner_id = ?";
         
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.SELECT_GYMS_BY_OWNER_ID)) {
             
             pstmt.setString(1, ownerId);
             ResultSet rs = pstmt.executeQuery();
@@ -135,10 +130,9 @@ public class GymDAO {
      */
     public List<Gym> getGymsByLocation(String location) {
         List<Gym> gyms = new ArrayList<>();
-        String sql = "SELECT * FROM gyms WHERE location = ? AND is_approved = TRUE";
         
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.SELECT_GYMS_BY_LOCATION)) {
             
             pstmt.setString(1, location);
             ResultSet rs = pstmt.executeQuery();
@@ -157,11 +151,10 @@ public class GymDAO {
      */
     public List<Gym> getApprovedGyms() {
         List<Gym> gyms = new ArrayList<>();
-        String sql = "SELECT * FROM gyms WHERE is_approved = TRUE";
         
         try (Connection conn = dbManager.getConnection();
              Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+             ResultSet rs = stmt.executeQuery(SQLConstants.SELECT_APPROVED_GYMS)) {
             
             while (rs.next()) {
                 gyms.add(mapResultSetToGym(rs));
@@ -177,11 +170,10 @@ public class GymDAO {
      */
     public List<Gym> getPendingGyms() {
         List<Gym> gyms = new ArrayList<>();
-        String sql = "SELECT * FROM gyms WHERE is_approved = FALSE";
         
         try (Connection conn = dbManager.getConnection();
              Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+             ResultSet rs = stmt.executeQuery(SQLConstants.SELECT_PENDING_GYMS)) {
             
             while (rs.next()) {
                 gyms.add(mapResultSetToGym(rs));
@@ -196,10 +188,8 @@ public class GymDAO {
      * Update existing gym
      */
     public boolean updateGym(Gym gym) {
-        String sql = "UPDATE gyms SET gym_name = ?, location = ?, is_approved = ? WHERE gym_id = ?";
-        
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.UPDATE_GYM)) {
             
             pstmt.setString(1, gym.getGymName());
             pstmt.setString(2, gym.getLocation());
@@ -219,10 +209,8 @@ public class GymDAO {
      * Approve gym
      */
     public boolean approveGym(String gymId) {
-        String sql = "UPDATE gyms SET is_approved = TRUE WHERE gym_id = ?";
-        
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.APPROVE_GYM)) {
             
             pstmt.setString(1, gymId);
             int rowsAffected = pstmt.executeUpdate();
@@ -238,10 +226,8 @@ public class GymDAO {
      * Delete gym by ID
      */
     public boolean deleteGym(String gymId) {
-        String sql = "DELETE FROM gyms WHERE gym_id = ?";
-        
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.DELETE_GYM)) {
             
             pstmt.setString(1, gymId);
             int rowsAffected = pstmt.executeUpdate();

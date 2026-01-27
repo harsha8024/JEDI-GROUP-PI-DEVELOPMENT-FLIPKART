@@ -1,10 +1,10 @@
 package com.flipfit.dao;
 
 import com.flipfit.bean.Slot;
+import com.flipfit.constants.SQLConstants;
 import com.flipfit.utils.DatabaseConnection;
 
 import java.sql.*;
-import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,14 +24,15 @@ public class SlotDAO {
      * Generate new slot ID from database counter
      */
     public synchronized String generateSlotId() {
-        String sql = "UPDATE id_counters SET current_value = current_value + 1 WHERE counter_name = 'SLOT'";
-        String selectSql = "SELECT current_value FROM id_counters WHERE counter_name = 'SLOT'";
-        
         try (Connection conn = dbManager.getConnection();
-             Statement stmt = conn.createStatement()) {
+             PreparedStatement updateStmt = conn.prepareStatement(SQLConstants.UPDATE_COUNTER);
+             PreparedStatement selectStmt = conn.prepareStatement(SQLConstants.SELECT_COUNTER)) {
             
-            stmt.executeUpdate(sql);
-            ResultSet rs = stmt.executeQuery(selectSql);
+            updateStmt.setString(1, "SLOT");
+            updateStmt.executeUpdate();
+            
+            selectStmt.setString(1, "SLOT");
+            ResultSet rs = selectStmt.executeQuery();
             
             if (rs.next()) {
                 int id = rs.getInt("current_value");
@@ -47,11 +48,8 @@ public class SlotDAO {
      * Save a new slot to database
      */
     public boolean saveSlot(Slot slot) {
-        String sql = "INSERT INTO slots (slot_id, gym_id, start_time, end_time, capacity, available_seats) " +
-                     "VALUES (?, ?, ?, ?, ?, ?)";
-        
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.INSERT_SLOT)) {
             
             pstmt.setString(1, slot.getSlotId());
             pstmt.setString(2, slot.getGymId());
@@ -73,10 +71,8 @@ public class SlotDAO {
      * Get slot by ID
      */
     public Slot getSlotById(String slotId) {
-        String sql = "SELECT * FROM slots WHERE slot_id = ?";
-        
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.SELECT_SLOT_BY_ID)) {
             
             pstmt.setString(1, slotId);
             ResultSet rs = pstmt.executeQuery();
@@ -95,11 +91,10 @@ public class SlotDAO {
      */
     public List<Slot> getAllSlots() {
         List<Slot> slots = new ArrayList<>();
-        String sql = "SELECT * FROM slots ORDER BY start_time";
         
         try (Connection conn = dbManager.getConnection();
              Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+             ResultSet rs = stmt.executeQuery(SQLConstants.SELECT_ALL_SLOTS)) {
             
             while (rs.next()) {
                 slots.add(mapResultSetToSlot(rs));
@@ -115,10 +110,9 @@ public class SlotDAO {
      */
     public List<Slot> getSlotsByGymId(String gymId) {
         List<Slot> slots = new ArrayList<>();
-        String sql = "SELECT * FROM slots WHERE gym_id = ? ORDER BY start_time";
         
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.SELECT_SLOTS_BY_GYM_ID)) {
             
             pstmt.setString(1, gymId);
             ResultSet rs = pstmt.executeQuery();
@@ -137,10 +131,9 @@ public class SlotDAO {
      */
     public List<Slot> getAvailableSlotsByGymId(String gymId) {
         List<Slot> slots = new ArrayList<>();
-        String sql = "SELECT * FROM slots WHERE gym_id = ? AND available_seats > 0 ORDER BY start_time";
         
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.SELECT_AVAILABLE_SLOTS_BY_GYM_ID)) {
             
             pstmt.setString(1, gymId);
             ResultSet rs = pstmt.executeQuery();
@@ -158,11 +151,8 @@ public class SlotDAO {
      * Update existing slot
      */
     public boolean updateSlot(Slot slot) {
-        String sql = "UPDATE slots SET start_time = ?, end_time = ?, capacity = ?, available_seats = ? " +
-                     "WHERE slot_id = ?";
-        
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.UPDATE_SLOT)) {
             
             pstmt.setTime(1, Time.valueOf(slot.getStartTime()));
             pstmt.setTime(2, Time.valueOf(slot.getEndTime()));
@@ -183,11 +173,8 @@ public class SlotDAO {
      * Decrease available seats (for booking)
      */
     public boolean decreaseAvailableSeats(String slotId) {
-        String sql = "UPDATE slots SET available_seats = available_seats - 1 " +
-                     "WHERE slot_id = ? AND available_seats > 0";
-        
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.DECREASE_AVAILABLE_SEATS)) {
             
             pstmt.setString(1, slotId);
             int rowsAffected = pstmt.executeUpdate();
@@ -203,11 +190,8 @@ public class SlotDAO {
      * Increase available seats (for cancellation)
      */
     public boolean increaseAvailableSeats(String slotId) {
-        String sql = "UPDATE slots SET available_seats = available_seats + 1 " +
-                     "WHERE slot_id = ? AND available_seats < capacity";
-        
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.INCREASE_AVAILABLE_SEATS)) {
             
             pstmt.setString(1, slotId);
             int rowsAffected = pstmt.executeUpdate();
@@ -223,10 +207,8 @@ public class SlotDAO {
      * Delete slot by ID
      */
     public boolean deleteSlot(String slotId) {
-        String sql = "DELETE FROM slots WHERE slot_id = ?";
-        
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.DELETE_SLOT)) {
             
             pstmt.setString(1, slotId);
             int rowsAffected = pstmt.executeUpdate();

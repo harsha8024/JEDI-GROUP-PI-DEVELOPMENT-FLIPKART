@@ -1,10 +1,10 @@
 package com.flipfit.dao;
 
 import com.flipfit.bean.Notification;
+import com.flipfit.constants.SQLConstants;
 import com.flipfit.utils.DatabaseConnection;
 
 import java.sql.*;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,14 +24,15 @@ public class NotificationDAO {
      * Generate new notification ID from database counter
      */
     public synchronized String generateNotificationId() {
-        String sql = "UPDATE id_counters SET current_value = current_value + 1 WHERE counter_name = 'NOTIFICATION'";
-        String selectSql = "SELECT current_value FROM id_counters WHERE counter_name = 'NOTIFICATION'";
-        
         try (Connection conn = dbManager.getConnection();
-             Statement stmt = conn.createStatement()) {
+             PreparedStatement updateStmt = conn.prepareStatement(SQLConstants.UPDATE_COUNTER);
+             PreparedStatement selectStmt = conn.prepareStatement(SQLConstants.SELECT_COUNTER)) {
             
-            stmt.executeUpdate(sql);
-            ResultSet rs = stmt.executeQuery(selectSql);
+            updateStmt.setString(1, "NOTIFICATION");
+            updateStmt.executeUpdate();
+            
+            selectStmt.setString(1, "NOTIFICATION");
+            ResultSet rs = selectStmt.executeQuery();
             
             if (rs.next()) {
                 int id = rs.getInt("current_value");
@@ -47,11 +48,8 @@ public class NotificationDAO {
      * Save a new notification to database
      */
     public boolean saveNotification(Notification notification) {
-        String sql = "INSERT INTO notifications (notification_id, user_id, user_type, title, message, is_read, created_at) " +
-                     "VALUES (?, ?, ?, ?, ?, ?, ?)";
-        
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.INSERT_NOTIFICATION)) {
             
             pstmt.setString(1, notification.getNotificationId());
             pstmt.setString(2, notification.getUserId());
@@ -74,10 +72,8 @@ public class NotificationDAO {
      * Get notification by ID
      */
     public Notification getNotificationById(String notificationId) {
-        String sql = "SELECT * FROM notifications WHERE notification_id = ?";
-        
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.SELECT_NOTIFICATION_BY_ID)) {
             
             pstmt.setString(1, notificationId);
             ResultSet rs = pstmt.executeQuery();
@@ -96,11 +92,10 @@ public class NotificationDAO {
      */
     public List<Notification> getAllNotifications() {
         List<Notification> notifications = new ArrayList<>();
-        String sql = "SELECT * FROM notifications ORDER BY created_at DESC";
         
         try (Connection conn = dbManager.getConnection();
              Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+             ResultSet rs = stmt.executeQuery(SQLConstants.SELECT_ALL_NOTIFICATIONS)) {
             
             while (rs.next()) {
                 notifications.add(mapResultSetToNotification(rs));
@@ -116,10 +111,9 @@ public class NotificationDAO {
      */
     public List<Notification> getNotificationsByUserId(String userId) {
         List<Notification> notifications = new ArrayList<>();
-        String sql = "SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC";
         
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.SELECT_NOTIFICATIONS_BY_USER_ID)) {
             
             pstmt.setString(1, userId);
             ResultSet rs = pstmt.executeQuery();
@@ -138,10 +132,9 @@ public class NotificationDAO {
      */
     public List<Notification> getUnreadNotificationsByUserId(String userId) {
         List<Notification> notifications = new ArrayList<>();
-        String sql = "SELECT * FROM notifications WHERE user_id = ? AND is_read = FALSE ORDER BY created_at DESC";
         
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.SELECT_UNREAD_NOTIFICATIONS_BY_USER_ID)) {
             
             pstmt.setString(1, userId);
             ResultSet rs = pstmt.executeQuery();
@@ -159,10 +152,8 @@ public class NotificationDAO {
      * Get count of unread notifications by user ID
      */
     public int getUnreadNotificationCount(String userId) {
-        String sql = "SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = FALSE";
-        
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.COUNT_UNREAD_NOTIFICATIONS)) {
             
             pstmt.setString(1, userId);
             ResultSet rs = pstmt.executeQuery();
@@ -180,10 +171,8 @@ public class NotificationDAO {
      * Mark notification as read
      */
     public boolean markAsRead(String notificationId) {
-        String sql = "UPDATE notifications SET is_read = TRUE WHERE notification_id = ?";
-        
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.MARK_NOTIFICATION_AS_READ)) {
             
             pstmt.setString(1, notificationId);
             int rowsAffected = pstmt.executeUpdate();
@@ -199,10 +188,8 @@ public class NotificationDAO {
      * Mark all notifications as read for a user
      */
     public boolean markAllAsReadForUser(String userId) {
-        String sql = "UPDATE notifications SET is_read = TRUE WHERE user_id = ? AND is_read = FALSE";
-        
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.MARK_ALL_NOTIFICATIONS_AS_READ)) {
             
             pstmt.setString(1, userId);
             int rowsAffected = pstmt.executeUpdate();
@@ -218,10 +205,8 @@ public class NotificationDAO {
      * Delete notification by ID
      */
     public boolean deleteNotification(String notificationId) {
-        String sql = "DELETE FROM notifications WHERE notification_id = ?";
-        
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.DELETE_NOTIFICATION)) {
             
             pstmt.setString(1, notificationId);
             int rowsAffected = pstmt.executeUpdate();
@@ -237,10 +222,8 @@ public class NotificationDAO {
      * Delete all notifications for a user
      */
     public boolean deleteAllNotificationsForUser(String userId) {
-        String sql = "DELETE FROM notifications WHERE user_id = ?";
-        
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(SQLConstants.DELETE_ALL_NOTIFICATIONS_BY_USER_ID)) {
             
             pstmt.setString(1, userId);
             int rowsAffected = pstmt.executeUpdate();
