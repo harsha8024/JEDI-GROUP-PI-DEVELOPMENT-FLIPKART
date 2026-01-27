@@ -2,30 +2,29 @@ package com.flipfit.business;
 
 import com.flipfit.bean.User;
 import com.flipfit.bean.Role;
-import com.flipfit.database.LocalFileDatabase;
-import java.util.HashMap;
+import com.flipfit.dao.UserDAO;
 import java.util.Map;
 
 public class GymUserServiceImpl implements GymUserInterface {
-    // Centralized User Collection - loaded from file database
-    private static Map<String, User> userDatabase = new HashMap<>();
 
-    static {
-        // Load existing users from file on startup
-        userDatabase = LocalFileDatabase.loadUsers();
+    private UserDAO userDAO;
+
+    public GymUserServiceImpl() {
+        this.userDAO = new UserDAO();
     }
 
-    // Static getter for Admin service access
+    // Static getter for Admin service access - keeping for compatibility but using
+    // DAO
     public static Map<String, User> getUserMap() {
-        return userDatabase;
+        return new UserDAO().getAllUsers();
     }
 
     @Override
     public void register(User user) {
-        // Generate unique user ID
-        String userId = LocalFileDatabase.generateUserId();
+        // Generate unique user ID using database counter
+        String userId = userDAO.generateUserId();
         user.setUserID(userId);
-        
+
         // Set default role if not set
         if (user.getRole() == null) {
             Role role = new Role();
@@ -33,40 +32,39 @@ public class GymUserServiceImpl implements GymUserInterface {
             role.setDescription("Regular gym customer");
             user.setRole(role);
         }
-        
+
         // Set user as active
         user.setActive(true);
-        
-        // Add to in-memory map
-        userDatabase.put(user.getEmail(), user);
-        
-        // Save to file
-        LocalFileDatabase.saveUser(user);
-        
-        System.out.println("Registration successful for: " + user.getName() + " (ID: " + userId + ")");
+
+        // Save to MySQL database
+        if (userDAO.saveUser(user)) {
+            System.out.println("Registration successful for: " + user.getName() + " (ID: " + userId + ")");
+        } else {
+            System.err.println("Registration failed for user: " + user.getName());
+        }
     }
 
     @Override
     public boolean login(String email, String password) {
-        if (userDatabase.containsKey(email)) {
-            User user = userDatabase.get(email);
-            if (user.getPassword().equals(password)) {
-                user.setActive(true);
-                LocalFileDatabase.updateUser(user);
-                return true;
-            }
+        User user = userDAO.getUserByEmail(email);
+        if (user != null && user.getPassword().equals(password)) {
+            user.setActive(true);
+            userDAO.updateUser(user);
+            return true;
         }
         return false;
     }
 
     @Override
     public void updatePassword(String email, String newPassword) {
-        if (userDatabase.containsKey(email)) {
-            User user = userDatabase.get(email);
+        User user = userDAO.getUserByEmail(email);
+        if (user != null) {
             user.setPassword(newPassword);
-            userDatabase.put(email, user);
-            LocalFileDatabase.updateUser(user);
-            System.out.println("Password updated successfully!");
+            if (userDAO.updateUser(user)) {
+                System.out.println("Password updated successfully!");
+            } else {
+                System.err.println("Failed to update password.");
+            }
         } else {
             System.out.println("User not found!");
         }

@@ -1,2 +1,4 @@
 USR1001|Hello|abcd@gmail.com||Bangalore|abcd|CUSTOMER|true
+USR1002|deep|abd||fbd|1234|CUSTOMER|true
 USR1000|Om|abc@gmail.com||Bangalore|abcd|CUSTOMER|true
+USR1003|hello|dfc||edf|123|CUSTOMER|true
