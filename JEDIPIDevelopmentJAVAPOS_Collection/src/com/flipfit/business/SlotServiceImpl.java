@@ -1,3 +1,4 @@
+// TODO: Auto-generated Javadoc
 package com.flipfit.business;
 
 import com.flipfit.bean.Slot;
@@ -7,16 +8,36 @@ import com.flipfit.exception.RegistrationFailedException;
 import java.time.LocalTime;
 import java.util.List;
 
+/**
+ * The Class SlotServiceImpl.
+ *
+ * @author team pi
+ * @ClassName "SlotServiceImpl"
+ */
 public class SlotServiceImpl implements SlotServiceInterface {
 
+    /** The slot DAO. */
     private SlotDAO slotDAO;
 
+    /**
+     * Instantiates a new slot service impl.
+     */
     public SlotServiceImpl() {
         this.slotDAO = new SlotDAO();
     }
 
+    /**
+     * Creates the slot.
+     *
+     * @param gymId     the gym id
+     * @param startTime the start time
+     * @param endTime   the end time
+     * @param capacity  the capacity
+     * @throws RegistrationFailedException the registration failed exception
+     */
     @Override
-    public void createSlot(String gymId, LocalTime startTime, LocalTime endTime, int capacity) throws RegistrationFailedException {
+    public void createSlot(String gymId, LocalTime startTime, LocalTime endTime, int capacity)
+            throws RegistrationFailedException {
         String slotId = slotDAO.generateSlotId();
 
         Slot slot = new Slot();
@@ -34,11 +55,23 @@ public class SlotServiceImpl implements SlotServiceInterface {
         }
     }
 
+    /**
+     * Gets the slots for gym.
+     *
+     * @param gymId the gym id
+     * @return the slots for gym
+     */
     @Override
     public List<Slot> getSlotsForGym(String gymId) {
         return slotDAO.getSlotsByGymId(gymId);
     }
 
+    /**
+     * Update slot.
+     *
+     * @param slotId   the slot id
+     * @param capacity the capacity
+     */
     @Override
     public void updateSlot(String slotId, int capacity) {
         Slot slot = slotDAO.getSlotById(slotId);
@@ -58,6 +91,11 @@ public class SlotServiceImpl implements SlotServiceInterface {
         }
     }
 
+    /**
+     * Delete slot.
+     *
+     * @param slotId the slot id
+     */
     @Override
     public void deleteSlot(String slotId) {
         if (slotDAO.deleteSlot(slotId)) {
@@ -67,6 +105,12 @@ public class SlotServiceImpl implements SlotServiceInterface {
         }
     }
 
+    /**
+     * Gets the slot by id.
+     *
+     * @param slotId the slot id
+     * @return the slot by id
+     */
     @Override
     public Slot getSlotById(String slotId) {
         return slotDAO.getSlotById(slotId);

@@ -1,3 +1,4 @@
+// TODO: Auto-generated Javadoc
 package com.flipfit.business;
 
 import com.flipfit.bean.Gym;
@@ -11,23 +12,48 @@ import com.flipfit.exception.UserNotFoundException;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * The Class GymOwnerServiceImpl.
+ *
+ * @author team pi
+ * @ClassName "GymOwnerServiceImpl"
+ */
 public class GymOwnerServiceImpl implements GymOwnerInterface {
 
+    /** The gym DAO. */
     private GymDAO gymDAO;
+
+    /** The booking DAO. */
     private BookingDAO bookingDAO;
+
+    /** The slot DAO. */
     private SlotDAO slotDAO;
 
+    /**
+     * Instantiates a new gym owner service impl.
+     */
     public GymOwnerServiceImpl() {
         this.gymDAO = new GymDAO();
         this.bookingDAO = new BookingDAO();
         this.slotDAO = new SlotDAO();
     }
 
+    /**
+     * Gets the gym list.
+     *
+     * @return the gym list
+     */
     // Static getter for Admin service access - using DAO
     public static List<Gym> getGymList() {
         return new GymDAO().getAllGyms();
     }
 
+    /**
+     * Register gym.
+     *
+     * @param gym the gym
+     * @throws RegistrationFailedException the registration failed exception
+     */
     @Override
     public void registerGym(Gym gym) throws RegistrationFailedException {
         String gymId = gymDAO.generateGymId();
@@ -41,18 +67,34 @@ public class GymOwnerServiceImpl implements GymOwnerInterface {
         }
     }
 
+    /**
+     * View my gyms.
+     *
+     * @return the list
+     */
     @Override
     public List<Gym> viewMyGyms() {
         return gymDAO.getAllGyms();
     }
 
+    /**
+     * View my gyms.
+     *
+     * @param ownerId the owner id
+     * @return the list
+     * @throws UserNotFoundException the user not found exception
+     */
     @Override
     public List<Gym> viewMyGyms(String ownerId) throws UserNotFoundException {
         List<Gym> gyms = gymDAO.getGymsByOwnerId(ownerId);
-        if(gyms == null) throw new UserNotFoundException("Owner ID not found.");
+        if (gyms == null)
+            throw new UserNotFoundException("Owner ID not found.");
         return gyms;
     }
 
+    /**
+     * View bookings.
+     */
     @Override
     public void viewBookings() {
         List<Booking> bookings = bookingDAO.getAllBookings();
@@ -63,6 +105,11 @@ public class GymOwnerServiceImpl implements GymOwnerInterface {
         }
     }
 
+    /**
+     * View bookings.
+     *
+     * @param ownerId the owner id
+     */
     @Override
     public void viewBookings(String ownerId) {
         List<Gym> ownerGyms = gymDAO.getGymsByOwnerId(ownerId);
@@ -80,6 +127,11 @@ public class GymOwnerServiceImpl implements GymOwnerInterface {
         }
     }
 
+    /**
+     * Display bookings.
+     *
+     * @param bookings the bookings
+     */
     private void displayBookings(List<Booking> bookings) {
         System.out.println("\n--- Bookings for Your Gyms ---");
         for (Booking booking : bookings) {
@@ -92,6 +144,11 @@ public class GymOwnerServiceImpl implements GymOwnerInterface {
         }
     }
 
+    /**
+     * Update schedule.
+     *
+     * @param gymId the gym id
+     */
     @Override
     public void updateSchedule(String gymId) {
         System.out.println("Updating schedule for Gym ID: " + gymId);

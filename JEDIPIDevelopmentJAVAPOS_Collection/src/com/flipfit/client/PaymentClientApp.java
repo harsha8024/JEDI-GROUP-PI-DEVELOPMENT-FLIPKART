@@ -1,3 +1,4 @@
+// TODO: Auto-generated Javadoc
 package com.flipfit.client;
 
 import com.flipfit.bean.Payment;
@@ -20,10 +21,18 @@ import java.time.LocalTime;
 import java.util.List;
 
 /**
- * Payment DAO CRUD Operations Demo
- * Demonstrates Create, Read, Update, Delete operations
+ * The Class PaymentClientApp.
+ *
+ * @author team pi
+ * @ClassName "PaymentClientApp"
  */
 public class PaymentClientApp {
+
+  /**
+   * The main method.
+   *
+   * @param args the arguments
+   */
   public static void main(String[] args) {
     PaymentDAO paymentDAO = new PaymentDAO();
     BookingDAO bookingDAO = new BookingDAO();
@@ -31,14 +40,14 @@ public class PaymentClientApp {
     GymDAO gymDAO = new GymDAO();
     SlotDAO slotDAO = new SlotDAO();
     GymOwnerDAO ownerDAO = new GymOwnerDAO();
-    
+
     System.out.println("========================================");
     System.out.println("  PAYMENT DAO CRUD OPERATIONS DEMO");
     System.out.println("========================================\n");
-    
+
     // Setup: Create required test data
     System.out.println("--- Setting up test data ---");
-    
+
     // Create customer
     GymCustomer customer = new GymCustomer();
     String customerId = customerDAO.generateCustomerId();
@@ -53,7 +62,7 @@ public class PaymentClientApp {
     customer.setRole(customerRole);
     customerDAO.saveCustomer(customer);
     System.out.println("✓ Customer created: " + customerId);
-    
+
     // Create owner
     GymOwner owner = new GymOwner();
     String ownerId = ownerDAO.generateOwnerId();
@@ -70,7 +79,7 @@ public class PaymentClientApp {
     owner.setRole(ownerRole);
     ownerDAO.saveGymOwner(owner);
     System.out.println("✓ Owner created: " + ownerId);
-    
+
     // Create gym
     Gym gym = new Gym();
     String gymId = gymDAO.generateGymId();
@@ -81,7 +90,7 @@ public class PaymentClientApp {
     gym.setApproved(true);
     gymDAO.saveGym(gym);
     System.out.println("✓ Gym created: " + gymId);
-    
+
     // Create slot
     Slot slot = new Slot();
     String slotId = slotDAO.generateSlotId();
@@ -93,7 +102,7 @@ public class PaymentClientApp {
     slot.setAvailableSeats(15);
     slotDAO.saveSlot(slot);
     System.out.println("✓ Slot created: " + slotId);
-    
+
     // Create booking
     Booking booking = new Booking();
     String bookingId = bookingDAO.generateBookingId();
@@ -106,7 +115,7 @@ public class PaymentClientApp {
     booking.setCreatedAt(LocalDateTime.now());
     bookingDAO.saveBooking(booking);
     System.out.println("✓ Booking created: " + bookingId);
-    
+
     // ==================== CREATE ====================
     System.out.println("\n--- CREATE Operation ---");
     Payment payment = new Payment();
@@ -118,7 +127,7 @@ public class PaymentClientApp {
     payment.setPaymentMethod("Credit Card");
     payment.setPaymentStatus("SUCCESS");
     payment.setPaymentDate(LocalDateTime.now());
-    
+
     boolean created = paymentDAO.savePayment(payment);
     if (created) {
       System.out.println("✓ Payment created successfully!");
@@ -131,10 +140,10 @@ public class PaymentClientApp {
     } else {
       System.out.println("✗ Failed to create payment.");
     }
-    
+
     // ==================== READ ====================
     System.out.println("\n--- READ Operations ---");
-    
+
     // Read by ID
     System.out.println("\n1. Read by ID:");
     Payment retrievedById = paymentDAO.getPaymentById(paymentId);
@@ -147,7 +156,7 @@ public class PaymentClientApp {
     } else {
       System.out.println("✗ Payment not found by ID");
     }
-    
+
     // Read by Booking ID
     System.out.println("\n2. Read by Booking ID:");
     Payment retrievedByBooking = paymentDAO.getPaymentByBookingId(bookingId);
@@ -158,50 +167,49 @@ public class PaymentClientApp {
     } else {
       System.out.println("✗ Payment not found for booking");
     }
-    
+
     // Read All Payments
     System.out.println("\n3. Read All Payments:");
     List<Payment> allPayments = paymentDAO.getAllPayments();
     System.out.println("✓ Total payments in database: " + allPayments.size());
-    
+
     // Read Payments by Customer
     System.out.println("\n4. Read Payments by Customer ID:");
     List<Payment> customerPayments = paymentDAO.getPaymentsByUserId(customerId);
     System.out.println("✓ Total payments for customer: " + customerPayments.size());
-    customerPayments.forEach(p -> 
-      System.out.println("  - Payment: " + p.getPaymentId() + " | Amount: ₹" + p.getAmount() + " | Status: " + p.getPaymentStatus())
-    );
-    
+    customerPayments.forEach(p -> System.out.println(
+        "  - Payment: " + p.getPaymentId() + " | Amount: ₹" + p.getAmount() + " | Status: " + p.getPaymentStatus()));
+
     // Read Successful Payments
     System.out.println("\n5. Read Successful Payments by Customer:");
     List<Payment> successfulPayments = paymentDAO.getSuccessfulPaymentsByUserId(customerId);
     System.out.println("✓ Successful payments: " + successfulPayments.size());
-    
+
     // Get Total Payment Amount
     System.out.println("\n6. Get Total Payment Amount:");
     BigDecimal totalAmount = paymentDAO.getTotalPaymentByUserId(customerId);
     System.out.println("✓ Total amount paid by customer: ₹" + totalAmount);
-    
+
     // ==================== UPDATE ====================
     System.out.println("\n--- UPDATE Operation ---");
     boolean statusUpdated = paymentDAO.updatePaymentStatus(paymentId, "COMPLETED");
     if (statusUpdated) {
       System.out.println("✓ Payment status updated successfully!");
-      
+
       // Verify update
       Payment updatedPayment = paymentDAO.getPaymentById(paymentId);
       System.out.println("  Updated Status: " + updatedPayment.getPaymentStatus());
     } else {
       System.out.println("✗ Failed to update payment status.");
     }
-    
+
     // ==================== DELETE ====================
     System.out.println("\n--- DELETE Operation ---");
     System.out.println("Deleting payment with ID: " + paymentId);
     boolean deleted = paymentDAO.deletePayment(paymentId);
     if (deleted) {
       System.out.println("✓ Payment deleted successfully!");
-      
+
       // Verify deletion
       Payment deletedPayment = paymentDAO.getPaymentById(paymentId);
       if (deletedPayment == null) {
@@ -210,14 +218,14 @@ public class PaymentClientApp {
     } else {
       System.out.println("✗ Failed to delete payment.");
     }
-    
+
     // Cleanup
     bookingDAO.deleteBooking(bookingId);
     slotDAO.deleteSlot(slotId);
     gymDAO.deleteGym(gymId);
     ownerDAO.deleteGymOwner(ownerId);
     customerDAO.deleteCustomer(customerId);
-    
+
     System.out.println("\n========================================");
     System.out.println("  CRUD OPERATIONS COMPLETED");
     System.out.println("========================================");

@@ -1,3 +1,4 @@
+// TODO: Auto-generated Javadoc
 package com.flipfit.business;
 
 import com.flipfit.bean.User;
@@ -13,23 +14,47 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * The Class GymCustomerServiceImpl.
+ *
+ * @author team pi
+ * @ClassName "GymCustomerServiceImpl"
+ */
 public class GymCustomerServiceImpl implements GymCustomerInterface {
 
+    /** The gym DAO. */
     private GymDAO gymDAO;
+
+    /** The slot DAO. */
     private SlotDAO slotDAO;
+
+    /** The booking DAO. */
     private BookingDAO bookingDAO;
 
+    /**
+     * Instantiates a new gym customer service impl.
+     */
     public GymCustomerServiceImpl() {
         this.gymDAO = new GymDAO();
         this.slotDAO = new SlotDAO();
         this.bookingDAO = new BookingDAO();
     }
 
+    /**
+     * Register.
+     *
+     * @param user the user
+     */
     public void register(User user) {
         GymUserServiceImpl userService = new GymUserServiceImpl();
         userService.register(user);
     }
 
+    /**
+     * View centers.
+     *
+     * @param cityInput the city input
+     */
     public void viewCenters(String cityInput) {
         List<Gym> filteredGyms = gymDAO.getGymsByLocation(cityInput);
         if (filteredGyms.isEmpty()) {
@@ -41,6 +66,12 @@ public class GymCustomerServiceImpl implements GymCustomerInterface {
         }
     }
 
+    /**
+     * View slots for gym.
+     *
+     * @param gymId the gym id
+     * @param date  the date
+     */
     public void viewSlotsForGym(String gymId, LocalDate date) {
         List<Slot> slots = slotDAO.getSlotsByGymId(gymId);
         if (slots.isEmpty()) {
@@ -56,13 +87,31 @@ public class GymCustomerServiceImpl implements GymCustomerInterface {
         }
     }
 
+    /**
+     * Gets the available slots.
+     *
+     * @param gymId the gym id
+     * @param date  the date
+     * @return the available slots
+     */
     public List<Slot> getAvailableSlots(String gymId, LocalDate date) {
         return slotDAO.getAvailableSlotsByGymId(gymId);
     }
 
-    public boolean bookSlot(String userId, String slotId, String gymId, LocalDate date) 
+    /**
+     * Book slot.
+     *
+     * @param userId the user id
+     * @param slotId the slot id
+     * @param gymId  the gym id
+     * @param date   the date
+     * @return true, if successful
+     * @throws BookingFailedException    the booking failed exception
+     * @throws SlotNotAvailableException the slot not available exception
+     */
+    public boolean bookSlot(String userId, String slotId, String gymId, LocalDate date)
             throws BookingFailedException, SlotNotAvailableException {
-        
+
         Slot targetSlot = slotDAO.getSlotById(slotId); //
         if (targetSlot == null) {
             throw new SlotNotAvailableException("Error: Slot " + slotId + " does not exist."); //
@@ -77,8 +126,8 @@ public class GymCustomerServiceImpl implements GymCustomerInterface {
                 .filter(b -> b.getBookingDate().equals(date) && !b.getStatus().equals("CANCELLED"))
                 .anyMatch(b -> {
                     Slot s = slotDAO.getSlotById(b.getSlotId()); //
-                    return s != null && !(targetSlot.getEndTime().isBefore(s.getStartTime()) || 
-                                         targetSlot.getStartTime().isAfter(s.getEndTime()));
+                    return s != null && !(targetSlot.getEndTime().isBefore(s.getStartTime()) ||
+                            targetSlot.getStartTime().isAfter(s.getEndTime()));
                 });
 
         if (conflict) {
@@ -102,6 +151,14 @@ public class GymCustomerServiceImpl implements GymCustomerInterface {
         }
     }
 
+    /**
+     * Cancel booking.
+     *
+     * @param bookingId the booking id
+     * @param userId    the user id
+     * @return true, if successful
+     * @throws BookingFailedException the booking failed exception
+     */
     public boolean cancelBooking(String bookingId, String userId) throws BookingFailedException {
         Booking booking = bookingDAO.getBookingById(bookingId); //
         if (booking == null || !booking.getUserId().equals(userId)) {
@@ -118,6 +175,11 @@ public class GymCustomerServiceImpl implements GymCustomerInterface {
         throw new BookingFailedException("System error: Cancellation failed."); //
     }
 
+    /**
+     * View my bookings.
+     *
+     * @param userId the user id
+     */
     public void viewMyBookings(String userId) {
         List<Booking> userBookings = bookingDAO.getBookingsByUserId(userId);
         if (userBookings.isEmpty()) {

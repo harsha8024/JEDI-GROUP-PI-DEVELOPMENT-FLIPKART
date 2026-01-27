@@ -1,3 +1,4 @@
+// TODO: Auto-generated Javadoc
 package com.flipfit.client;
 
 import com.flipfit.bean.GymOwner;
@@ -6,17 +7,25 @@ import com.flipfit.dao.GymOwnerDAO;
 import java.util.Map;
 
 /**
- * GymOwner DAO CRUD Operations Demo
- * Demonstrates Create, Read, Update, Delete operations
+ * The Class GymOwnerClientApp.
+ *
+ * @author team pi
+ * @ClassName "GymOwnerClientApp"
  */
 public class GymOwnerClientApp {
+
+  /**
+   * The main method.
+   *
+   * @param args the arguments
+   */
   public static void main(String[] args) {
     GymOwnerDAO gymOwnerDAO = new GymOwnerDAO();
-    
+
     System.out.println("========================================");
     System.out.println("  GYM OWNER DAO CRUD OPERATIONS DEMO");
     System.out.println("========================================\n");
-    
+
     // ==================== CREATE ====================
     System.out.println("--- CREATE Operation ---");
     GymOwner owner = new GymOwner();
@@ -30,12 +39,12 @@ public class GymOwnerClientApp {
     owner.setPanNumber("ABCDE1234F");
     owner.setAadharNumber("123456789012");
     owner.setActive(false); // Owners start inactive, need admin approval
-    
+
     // Set owner role
     Role role = new Role();
     role.setRoleName("OWNER");
     owner.setRole(role);
-    
+
     boolean created = gymOwnerDAO.saveGymOwner(owner);
     if (created) {
       System.out.println("✓ Gym Owner created successfully!");
@@ -49,10 +58,10 @@ public class GymOwnerClientApp {
     } else {
       System.out.println("✗ Failed to create gym owner.");
     }
-    
+
     // ==================== READ ====================
     System.out.println("\n--- READ Operations ---");
-    
+
     // Read by Email
     System.out.println("\n1. Read by Email:");
     GymOwner retrievedByEmail = gymOwnerDAO.getGymOwnerByEmail("jane.smith@gymowner.com");
@@ -66,7 +75,7 @@ public class GymOwnerClientApp {
     } else {
       System.out.println("✗ Gym Owner not found by email");
     }
-    
+
     // Read by ID
     System.out.println("\n2. Read by ID:");
     GymOwner retrievedById = gymOwnerDAO.getGymOwnerById(ownerId);
@@ -78,20 +87,19 @@ public class GymOwnerClientApp {
     } else {
       System.out.println("✗ Gym Owner not found by ID");
     }
-    
+
     // Read All Gym Owners
     System.out.println("\n3. Read All Gym Owners:");
     Map<String, GymOwner> allOwners = gymOwnerDAO.getAllGymOwners();
     System.out.println("✓ Total gym owners in database: " + allOwners.size());
-    allOwners.values().forEach(o -> 
-      System.out.println("  - " + o.getName() + " (" + o.getEmail() + ") | Active: " + o.isActive())
-    );
-    
+    allOwners.values()
+        .forEach(o -> System.out.println("  - " + o.getName() + " (" + o.getEmail() + ") | Active: " + o.isActive()));
+
     // Check Email Exists
     System.out.println("\n4. Check Email Exists:");
     boolean emailExists = gymOwnerDAO.emailExists("jane.smith@gymowner.com");
     System.out.println("✓ Email exists: " + emailExists);
-    
+
     // ==================== UPDATE ====================
     System.out.println("\n--- UPDATE Operation ---");
     if (retrievedByEmail != null) {
@@ -99,11 +107,11 @@ public class GymOwnerClientApp {
       retrievedByEmail.setPhoneNumber("9999888877");
       retrievedByEmail.setActive(true); // Admin approved
       retrievedByEmail.setPanNumber("FGHIJ5678K");
-      
+
       boolean updated = gymOwnerDAO.updateGymOwner(retrievedByEmail);
       if (updated) {
         System.out.println("✓ Gym Owner updated successfully!");
-        
+
         // Verify update
         GymOwner updatedOwner = gymOwnerDAO.getGymOwnerById(ownerId);
         System.out.println("  Updated City: " + updatedOwner.getCity());
@@ -114,14 +122,14 @@ public class GymOwnerClientApp {
         System.out.println("✗ Failed to update gym owner.");
       }
     }
-    
+
     // ==================== DELETE ====================
     System.out.println("\n--- DELETE Operation ---");
     System.out.println("Deleting gym owner with ID: " + ownerId);
     boolean deleted = gymOwnerDAO.deleteGymOwner(ownerId);
     if (deleted) {
       System.out.println("✓ Gym Owner deleted successfully!");
-      
+
       // Verify deletion
       GymOwner deletedOwner = gymOwnerDAO.getGymOwnerById(ownerId);
       if (deletedOwner == null) {
@@ -130,7 +138,7 @@ public class GymOwnerClientApp {
     } else {
       System.out.println("✗ Failed to delete gym owner.");
     }
-    
+
     System.out.println("\n========================================");
     System.out.println("  CRUD OPERATIONS COMPLETED");
     System.out.println("========================================");

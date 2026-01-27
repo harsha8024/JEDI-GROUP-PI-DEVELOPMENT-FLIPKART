@@ -1,3 +1,4 @@
+// TODO: Auto-generated Javadoc
 package com.flipfit.client;
 
 import com.flipfit.bean.Gym;
@@ -11,14 +12,34 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Scanner;
 
+/**
+ * The Class GymOwnerFlipFitMenu.
+ *
+ * @author team pi
+ * @ClassName "GymOwnerFlipFitMenu"
+ */
 public class GymOwnerFlipFitMenu {
-    
+
+    /** The current owner id. */
     private static String currentOwnerId = null;
 
+    /**
+     * Show owner menu.
+     *
+     * @param scanner      the scanner
+     * @param ownerService the owner service
+     */
     public static void showOwnerMenu(Scanner scanner, GymOwnerInterface ownerService) {
         showOwnerMenu(scanner, ownerService, null);
     }
 
+    /**
+     * Show owner menu.
+     *
+     * @param scanner      the scanner
+     * @param ownerService the owner service
+     * @param ownerId      the owner id
+     */
     public static void showOwnerMenu(Scanner scanner, GymOwnerInterface ownerService, String ownerId) {
         currentOwnerId = ownerId;
         boolean back = false;
@@ -38,7 +59,7 @@ public class GymOwnerFlipFitMenu {
 
             try {
                 int choice = scanner.nextInt();
-                scanner.nextLine(); 
+                scanner.nextLine();
 
                 switch (choice) {
                     case 1:
@@ -73,22 +94,33 @@ public class GymOwnerFlipFitMenu {
             }
         }
     }
-    
+
+    /**
+     * Handle register gym.
+     *
+     * @param scanner      the scanner
+     * @param ownerService the owner service
+     */
     private static void handleRegisterGym(Scanner scanner, GymOwnerInterface ownerService) {
         Gym newGym = new Gym();
-        System.out.print("Enter Gym Name: "); 
+        System.out.print("Enter Gym Name: ");
         newGym.setGymName(scanner.nextLine());
-        System.out.print("Enter Location: "); 
+        System.out.print("Enter Location: ");
         newGym.setLocation(scanner.nextLine());
         newGym.setGymOwnerId(currentOwnerId);
-        
+
         try {
             ownerService.registerGym(newGym);
         } catch (RegistrationFailedException e) {
             System.out.println("[REGISTRATION ERROR] " + e.getMessage());
         }
     }
-    
+
+    /**
+     * Handle view my gyms.
+     *
+     * @param ownerService the owner service
+     */
     private static void handleViewMyGyms(GymOwnerInterface ownerService) {
         List<Gym> myGyms;
         try {
@@ -97,7 +129,7 @@ public class GymOwnerFlipFitMenu {
             } else {
                 myGyms = ownerService.viewMyGyms();
             }
-            
+
             if (myGyms.isEmpty()) {
                 System.out.println("No gyms registered under your account.");
             } else {
@@ -106,10 +138,10 @@ public class GymOwnerFlipFitMenu {
                 System.out.println("========================================");
                 myGyms.forEach(g -> {
                     String status = g.isApproved() ? "✓ APPROVED" : "⏳ PENDING";
-                    System.out.println("ID: " + g.getGymId() + 
-                                       " | Name: " + g.getGymName() + 
-                                       " | Location: " + g.getLocation() + 
-                                       " | Status: " + status);
+                    System.out.println("ID: " + g.getGymId() +
+                            " | Name: " + g.getGymName() +
+                            " | Location: " + g.getLocation() +
+                            " | Status: " + status);
                 });
                 System.out.println("========================================");
                 System.out.println("Total: " + myGyms.size() + " gyms");
@@ -118,33 +150,44 @@ public class GymOwnerFlipFitMenu {
             System.out.println("\n[ERROR] Could not retrieve gyms: " + e.getMessage());
         }
     }
-    
+
+    /**
+     * Handle add slots.
+     *
+     * @param scanner the scanner
+     */
     private static void handleAddSlots(Scanner scanner) {
         SlotServiceImpl slotService = new SlotServiceImpl();
-        
+
         System.out.print("Enter Gym ID: ");
         String gymId = scanner.nextLine();
-        
+
         System.out.print("Enter Start Time (HH:mm, e.g., 06:00): ");
         String startStr = scanner.nextLine();
-        
+
         System.out.print("Enter End Time (HH:mm, e.g., 07:00): ");
         String endStr = scanner.nextLine();
-        
+
         System.out.print("Enter Capacity: ");
         int capacity = scanner.nextInt();
         scanner.nextLine();
-        
+
         try {
             LocalTime startTime = LocalTime.parse(startStr, DateTimeFormatter.ofPattern("HH:mm"));
             LocalTime endTime = LocalTime.parse(endStr, DateTimeFormatter.ofPattern("HH:mm"));
-            
+
             slotService.createSlot(gymId, startTime, endTime, capacity);
         } catch (Exception e) {
             System.out.println("Error: Invalid time format. Use HH:mm format (e.g., 06:00)");
         }
     }
-    
+
+    /**
+     * Handle view schedule.
+     *
+     * @param scanner      the scanner
+     * @param ownerService the owner service
+     */
     private static void handleViewSchedule(Scanner scanner, GymOwnerInterface ownerService) {
         System.out.print("Enter Gym ID: ");
         String gymId = scanner.nextLine();

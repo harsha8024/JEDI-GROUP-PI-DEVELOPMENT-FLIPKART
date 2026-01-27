@@ -1,3 +1,4 @@
+// TODO: Auto-generated Javadoc
 package com.flipfit.utils;
 
 import java.sql.Connection;
@@ -5,17 +6,21 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 /**
- * Database Connection Manager
- * Singleton pattern implementation for managing database connections
- * Thread-safe connection handling
+ * The Class DatabaseConnection.
+ *
+ * @author team pi
+ * @ClassName "DatabaseConnection"
  */
 public class DatabaseConnection {
-    
+
+    /** The instance. */
     private static DatabaseConnection instance;
+
+    /** The Constant MAX_RETRIES. */
     private static final int MAX_RETRIES = 3;
-    
+
     /**
-     * Private constructor to prevent instantiation
+     * Instantiates a new database connection.
      */
     private DatabaseConnection() {
         try {
@@ -28,9 +33,11 @@ public class DatabaseConnection {
             throw new RuntimeException("Failed to load MySQL JDBC Driver", e);
         }
     }
-    
+
     /**
-     * Get singleton instance
+     * Gets the single instance of DatabaseConnection.
+     *
+     * @return single instance of DatabaseConnection
      */
     public static synchronized DatabaseConnection getInstance() {
         if (instance == null) {
@@ -38,35 +45,36 @@ public class DatabaseConnection {
         }
         return instance;
     }
-    
+
     /**
-     * Get a database connection
-     * Implements retry logic for transient failures
+     * Gets the connection.
+     *
+     * @return the connection
+     * @throws SQLException the SQL exception
      */
     public Connection getConnection() throws SQLException {
         int retries = 0;
         SQLException lastException = null;
-        
+
         while (retries < MAX_RETRIES) {
             try {
                 Connection connection = DriverManager.getConnection(
-                    DatabaseConfig.getUrl(),
-                    DatabaseConfig.getUsername(),
-                    DatabaseConfig.getPassword()
-                );
-                
+                        DatabaseConfig.getUrl(),
+                        DatabaseConfig.getUsername(),
+                        DatabaseConfig.getPassword());
+
                 if (retries > 0) {
                     System.out.println("✓ Database connection established (after " + retries + " retries)");
                 } else {
                     System.out.println("✓ Database connection established");
                 }
-                
+
                 return connection;
-                
+
             } catch (SQLException e) {
                 lastException = e;
                 retries++;
-                
+
                 if (retries < MAX_RETRIES) {
                     System.err.println("Connection attempt " + retries + " failed. Retrying...");
                     try {
@@ -78,14 +86,16 @@ public class DatabaseConnection {
                 }
             }
         }
-        
+
         System.err.println("✗ Failed to connect to database after " + MAX_RETRIES + " attempts");
         System.err.println("Error: " + lastException.getMessage());
         throw lastException;
     }
-    
+
     /**
-     * Close a database connection safely
+     * Close connection.
+     *
+     * @param connection the connection
      */
     public static void closeConnection(Connection connection) {
         if (connection != null) {
@@ -99,9 +109,11 @@ public class DatabaseConnection {
             }
         }
     }
-    
+
     /**
-     * Test database connectivity
+     * Test connection.
+     *
+     * @return true, if successful
      */
     public boolean testConnection() {
         try (Connection connection = getConnection()) {
@@ -111,9 +123,9 @@ public class DatabaseConnection {
             return false;
         }
     }
-    
+
     /**
-     * Display connection information
+     * Display connection info.
      */
     public void displayConnectionInfo() {
         try (Connection connection = getConnection()) {
@@ -132,19 +144,21 @@ public class DatabaseConnection {
             System.err.println("Error getting connection info: " + e.getMessage());
         }
     }
-    
+
     /**
-     * Main method for testing
+     * The main method.
+     *
+     * @param args the arguments
      */
     public static void main(String[] args) {
         System.out.println("\n========================================");
         System.out.println("  TESTING DATABASE CONNECTION");
         System.out.println("========================================\n");
-        
+
         DatabaseConfig.displayConfig();
-        
+
         DatabaseConnection dbManager = DatabaseConnection.getInstance();
-        
+
         if (dbManager.testConnection()) {
             System.out.println("\n✓ Database connection test PASSED");
             dbManager.displayConnectionInfo();
