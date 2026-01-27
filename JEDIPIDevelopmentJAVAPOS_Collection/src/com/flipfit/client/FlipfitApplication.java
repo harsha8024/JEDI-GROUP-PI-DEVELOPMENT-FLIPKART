@@ -1,5 +1,6 @@
 package com.flipfit.client;
 
+import java.util.Map;
 import java.util.Scanner;
 import com.flipfit.bean.User;
 import com.flipfit.business.*;
@@ -91,31 +92,38 @@ public class FlipfitApplication {
 
         // For regular users, validate from database
         if (userService.login(email, password)) {
+            // Get user details to retrieve ID and role
+            Map<String, User> userMap = GymUserServiceImpl.getUserMap();
+            User loggedInUser = userMap.get(email);
+            
+            if (loggedInUser == null) {
+                System.out.println("[ERROR] User not found in system.");
+                return;
+            }
+            
+            String userId = loggedInUser.getUserID();
+            String roleName = loggedInUser.getRole() != null ? loggedInUser.getRole().getRoleName() : "CUSTOMER";
+            
             System.out.println("\n✓ Login successful!");
+            System.out.println("Welcome, " + loggedInUser.getName() + "!");
             
-            // Get user details to retrieve ID
-            User loggedInUser = GymUserServiceImpl.getUserMap().get(email);
-            String userId = loggedInUser != null ? loggedInUser.getUserID() : null;
-            
-            // Regular users can select their role (Customer or Gym Owner only)
-            System.out.println("\nSelect Role:");
-            System.out.println("1. Customer");
-            System.out.println("2. Gym Owner");
-            System.out.print("Enter your choice: ");
-            int roleChoice = scanner.nextInt();
-            scanner.nextLine(); // Consume newline
-            
-            switch (roleChoice) {
-                case 1:
-                    System.out.println("Welcome, " + loggedInUser.getName() + "! (Customer)");
+            // Automatically redirect to appropriate menu based on registered role
+            switch (roleName.toUpperCase()) {
+                case "CUSTOMER":
+                    System.out.println("Logging in as Customer...");
                     GymCustomerFlipFitMenu.showCustomerMenu(scanner, customerService, userId);
                     break;
-                case 2:
-                    System.out.println("Welcome, " + loggedInUser.getName() + "! (Gym Owner)");
+                case "OWNER":
+                case "GYM_OWNER":
+                    System.out.println("Logging in as Gym Owner...");
                     GymOwnerFlipFitMenu.showOwnerMenu(scanner, ownerService, userId);
                     break;
+                case "ADMIN":
+                    System.out.println("Logging in as Admin...");
+                    GymAdminFlipfitMenu.showAdminMenu(scanner, adminService);
+                    break;
                 default:
-                    System.out.println("[ERROR] Invalid role selection!");
+                    System.out.println("[ERROR] Unknown role: " + roleName);
             }
             
         } else {
@@ -124,15 +132,78 @@ public class FlipfitApplication {
     }
 
     private static void handleRegistration(Scanner scanner, GymUserInterface userService) {
-        User newUser = new User();
-        System.out.println("\n--- Registration ---");
-        System.out.print("Name: "); newUser.setName(scanner.nextLine());
-        System.out.print("Email: "); newUser.setEmail(scanner.nextLine());
-        System.out.print("Password: "); newUser.setPassword(scanner.nextLine());
-        System.out.print("City: "); newUser.setCity(scanner.nextLine());
+        System.out.println("\n========================================");
+        System.out.println("         REGISTRATION");
+        System.out.println("========================================");
         
-        userService.register(newUser);
-        System.out.println("Registration successful! You can now log in.");
+        // Ask for role first
+        System.out.println("Select your role:");
+        System.out.println("1. Customer (Book gym slots)");
+        System.out.println("2. Gym Owner (Manage gyms and slots)");
+        System.out.print("Enter your choice: ");
+        
+        int roleChoice = scanner.nextInt();
+        scanner.nextLine(); // Consume newline
+        
+        String roleName;
+        switch (roleChoice) {
+            case 1:
+                roleName = "CUSTOMER";
+                break;
+            case 2:
+                roleName = "OWNER";
+                break;
+            default:
+                System.out.println("[ERROR] Invalid role selection!");
+                return;
+        }
+        
+        // Collect user details
+        User newUser = new User();
+        System.out.println("\n--- Enter Your Details ---");
+        System.out.print("Name: ");
+        newUser.setName(scanner.nextLine());
+        
+        System.out.print("Email: ");
+        newUser.setEmail(scanner.nextLine());
+        
+        System.out.print("Password: ");
+        newUser.setPassword(scanner.nextLine());
+        
+        System.out.print("Phone Number: ");
+        newUser.setPhoneNumber(scanner.nextLine());
+        
+        System.out.print("City: ");
+        newUser.setCity(scanner.nextLine());
+        
+        // Set role
+        com.flipfit.bean.Role role = new com.flipfit.bean.Role();
+        role.setRoleName(roleName);
+        newUser.setRole(role);
+        
+        // If gym owner, collect additional details
+        if (roleName.equals("OWNER")) {
+            com.flipfit.bean.GymOwner owner = new com.flipfit.bean.GymOwner();
+            owner.setName(newUser.getName());
+            owner.setEmail(newUser.getEmail());
+            owner.setPassword(newUser.getPassword());
+            owner.setPhoneNumber(newUser.getPhoneNumber());
+            owner.setCity(newUser.getCity());
+            owner.setRole(role);
+            
+            System.out.print("PAN Number: ");
+            owner.setPanNumber(scanner.nextLine());
+            
+            System.out.print("Aadhar Number: ");
+            owner.setAadharNumber(scanner.nextLine());
+            
+            userService.register(owner);
+            System.out.println("\n✓ Gym Owner registration successful!");
+            System.out.println("Note: Your account is pending admin approval.");
+        } else {
+            userService.register(newUser);
+            System.out.println("\n✓ Customer registration successful! You can now log in.");
+        }
     }
 
     private static void handleChangePassword(Scanner scanner, GymUserInterface userService) {

@@ -107,10 +107,12 @@ CREATE TABLE IF NOT EXISTS slots (
     end_time TIME NOT NULL,
     capacity INT NOT NULL,
     available_seats INT NOT NULL,
+    is_approved BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (gym_id) REFERENCES gyms(gym_id) ON DELETE CASCADE,
     INDEX idx_gym (gym_id),
-    INDEX idx_time (start_time, end_time)
+    INDEX idx_time (start_time, end_time),
+    INDEX idx_approved (is_approved)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ========================================
