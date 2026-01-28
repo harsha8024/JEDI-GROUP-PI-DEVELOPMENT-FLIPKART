@@ -1,24 +1,26 @@
 // TODO: Auto-generated Javadoc
-package com.flipfit.utils;
+package com.flipfit.client;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-import java.sql.Connection;
-import java.sql.Statement;
-import java.time.LocalTime;
-import java.util.List;
-import com.flipfit.bean.*;
+import java.util.Map;
+import java.util.Scanner;
+import com.flipfit.bean.User;
 import com.flipfit.business.*;
-import com.flipfit.exception.*;
+import com.flipfit.exception.RegistrationFailedException;
 
 /**
- * The Class DataInitializer.
+ * The Class FlipfitApplication.
  *
  * @author team pi
- * @ClassName  "DataInitializer"
+ * @ClassName "FlipfitApplication"
  */
-public class DataInitializer {
+public class FlipfitApplication {
+
+    /** The Constant ADMIN_EMAIL. */
+    // Hardcoded Admin Credentials - Single admin for the system
+    private static final String ADMIN_EMAIL = "admin@flipfit.com";
+
+    /** The Constant ADMIN_PASSWORD. */
+    private static final String ADMIN_PASSWORD = "admin@123";
 
     /**
      * The main method.
@@ -26,132 +28,233 @@ public class DataInitializer {
      * @param args the arguments
      */
     public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+
+        // Initialize service implementations
+        GymUserInterface userService = new GymUserServiceImpl();
+        GymCustomerInterface customerService = new GymCustomerServiceImpl();
+        GymOwnerInterface ownerService = new GymOwnerServiceImpl();
+        GymAdminInterface adminService = new GymAdminServiceImpl();
+
+        boolean exit = false;
+
         System.out.println("========================================");
-        System.out.println("   FlipFit Database Initializer");
+        System.out.println("    Welcome to FlipFit Gym Booking System");
         System.out.println("========================================");
 
+        while (!exit) {
+            try {
+                displayMainMenu();
+                System.out.print("Enter your choice: ");
+                int choice = scanner.nextInt();
+                scanner.nextLine(); // Consume newline
+
+                switch (choice) {
+                    case 1:
+                        handleLogin(scanner, userService, customerService, ownerService, adminService);
+                        break;
+                    case 2:
+                        handleRegistration(scanner, userService);
+                        break;
+                    case 3:
+                        handleChangePassword(scanner, userService);
+                        break;
+                    case 4:
+                        // Delegating to the specific Customer Menu class for browsing
+                        GymCustomerFlipFitMenu.showCustomerMenu(scanner, customerService);
+                        break;
+                    case 5:
+                        System.out.println("\nThank you for using FlipFit! Stay healthy!");
+                        exit = true;
+                        break;
+                    default:
+                        System.out.println("\nInvalid choice! Please try again.");
+                }
+            } catch (Exception e) {
+                System.out.println("\nError: " + e.getMessage());
+                scanner.nextLine(); // Clear invalid input
+            }
+        }
+        scanner.close();
+    }
+
+    /**
+     * Display main menu.
+     */
+    private static void displayMainMenu() {
+        System.out.println("\n========================================");
+        System.out.println("            MAIN MENU");
+        System.out.println("========================================");
+        System.out.println("1. Login\n2. Register\n3. Change Password\n4. Browse as Guest\n5. Exit");
+        System.out.println("========================================");
+    }
+
+    /**
+     * Handle login.
+     *
+     * @param scanner         the scanner
+     * @param userService     the user service
+     * @param customerService the customer service
+     * @param ownerService    the owner service
+     * @param adminService    the admin service
+     */
+    private static void handleLogin(Scanner scanner, GymUserInterface userService,
+            GymCustomerInterface customerService,
+            GymOwnerInterface ownerService,
+            GymAdminInterface adminService) {
+
+        System.out.println("\n--- Login ---");
+        System.out.print("Email: ");
+        String email = scanner.nextLine();
+        System.out.print("Password: ");
+        String password = scanner.nextLine();
+
+        // Check if user is admin with hardcoded credentials
+        if (email.equals(ADMIN_EMAIL) && password.equals(ADMIN_PASSWORD)) {
+            System.out.println("\n✓ Admin login successful!");
+            System.out.println("Welcome, Administrator!");
+            // Admin directly goes to admin menu - no role selection
+            GymAdminFlipfitMenu.showAdminMenu(scanner, adminService);
+            return;
+        }
+
+        // For regular users, validate from database
         try {
-            initializeDatabase();
-            System.out.println("\n✓ Database initialized and seeded successfully!");
-        } catch (Exception e) {
-            System.err.println("\n✗ Database initialization failed: " + e.getMessage());
-            e.printStackTrace();
+            if (userService.login(email, password)) {
+                // Get user details to retrieve ID and role
+                Map<String, User> userMap = GymUserServiceImpl.getUserMap();
+                User loggedInUser = userMap.get(email);
+
+                if (loggedInUser == null) {
+                    System.out.println("[ERROR] User not found in system.");
+                    return;
+                }
+
+                String userId = loggedInUser.getUserID();
+                String roleName = loggedInUser.getRole() != null ? loggedInUser.getRole().getRoleName() : "CUSTOMER";
+
+                System.out.println("\n✓ Login successful!");
+                System.out.println("Welcome, " + loggedInUser.getName() + "!");
+
+                // Automatically redirect to appropriate menu based on registered role
+                switch (roleName.toUpperCase()) {
+                    case "CUSTOMER":
+                        System.out.println("Logging in as Customer...");
+                        GymCustomerFlipFitMenu.showCustomerMenu(scanner, customerService, userId);
+                        break;
+                    case "OWNER":
+                    case "GYM_OWNER":
+                        System.out.println("Logging in as Gym Owner...");
+                        GymOwnerFlipFitMenu.showOwnerMenu(scanner, ownerService, userId);
+                        break;
+                    case "ADMIN":
+                        System.out.println("Logging in as Admin...");
+                        GymAdminFlipfitMenu.showAdminMenu(scanner, adminService);
+                        break;
+                    default:
+                        System.out.println("[ERROR] Unknown role: " + roleName);
+                }
+
+            }
+        } catch (com.flipfit.exception.UserNotFoundException e) {
+            System.out.println("\n[LOGIN ERROR] " + e.getMessage());
+        } catch (com.flipfit.exception.InvalidCredentialsException e) {
+            System.out.println("\n[AUTH ERROR] " + e.getMessage());
         }
     }
 
     /**
-     * Initialize database by executing schema SQL and seeding initial test data.
+     * Handle registration.
      *
-     * @throws Exception the exception if connection or execution fails
+     * @param scanner     the scanner
+     * @param userService the user service
      */
-    public static void initializeDatabase() throws Exception {
-        Connection conn = DatabaseConnection.getInstance().getConnection();
-        if (conn == null) {
-            throw new Exception("Could not establish database connection.");
+    private static void handleRegistration(Scanner scanner, GymUserInterface userService) {
+        System.out.println("\n========================================");
+        System.out.println("         REGISTRATION");
+        System.out.println("========================================");
+
+        System.out.println("Select your role:");
+        System.out.println("1. Customer (Book gym slots)");
+        System.out.println("2. Gym Owner (Manage gyms and slots)");
+        System.out.print("Enter your choice: ");
+
+        int roleChoice = scanner.nextInt();
+        scanner.nextLine();
+
+        String roleName;
+        switch (roleChoice) {
+            case 1:
+                roleName = "CUSTOMER";
+                break;
+            case 2:
+                roleName = "OWNER";
+                break;
+            default:
+                System.out.println("[ERROR] Invalid role selection!");
+                return;
         }
 
-        // --- PART 1: SCHEMA INITIALIZATION (Resolving Conflict from feature/login-datetime) ---
-        Statement stmt = conn.createStatement();
-        String schemaPath = "database/schema.sql";
+        User newUser = new User();
+        System.out.println("\n--- Enter Your Details ---");
+        System.out.print("Name: ");
+        newUser.setName(scanner.nextLine());
+        System.out.print("Email: ");
+        newUser.setEmail(scanner.nextLine());
+        System.out.print("Password: ");
+        newUser.setPassword(scanner.nextLine());
+        System.out.print("Phone Number: ");
+        newUser.setPhoneNumber(scanner.nextLine());
+        System.out.print("City: ");
+        newUser.setCity(scanner.nextLine());
 
-        System.out.println("Reading schema from: " + schemaPath);
-
-        try (BufferedReader reader = new BufferedReader(new FileReader(schemaPath))) {
-            StringBuilder sqlBuilder = new StringBuilder();
-            String line;
-
-            while ((line = reader.readLine()) != null) {
-                // Remove comments and empty lines
-                if (line.trim().startsWith("--") || line.trim().isEmpty()) {
-                    continue;
-                }
-
-                sqlBuilder.append(line).append(" ");
-
-                // If line ends with semicolon, verify and execute
-                if (line.trim().endsWith(";")) {
-                    String sql = sqlBuilder.toString().trim();
-                    if (!sql.isEmpty()) {
-                        try {
-                            stmt.execute(sql);
-                        } catch (Exception e) {
-                            // Schema uses "IF NOT EXISTS", so minor warnings are ignored
-                            System.out.println("Warning executing statement: " + e.getMessage());
-                        }
-                    }
-                    sqlBuilder = new StringBuilder();
-                }
-            }
-        } catch (IOException e) {
-            throw new Exception("Error reading schema file: " + e.getMessage());
-        }
-
-        // --- PART 2: DATA SEEDING (Resolving Conflict from main) ---
-        GymUserServiceImpl userService = new GymUserServiceImpl();
-        GymOwnerServiceImpl ownerService = new GymOwnerServiceImpl();
-        GymAdminServiceImpl adminService = new GymAdminServiceImpl();
-        SlotServiceImpl slotService = new SlotServiceImpl();
+        com.flipfit.bean.Role role = new com.flipfit.bean.Role();
+        role.setRoleName(roleName);
+        newUser.setRole(role);
 
         try {
-            System.out.println("\n1. Creating test users...");
-            
-            // Seed Admin
-            User admin = new User();
-            admin.setName("Admin User");
-            admin.setEmail("admin@flipfit.com");
-            admin.setPassword("admin123");
-            admin.setCity("Bangalore");
-            admin.setPhoneNumber("9999999999");
-            Role adminRole = new Role();
-            adminRole.setRoleName("ADMIN");
-            admin.setRole(adminRole);
-            userService.register(admin);
+            if (roleName.equals("OWNER")) {
+                com.flipfit.bean.GymOwner owner = new com.flipfit.bean.GymOwner();
+                // Mapping common fields
+                owner.setName(newUser.getName());
+                owner.setEmail(newUser.getEmail());
+                owner.setPassword(newUser.getPassword());
+                owner.setPhoneNumber(newUser.getPhoneNumber());
+                owner.setCity(newUser.getCity());
+                owner.setRole(role);
 
-            // Seed Owner
-            User owner1 = new User();
-            owner1.setName("John Owner");
-            owner1.setEmail("owner1@flipfit.com");
-            owner1.setPassword("owner123");
-            owner1.setCity("Bangalore");
-            owner1.setPhoneNumber("9876543210");
-            Role ownerRole1 = new Role();
-            ownerRole1.setRoleName("OWNER");
-            owner1.setRole(ownerRole1);
-            userService.register(owner1);
-            String owner1Id = owner1.getUserID();
+                System.out.print("PAN Number: ");
+                owner.setPanNumber(scanner.nextLine());
+                System.out.print("Aadhar Number: ");
+                owner.setAadharNumber(scanner.nextLine());
+                System.out.print("GSTIN Number (optional): ");
+                owner.setGstinNumber(scanner.nextLine());
 
-            System.out.println("\n2. Creating test gyms...");
-            Gym gym1 = new Gym();
-            gym1.setGymName("Gold's Gym Koramangala");
-            gym1.setLocation("Bangalore");
-            gym1.setGymOwnerId(owner1Id);
-            ownerService.registerGym(gym1);
-
-            System.out.println("\n3. Approving gyms...");
-            List<Gym> ownerGyms = ownerService.viewMyGyms(owner1Id);
-            // Using forEach as per assignment requirements
-            ownerGyms.forEach(gym -> {
-                try {
-                    adminService.approveGym(gym.getGymId());
-                } catch (ApprovalFailedException e) {
-                    System.out.println("Approval skipped for ID " + gym.getGymId());
-                }
-            });
-            System.out.println("   ✓ All gyms approved");
-
-            System.out.println("\n4. Creating time slots...");
-            if (!ownerGyms.isEmpty()) {
-                String gym1Id = ownerGyms.get(0).getGymId();
-                slotService.createSlot(gym1Id, LocalTime.of(6, 0), LocalTime.of(7, 0), 20);
-                slotService.createSlot(gym1Id, LocalTime.of(7, 0), LocalTime.of(8, 0), 20);
+                userService.register(owner);
+                System.out.println("\n✓ Gym Owner registration successful! You can now log in.");
+            } else {
+                userService.register(newUser);
+                System.out.println("\n✓ Customer registration successful! You can now log in.");
             }
-
-            System.out.println("\n========================================");
-            System.out.println("  TEST DATA INITIALIZATION COMPLETE!");
-            System.out.println("========================================\n");
-
-        } catch (RegistrationFailedException | UserNotFoundException e) {
-            System.err.println("\n[ERROR] Data seeding failed: " + e.getMessage());
+        } catch (RegistrationFailedException e) {
+            System.out.println("\n[REGISTRATION FAILED] " + e.getMessage());
         }
+    }
+
+    /**
+     * Handle change password.
+     *
+     * @param scanner     the scanner
+     * @param userService the user service
+     */
+    private static void handleChangePassword(Scanner scanner, GymUserInterface userService) {
+        System.out.print("Enter Email: ");
+        String email = scanner.nextLine();
+        System.out.print("Current Password: ");
+        scanner.nextLine(); // Read but don't use (for future validation)
+        System.out.print("New Password: ");
+        String newPass = scanner.nextLine();
+
+        userService.updatePassword(email, newPass);
     }
 }
