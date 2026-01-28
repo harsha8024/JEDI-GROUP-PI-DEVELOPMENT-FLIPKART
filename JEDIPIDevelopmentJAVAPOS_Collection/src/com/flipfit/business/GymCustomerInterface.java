@@ -1,11 +1,9 @@
 // TODO: Auto-generated Javadoc
 package com.flipfit.business;
 
-import com.flipfit.bean.User;
-import com.flipfit.exception.BookingFailedException;
-import com.flipfit.exception.RegistrationFailedException;
-import com.flipfit.exception.SlotNotAvailableException;
 import com.flipfit.bean.Slot;
+import com.flipfit.exception.BookingFailedException;
+import com.flipfit.exception.SlotNotAvailableException;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -16,14 +14,6 @@ import java.util.List;
  * @ClassName "GymCustomerInterface"
  */
 public interface GymCustomerInterface {
-
-    /**
-     * Register.
-     *
-     * @param user the user
-     * @throws RegistrationFailedException the registration failed exception
-     */
-    void register(User user) throws RegistrationFailedException;
 
     /**
      * View centers.
@@ -39,6 +29,15 @@ public interface GymCustomerInterface {
      * @param date  the date
      */
     void viewSlotsForGym(String gymId, LocalDate date);
+
+    /**
+     * Gets the available slots.
+     *
+     * @param gymId the gym id
+     * @param date  the date
+     * @return the available slots
+     */
+    List<Slot> getAvailableSlots(String gymId, LocalDate date);
 
     /**
      * Book slot.
@@ -70,13 +69,4 @@ public interface GymCustomerInterface {
      * @param userId the user id
      */
     void viewMyBookings(String userId);
-
-    /**
-     * Gets the available slots.
-     *
-     * @param gymId the gym id
-     * @param date  the date
-     * @return the available slots
-     */
-    List<Slot> getAvailableSlots(String gymId, LocalDate date);
 }
