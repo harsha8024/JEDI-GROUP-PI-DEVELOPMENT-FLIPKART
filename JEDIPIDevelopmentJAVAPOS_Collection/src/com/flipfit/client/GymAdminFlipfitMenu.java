@@ -40,7 +40,9 @@ public class GymAdminFlipfitMenu {
             System.out.println("8. View All Registered Users");
             System.out.println("9. View All Bookings");
             System.out.println("10. Generate Reports");
-            System.out.println("11. Logout");
+            System.out.println("11. View Payment & Revenue Reports");
+            System.out.println("12. View Revenue by Date Range");
+            System.out.println("13. Logout");
             System.out.println("========================================");
             System.out.print("Enter your choice: ");
 
@@ -108,6 +110,16 @@ public class GymAdminFlipfitMenu {
                     handleGenerateReports(scanner, adminService);
                     break;
                 case 11:
+                    adminService.viewPaymentReports();
+                    break;
+                case 12:
+                    System.out.print("Enter start date (yyyy-MM-dd): ");
+                    String startDate = scanner.nextLine();
+                    System.out.print("Enter end date (yyyy-MM-dd): ");
+                    String endDate = scanner.nextLine();
+                    adminService.viewRevenueByDateRange(startDate, endDate);
+                    break;
+                case 13:
                     System.out.println("Logging out from Admin Session...");
                     back = true;
                     break;

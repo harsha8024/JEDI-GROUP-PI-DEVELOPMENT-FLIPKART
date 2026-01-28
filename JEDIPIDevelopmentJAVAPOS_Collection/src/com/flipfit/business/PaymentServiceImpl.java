@@ -2,12 +2,13 @@ package com.flipfit.business;
 
 import com.flipfit.bean.Payment;
 import com.flipfit.dao.PaymentDAO;
+import com.flipfit.dao.BookingDAO;
 import java.math.BigDecimal;
-import java.util.UUID;
 
 public class PaymentServiceImpl implements PaymentInterface {
 
     private final PaymentDAO paymentDAO = new PaymentDAO();
+    private final BookingDAO bookingDAO = new BookingDAO();
 
     @Override
     public boolean processPayment(String bookingId, double amount, String paymentMethod) {
@@ -16,9 +17,17 @@ public class PaymentServiceImpl implements PaymentInterface {
         boolean success = true; // Assume gateway success
         
         if(success) {
+            // Get customer ID from booking
+            String customerId = null;
+            var booking = bookingDAO.getBookingById(bookingId);
+            if (booking != null) {
+                customerId = booking.getUserId();
+            }
+            
             Payment payment = new Payment();
-            payment.setPaymentId(UUID.randomUUID().toString());
+            payment.setPaymentId(paymentDAO.generatePaymentId());
             payment.setBookingId(bookingId);
+            payment.setUserId(customerId);
             payment.setAmount(BigDecimal.valueOf(amount));
             payment.setPaymentMethod(paymentMethod);
             payment.setPaymentStatus("SUCCESS");

@@ -194,9 +194,9 @@ public class LocalFileDatabase {
      */
     private static void saveAllUsers(Map<String, User> users) {
         try (PrintWriter writer = new PrintWriter(new FileWriter(USERS_FILE))) {
-            for (User user : users.values()) {
-                writer.println(userToString(user));
-            }
+            users.values().forEach(user ->
+                    writer.println(userToString(user))
+            );
         } catch (IOException e) {
             System.err.println("Error saving all users: " + e.getMessage());
         }
@@ -308,12 +308,10 @@ public class LocalFileDatabase {
      */
     public static void updateGym(Gym updatedGym) {
         List<Gym> gyms = loadGyms();
-        for (int i = 0; i < gyms.size(); i++) {
-            if (gyms.get(i).getGymId().equals(updatedGym.getGymId())) {
-                gyms.set(i, updatedGym);
-                break;
-            }
-        }
+        java.util.stream.IntStream.range(0, gyms.size())
+                .filter(i -> gyms.get(i).getGymId().equals(updatedGym.getGymId()))
+                .findFirst()
+                .ifPresent(i -> gyms.set(i, updatedGym));
         saveAllGyms(gyms);
     }
 
@@ -324,9 +322,9 @@ public class LocalFileDatabase {
      */
     private static void saveAllGyms(List<Gym> gyms) {
         try (PrintWriter writer = new PrintWriter(new FileWriter(GYMS_FILE))) {
-            for (Gym gym : gyms) {
-                writer.println(gymToString(gym));
-            }
+            gyms.forEach(gym ->
+                    writer.println(gymToString(gym))
+            );
         } catch (IOException e) {
             System.err.println("Error saving all gyms: " + e.getMessage());
         }
@@ -427,12 +425,10 @@ public class LocalFileDatabase {
      */
     public static void updateSlot(Slot updatedSlot) {
         List<Slot> slots = loadSlots();
-        for (int i = 0; i < slots.size(); i++) {
-            if (slots.get(i).getSlotId().equals(updatedSlot.getSlotId())) {
-                slots.set(i, updatedSlot);
-                break;
-            }
-        }
+        java.util.stream.IntStream.range(0, slots.size())
+                .filter(i -> slots.get(i).getSlotId().equals(updatedSlot.getSlotId()))
+                .findFirst()
+                .ifPresent(i -> slots.set(i, updatedSlot));
         saveAllSlots(slots);
     }
 
@@ -443,9 +439,9 @@ public class LocalFileDatabase {
      */
     private static void saveAllSlots(List<Slot> slots) {
         try (PrintWriter writer = new PrintWriter(new FileWriter(SLOTS_FILE))) {
-            for (Slot slot : slots) {
-                writer.println(slotToString(slot));
-            }
+            slots.forEach(slot ->
+                    writer.println(slotToString(slot))
+            );
         } catch (IOException e) {
             System.err.println("Error saving all slots: " + e.getMessage());
         }
@@ -548,12 +544,10 @@ public class LocalFileDatabase {
      */
     public static void updateBooking(Booking updatedBooking) {
         List<Booking> bookings = loadBookings();
-        for (int i = 0; i < bookings.size(); i++) {
-            if (bookings.get(i).getBookingId().equals(updatedBooking.getBookingId())) {
-                bookings.set(i, updatedBooking);
-                break;
-            }
-        }
+        java.util.stream.IntStream.range(0, bookings.size())
+                .filter(i -> bookings.get(i).getBookingId().equals(updatedBooking.getBookingId()))
+                .findFirst()
+                .ifPresent(i -> bookings.set(i, updatedBooking));
         saveAllBookings(bookings);
     }
 
@@ -575,9 +569,9 @@ public class LocalFileDatabase {
      */
     private static void saveAllBookings(List<Booking> bookings) {
         try (PrintWriter writer = new PrintWriter(new FileWriter(BOOKINGS_FILE))) {
-            for (Booking booking : bookings) {
-                writer.println(bookingToString(booking));
-            }
+            bookings.forEach(booking ->
+                    writer.println(bookingToString(booking))
+            );
         } catch (IOException e) {
             System.err.println("Error saving all bookings: " + e.getMessage());
         }

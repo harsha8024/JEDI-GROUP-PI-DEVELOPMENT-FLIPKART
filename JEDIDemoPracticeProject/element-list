@@ -1,0 +1,9 @@
+module:JEDIDemoPracticeProject
+com.flipkart.bean
+com.flipkart.business
+com.flipkart.client
+com.flipkart.collection
+com.flipkart.dao
+com.flipkart.exception
+com.flipkart.io
+com.flipkart.java17
