@@ -1,3 +1,4 @@
+// TODO: Auto-generated Javadoc
 package com.flipfit.business;
 
 import com.flipfit.bean.Registration;
@@ -13,11 +14,29 @@ import com.flipfit.exception.InvalidInputException;
 import com.flipfit.exception.RegistrationFailedException;
 import com.flipfit.exception.RegistrationAlreadyExistsException;
 
+/**
+ * The Class RegistrationServiceImpl.
+ * Implementation of RegistrationInterface that provides registration management functionality.
+ *
+ * @author team pi
+ * @ClassName "RegistrationServiceImpl"
+ */
 public class RegistrationServiceImpl implements RegistrationInterface {
 
+    /** The registration DAO. */
     private RegistrationDAO registrationDAO = new RegistrationDAO();
+    
+    /** The admin DAO. */
     private AdminDAO adminDAO = new AdminDAO();
 
+    /**
+     * Creates the registration.
+     * Creates a new registration request for a user with specified role.
+     *
+     * @param userId the user id
+     * @param role the role
+     * @return the registration
+     */
     @Override
     public Registration createRegistration(String userId, String role) throws InvalidInputException, RegistrationFailedException, RegistrationAlreadyExistsException {
         if (userId == null || userId.isBlank() || role == null || role.isBlank()) {
@@ -46,6 +65,14 @@ public class RegistrationServiceImpl implements RegistrationInterface {
         }
     }
 
+    /**
+     * Approve registration.
+     * Approves a pending registration request and activates the user account.
+     *
+     * @param registrationId the registration id
+     * @param adminId the admin id
+     * @return true, if successful
+     */
     @Override
     public boolean approveRegistration(String registrationId, String adminId) throws InvalidInputException, RegistrationFailedException {
         if (registrationId == null || registrationId.isBlank() || adminId == null || adminId.isBlank()) {
@@ -91,6 +118,14 @@ public class RegistrationServiceImpl implements RegistrationInterface {
         throw new RegistrationFailedException("Failed to complete approval process.");
     }
 
+    /**
+     * Reject registration.
+     * Rejects a pending registration request.
+     *
+     * @param registrationId the registration id
+     * @param adminId the admin id
+     * @return true, if successful
+     */
     @Override
     public boolean rejectRegistration(String registrationId, String adminId) throws InvalidInputException, RegistrationFailedException {
         if (registrationId == null || registrationId.isBlank() || adminId == null || adminId.isBlank()) {
@@ -106,6 +141,12 @@ public class RegistrationServiceImpl implements RegistrationInterface {
         throw new RegistrationFailedException("Failed to reject registration: " + registrationId);
     }
 
+    /**
+     * Gets the pending registrations.
+     * Retrieves all registration requests with pending status.
+     *
+     * @return the pending registrations
+     */
     @Override
     public List<Registration> getPendingRegistrations() {
         List<Registration> pendingList = registrationDAO.getPendingRegistrations();
