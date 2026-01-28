@@ -4,6 +4,9 @@ package com.flipfit.client;
 import com.flipfit.business.GymCustomerInterface;
 import com.flipfit.exception.BookingFailedException;
 import com.flipfit.exception.SlotNotAvailableException;
+import com.flipfit.exception.InvalidInputException;
+import com.flipfit.exception.BookingCreationException;
+import com.flipfit.exception.GymNotFoundException;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -61,7 +64,14 @@ public class GymCustomerFlipFitMenu {
                 switch (choice) {
                     case 1:
                         System.out.print("Enter City Name: ");
-                        customerService.viewCenters(scanner.nextLine());
+                        String city = scanner.nextLine();
+                        try {
+                            customerService.viewCenters(city);
+                        } catch (InvalidInputException e) {
+                            System.out.println("\n[INPUT ERROR] " + e.getMessage());
+                        } catch (GymNotFoundException e) {
+                            System.out.println("\n[NOT FOUND] " + e.getMessage());
+                        }
                         break;
                     case 2:
                         handleViewSlots(scanner, customerService);
@@ -117,7 +127,13 @@ public class GymCustomerFlipFitMenu {
             }
         }
 
-        customerService.viewSlotsForGym(gymId, date);
+        try {
+            customerService.viewSlotsForGym(gymId, date);
+        } catch (InvalidInputException e) {
+            System.out.println("\n[INPUT ERROR] " + e.getMessage());
+        } catch (GymNotFoundException e) {
+            System.out.println("\n[NOT FOUND] " + e.getMessage());
+        }
     }
 
     /**
@@ -158,6 +174,10 @@ public class GymCustomerFlipFitMenu {
             }
         } catch (BookingFailedException | SlotNotAvailableException e) {
             System.out.println("\n[BOOKING FAILED] " + e.getMessage());
+        } catch (InvalidInputException e) {
+            System.out.println("\n[INPUT ERROR] " + e.getMessage());
+        } catch (BookingCreationException e) {
+            System.out.println("\n[BOOKING CREATION ERROR] " + e.getMessage());
         }
     }
 
@@ -183,6 +203,8 @@ public class GymCustomerFlipFitMenu {
             }
         } catch (BookingFailedException e) {
             System.out.println("\n[CANCELLATION FAILED] " + e.getMessage());
+        } catch (InvalidInputException e) {
+            System.out.println("\n[INPUT ERROR] " + e.getMessage());
         }
     }
 }

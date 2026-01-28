@@ -160,6 +160,8 @@ public class FlipfitApplication {
             System.out.println("\n[LOGIN ERROR] " + e.getMessage());
         } catch (com.flipfit.exception.InvalidCredentialsException e) {
             System.out.println("\n[AUTH ERROR] " + e.getMessage());
+        } catch (com.flipfit.exception.InvalidInputException e) {
+            System.out.println("\n[INPUT ERROR] " + e.getMessage());
         }
     }
 
@@ -238,6 +240,8 @@ public class FlipfitApplication {
             }
         } catch (RegistrationFailedException e) {
             System.out.println("\n[REGISTRATION FAILED] " + e.getMessage());
+        } catch (com.flipfit.exception.InvalidInputException e) {
+            System.out.println("\n[INPUT ERROR] " + e.getMessage());
         }
     }
 
@@ -255,6 +259,13 @@ public class FlipfitApplication {
         System.out.print("New Password: ");
         String newPass = scanner.nextLine();
 
-        userService.updatePassword(email, newPass);
+        try {
+            userService.updatePassword(email, newPass);
+            System.out.println("\n✓ Password updated successfully.");
+        } catch (com.flipfit.exception.InvalidInputException e) {
+            System.out.println("\n[INPUT ERROR] " + e.getMessage());
+        } catch (com.flipfit.exception.UserNotFoundException e) {
+            System.out.println("\n[NOT FOUND] " + e.getMessage());
+        }
     }
 }

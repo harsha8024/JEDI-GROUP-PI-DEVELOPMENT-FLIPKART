@@ -6,6 +6,7 @@ import com.flipfit.business.GymOwnerInterface;
 import com.flipfit.business.SlotServiceImpl;
 import com.flipfit.exception.RegistrationFailedException;
 import com.flipfit.exception.UserNotFoundException;
+import com.flipfit.exception.InvalidInputException;
 
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -75,10 +76,16 @@ public class GymOwnerFlipFitMenu {
                         handleViewSchedule(scanner, ownerService);
                         break;
                     case 5:
-                        if (currentOwnerId != null) {
-                            ownerService.viewBookings(currentOwnerId);
-                        } else {
-                            ownerService.viewBookings();
+                        try {
+                            if (currentOwnerId != null) {
+                                ownerService.viewBookings(currentOwnerId);
+                            } else {
+                                ownerService.viewBookings();
+                            }
+                        } catch (UserNotFoundException e) {
+                            System.out.println("\n[ERROR] Could not retrieve bookings: " + e.getMessage());
+                        } catch (InvalidInputException e) {
+                            System.out.println("\n[INPUT ERROR] " + e.getMessage());
                         }
                         break;
                     case 6:
@@ -111,8 +118,11 @@ public class GymOwnerFlipFitMenu {
 
         try {
             ownerService.registerGym(newGym);
+            System.out.println("\nGym registered successfully. It will be visible once approved.");
         } catch (RegistrationFailedException e) {
             System.out.println("[REGISTRATION ERROR] " + e.getMessage());
+        } catch (InvalidInputException e) {
+            System.out.println("[INPUT ERROR] " + e.getMessage());
         }
     }
 
@@ -137,7 +147,7 @@ public class GymOwnerFlipFitMenu {
                 System.out.println("           MY GYMS");
                 System.out.println("========================================");
                 myGyms.forEach(g -> {
-                    String status = g.isApproved() ? "✓ APPROVED" : "⏳ PENDING";
+                    String status = g.isApproved() ? "APPROVED" : "PENDING";
                     System.out.println("ID: " + g.getGymId() +
                             " | Name: " + g.getGymName() +
                             " | Location: " + g.getLocation() +
@@ -148,6 +158,8 @@ public class GymOwnerFlipFitMenu {
             }
         } catch (UserNotFoundException e) {
             System.out.println("\n[ERROR] Could not retrieve gyms: " + e.getMessage());
+        } catch (InvalidInputException e) {
+            System.out.println("\n[INPUT ERROR] " + e.getMessage());
         }
     }
 
@@ -177,8 +189,11 @@ public class GymOwnerFlipFitMenu {
             LocalTime endTime = LocalTime.parse(endStr, DateTimeFormatter.ofPattern("HH:mm"));
 
             slotService.createSlot(gymId, startTime, endTime, capacity);
-        } catch (Exception e) {
+            System.out.println("\n✓ Slot created successfully!");
+        } catch (java.time.format.DateTimeParseException dtpe) {
             System.out.println("Error: Invalid time format. Use HH:mm format (e.g., 06:00)");
+        } catch (RegistrationFailedException | InvalidInputException e) {
+            System.out.println("[ERROR] " + e.getMessage());
         }
     }
 
@@ -191,6 +206,10 @@ public class GymOwnerFlipFitMenu {
     private static void handleViewSchedule(Scanner scanner, GymOwnerInterface ownerService) {
         System.out.print("Enter Gym ID: ");
         String gymId = scanner.nextLine();
-        ownerService.updateSchedule(gymId);
+        try {
+            ownerService.updateSchedule(gymId);
+        } catch (InvalidInputException e) {
+            System.out.println("[INPUT ERROR] " + e.getMessage());
+        }
     }
 }

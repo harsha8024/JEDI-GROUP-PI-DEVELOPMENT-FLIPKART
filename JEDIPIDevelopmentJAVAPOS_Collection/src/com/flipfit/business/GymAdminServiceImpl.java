@@ -109,7 +109,7 @@ public class GymAdminServiceImpl implements GymAdminInterface {
             System.out.println("         ALL REGISTERED GYMS");
             System.out.println("========================================");
             allGyms.forEach(gym -> {
-                String status = gym.isApproved() ? "✓ APPROVED" : "⏳ PENDING";
+                String status = gym.isApproved() ? "APPROVED" : "PENDING";
                 System.out.println("ID: " + gym.getGymId() +
                         " | Name: " + gym.getGymName() +
                         " | Location: " + gym.getLocation() +
