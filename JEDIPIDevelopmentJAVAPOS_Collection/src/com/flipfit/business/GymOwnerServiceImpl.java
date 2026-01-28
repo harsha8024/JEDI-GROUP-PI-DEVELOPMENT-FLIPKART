@@ -158,10 +158,11 @@ public class GymOwnerServiceImpl implements GymOwnerInterface {
             System.out.println("No slots found for this gym.");
         } else {
             System.out.println("Current slots:");
-            slots.forEach(slot ->
-                    System.out.println("Slot ID: " + slot.getSlotId() + " | " + slot.getStartTime() + " - "
-                            + slot.getEndTime() + " | Capacity: " + slot.getCapacity())
-            );
+            slots.forEach(slot -> {
+                String approvalStatus = slot.isApproved() ? "✓ Approved" : "✗ Pending Approval";
+                System.out.println("Slot ID: " + slot.getSlotId() + " | " + slot.getStartTime() + " - "
+                        + slot.getEndTime() + " | Capacity: " + slot.getCapacity() + " | Status: " + approvalStatus);
+            });
         }
     }
 }
