@@ -1,7 +1,5 @@
-// TODO: Auto-generated Javadoc
 package com.flipfit.business;
 
-import com.flipfit.bean.User;
 import com.flipfit.bean.Gym;
 import com.flipfit.bean.Slot;
 import com.flipfit.bean.Booking;
@@ -9,9 +7,8 @@ import com.flipfit.dao.GymDAO;
 import com.flipfit.dao.SlotDAO;
 import com.flipfit.exception.BookingFailedException;
 import com.flipfit.exception.SlotNotAvailableException;
-import com.flipfit.dao.BookingDAO;
+
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -22,56 +19,43 @@ import java.util.List;
  */
 public class GymCustomerServiceImpl implements GymCustomerInterface {
 
-    /** The gym DAO. */
+    // DAOs for read-only browsing operations
     private GymDAO gymDAO;
-
-    /** The slot DAO. */
     private SlotDAO slotDAO;
+    
+    // Business Services for complex logic delegation
+    private BookingInterface bookingService;
+    private PaymentInterface paymentService;
+    private NotificationInterface notificationService;
 
-    /** The booking DAO. */
-    private BookingDAO bookingDAO;
-
-    /**
-     * Instantiates a new gym customer service impl.
-     */
     public GymCustomerServiceImpl() {
         this.gymDAO = new GymDAO();
         this.slotDAO = new SlotDAO();
-        this.bookingDAO = new BookingDAO();
+        
+        // Initialize the delegate services
+        this.bookingService = new BookingServiceImpl();
+        this.paymentService = new PaymentServiceImpl();
+        this.notificationService = new NotificationServiceImpl();
     }
 
-    /**
-     * Register.
-     *
-     * @param user the user
-     */
-    public void register(User user) {
-        GymUserServiceImpl userService = new GymUserServiceImpl();
-        userService.register(user);
-    }
+    // -------------------------------------------------------------------------
+    // BROWSING OPERATIONS
+    // -------------------------------------------------------------------------
 
-    /**
-     * View centers.
-     *
-     * @param cityInput the city input
-     */
+    @Override
     public void viewCenters(String cityInput) {
         List<Gym> filteredGyms = gymDAO.getGymsByLocation(cityInput);
         if (filteredGyms.isEmpty()) {
             System.out.println("No approved gym centers found in " + cityInput);
         } else {
             System.out.println("\n--- Available Centers in " + cityInput + " ---");
-            filteredGyms.forEach(g -> System.out
-                    .println("ID: " + g.getGymId() + " | Name: " + g.getGymName() + " | Address: " + g.getLocation()));
+            filteredGyms.forEach(g -> System.out.println(
+                "ID: " + g.getGymId() + " | Name: " + g.getGymName() + " | Address: " + g.getLocation()
+            ));
         }
     }
 
-    /**
-     * View slots for gym.
-     *
-     * @param gymId the gym id
-     * @param date  the date
-     */
+    @Override
     public void viewSlotsForGym(String gymId, LocalDate date) {
         List<Slot> slots = slotDAO.getSlotsByGymId(gymId);
         if (slots.isEmpty()) {
@@ -80,120 +64,108 @@ public class GymCustomerServiceImpl implements GymCustomerInterface {
             System.out.println("\n--- Available Slots for Gym " + gymId + " on " + date + " ---");
             for (Slot slot : slots) {
                 String availability = slot.getAvailableSeats() > 0 ? "Available" : "Full";
-                System.out.println("Slot ID: " + slot.getSlotId() + " | Time: " + slot.getStartTime() + " - "
-                        + slot.getEndTime() + " | Available: " + slot.getAvailableSeats() + "/" + slot.getCapacity()
-                        + " | Status: " + availability);
+                System.out.println("Slot ID: " + slot.getSlotId() + 
+                                   " | Time: " + slot.getStartTime() + " - " + slot.getEndTime() + 
+                                   " | Available: " + slot.getAvailableSeats() + "/" + slot.getCapacity() + 
+                                   " | Status: " + availability);
             }
         }
     }
 
-    /**
-     * Gets the available slots.
-     *
-     * @param gymId the gym id
-     * @param date  the date
-     * @return the available slots
-     */
+    @Override
     public List<Slot> getAvailableSlots(String gymId, LocalDate date) {
         return slotDAO.getAvailableSlotsByGymId(gymId);
     }
 
-    /**
-     * Book slot.
-     *
-     * @param userId the user id
-     * @param slotId the slot id
-     * @param gymId  the gym id
-     * @param date   the date
-     * @return true, if successful
-     * @throws BookingFailedException    the booking failed exception
-     * @throws SlotNotAvailableException the slot not available exception
-     */
-    public boolean bookSlot(String userId, String slotId, String gymId, LocalDate date)
+    // -------------------------------------------------------------------------
+    // BOOKING OPERATIONS (Delegated to specialized services)
+    // -------------------------------------------------------------------------
+
+    @Override
+    public boolean bookSlot(String userId, String slotId, String gymId, LocalDate date) 
             throws BookingFailedException, SlotNotAvailableException {
-
-        Slot targetSlot = slotDAO.getSlotById(slotId); //
-        if (targetSlot == null) {
-            throw new SlotNotAvailableException("Error: Slot " + slotId + " does not exist."); //
-        }
-        if (targetSlot.getAvailableSeats() <= 0) {
-            throw new SlotNotAvailableException("Error: Slot " + slotId + " is fully booked!"); //
+        
+        // 1. Validate Slot Availability
+        Slot targetSlot = slotDAO.getSlotById(slotId);
+        if (targetSlot == null || targetSlot.getAvailableSeats() <= 0) {
+            throw new SlotNotAvailableException("Slot " + slotId + " is full or does not exist.");
         }
 
-        // Logic for conflicts
-        List<Booking> userBookings = bookingDAO.getBookingsByUserId(userId); //
-        boolean conflict = userBookings.stream()
-                .filter(b -> b.getBookingDate().equals(date) && !b.getStatus().equals("CANCELLED"))
-                .anyMatch(b -> {
-                    Slot s = slotDAO.getSlotById(b.getSlotId()); //
-                    return s != null && !(targetSlot.getEndTime().isBefore(s.getStartTime()) ||
-                            targetSlot.getStartTime().isAfter(s.getEndTime()));
-                });
-
-        if (conflict) {
-            throw new BookingFailedException("Time conflict: You already have a booking during this period."); //
+        // 2. Create Booking via BookingService
+        String bookingId = bookingService.addBooking(userId, slotId);
+        
+        if (bookingId != null) {
+            // 3. Process Payment via PaymentService
+            boolean paymentSuccess = paymentService.processPayment(bookingId, 500.0, "UPI");
+            
+            if (paymentSuccess) {
+                // 4. Update Seats in DB
+                slotDAO.decreaseAvailableSeats(slotId);
+                
+                // 5. Send Notification
+                notificationService.sendNotification(userId, 
+                    "Booking Confirmed! ID: " + bookingId, 
+                    "Booking Success"
+                );
+                
+                System.out.println("Successfully booked slot: " + slotId);
+                return true;
+            } else {
+                // Rollback booking if payment fails
+                bookingService.cancelBooking(bookingId);
+                throw new BookingFailedException("Payment failed. Booking cancelled.");
+            }
         }
-
-        Booking newBooking = new Booking();
-        newBooking.setBookingId(bookingDAO.generateBookingId()); //
-        newBooking.setUserId(userId);
-        newBooking.setSlotId(slotId);
-        newBooking.setGymId(gymId);
-        newBooking.setBookingDate(date);
-        newBooking.setStatus("CONFIRMED");
-        newBooking.setCreatedAt(LocalDateTime.now());
-
-        if (bookingDAO.saveBooking(newBooking)) { //
-            slotDAO.decreaseAvailableSeats(slotId); //
-            return true;
-        } else {
-            throw new BookingFailedException("Database error: Booking could not be saved."); //
-        }
+        
+        throw new BookingFailedException("Unable to create booking.");
     }
 
-    /**
-     * Cancel booking.
-     *
-     * @param bookingId the booking id
-     * @param userId    the user id
-     * @return true, if successful
-     * @throws BookingFailedException the booking failed exception
-     */
+    @Override
     public boolean cancelBooking(String bookingId, String userId) throws BookingFailedException {
-        Booking booking = bookingDAO.getBookingById(bookingId); //
-        if (booking == null || !booking.getUserId().equals(userId)) {
-            throw new BookingFailedException("Booking not found or access denied."); //
+        // 1. Validate Booking
+        Booking targetBooking = bookingService.getBookingById(bookingId);
+
+        if (targetBooking == null || !targetBooking.getUserId().equals(userId)) {
+            throw new BookingFailedException("Booking not found or unauthorized.");
         }
-        if (booking.getStatus().equals("CANCELLED")) {
-            throw new BookingFailedException("Booking is already cancelled."); //
+        if ("CANCELLED".equalsIgnoreCase(targetBooking.getStatus())) {
+            throw new BookingFailedException("Booking is already cancelled.");
         }
 
-        if (bookingDAO.cancelBooking(bookingId)) { //
-            slotDAO.increaseAvailableSeats(booking.getSlotId()); //
+        // 2. Perform Cancellation via BookingService
+        if (bookingService.cancelBooking(bookingId)) {
+            // 3. Restore Slot capacity
+            slotDAO.increaseAvailableSeats(targetBooking.getSlotId());
+            
+            // 4. Notify User
+            notificationService.sendNotification(userId, 
+                "Your booking " + bookingId + " has been successfully cancelled.", 
+                "Cancellation Success"
+            );
+            
+            System.out.println("Successfully cancelled booking: " + bookingId);
             return true;
         }
-        throw new BookingFailedException("System error: Cancellation failed."); //
+
+        return false;
     }
 
-    /**
-     * View my bookings.
-     *
-     * @param userId the user id
-     */
+    @Override
     public void viewMyBookings(String userId) {
-        List<Booking> userBookings = bookingDAO.getBookingsByUserId(userId);
+        List<Booking> userBookings = bookingService.getBookingsByUserId(userId);
+        
         if (userBookings.isEmpty()) {
             System.out.println("You have no bookings.");
         } else {
             System.out.println("\n--- Your Bookings ---");
             for (Booking booking : userBookings) {
                 Slot slot = slotDAO.getSlotById(booking.getSlotId());
-                String timeInfo = "";
-                if (slot != null) {
-                    timeInfo = " | Time: " + slot.getStartTime() + " - " + slot.getEndTime();
-                }
-                System.out.println("Booking ID: " + booking.getBookingId() + " | Gym: " + booking.getGymId()
-                        + " | Date: " + booking.getBookingDate() + timeInfo + " | Status: " + booking.getStatus());
+                String timeInfo = (slot != null) ? " | Time: " + slot.getStartTime() + " - " + slot.getEndTime() : "";
+                
+                System.out.println("Booking ID: " + booking.getBookingId() + 
+                                   " | Gym: " + booking.getGymId() +
+                                   " | Date: " + booking.getBookingDate() + timeInfo + 
+                                   " | Status: " + booking.getStatus());
             }
         }
     }
