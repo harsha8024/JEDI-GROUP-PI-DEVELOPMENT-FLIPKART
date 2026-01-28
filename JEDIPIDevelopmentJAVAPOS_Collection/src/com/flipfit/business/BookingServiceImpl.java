@@ -8,6 +8,11 @@ import java.util.UUID;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+import com.flipfit.exception.InvalidInputException;
+import com.flipfit.exception.BookingCreationException;
+import com.flipfit.exception.BookingCancellationException;
+import com.flipfit.exception.BookingNotFoundException;
+
 /**
  * The Class BookingServiceImpl.
  * Implementation of BookingInterface that provides booking management functionality.
@@ -30,7 +35,10 @@ public class BookingServiceImpl implements BookingInterface {
      * @return true, if a booking overlap exists
      */
     @Override
-    public boolean checkBookingOverlap(String userId, LocalDate date, String slotId) {
+    public boolean checkBookingOverlap(String userId, LocalDate date, String slotId) throws InvalidInputException {
+        if (userId == null || userId.isBlank() || date == null || slotId == null || slotId.isBlank()) {
+            throw new InvalidInputException("Invalid input for checking booking overlap.");
+        }
         // Logic to check if user already has a booking at this time
         List<Booking> userBookings = bookingDAO.getBookingsByUserId(userId);
         
@@ -50,7 +58,10 @@ public class BookingServiceImpl implements BookingInterface {
      * @return the booking id if successful, null otherwise
      */
     @Override
-    public String addBooking(String userId, String slotId, String gymId) {
+    public String addBooking(String userId, String slotId, String gymId) throws InvalidInputException, BookingCreationException {
+        if (userId == null || userId.isBlank() || slotId == null || slotId.isBlank() || gymId == null || gymId.isBlank()) {
+            throw new InvalidInputException("Invalid input parameters for creating booking.");
+        }
         // Use your DAO's ID generator if it exists, otherwise use UUID
         String bookingId = UUID.randomUUID().toString(); 
         
@@ -66,7 +77,7 @@ public class BookingServiceImpl implements BookingInterface {
         if(bookingDAO.saveBooking(newBooking)) {
             return bookingId;
         }
-        return null;
+        throw new BookingCreationException("Failed to create booking for user " + userId);
     }
 
     /**
@@ -77,8 +88,15 @@ public class BookingServiceImpl implements BookingInterface {
      * @return true, if successful
      */
     @Override
-    public boolean cancelBooking(String bookingId) {
-        return bookingDAO.cancelBooking(bookingId);
+    public boolean cancelBooking(String bookingId) throws InvalidInputException, BookingCancellationException {
+        if (bookingId == null || bookingId.isBlank()) {
+            throw new InvalidInputException("Invalid booking id for cancellation.");
+        }
+        boolean result = bookingDAO.cancelBooking(bookingId);
+        if (!result) {
+            throw new BookingCancellationException("Cancellation failed for booking: " + bookingId);
+        }
+        return true;
     }
 
     /**
@@ -88,8 +106,15 @@ public class BookingServiceImpl implements BookingInterface {
      * @return the booking by id
      */
     @Override
-    public Booking getBookingById(String bookingId) {
-        return bookingDAO.getBookingById(bookingId);
+    public Booking getBookingById(String bookingId) throws InvalidInputException, BookingNotFoundException {
+        if (bookingId == null || bookingId.isBlank()) {
+            throw new InvalidInputException("Invalid booking id.");
+        }
+        Booking booking = bookingDAO.getBookingById(bookingId);
+        if (booking == null) {
+            throw new BookingNotFoundException("Booking not found: " + bookingId);
+        }
+        return booking;
     }
 
     /**
@@ -99,7 +124,10 @@ public class BookingServiceImpl implements BookingInterface {
      * @return the bookings by user id
      */
     @Override
-    public List<Booking> getBookingsByUserId(String userId) {
+    public List<Booking> getBookingsByUserId(String userId) throws InvalidInputException {
+        if (userId == null || userId.isBlank()) {
+            throw new InvalidInputException("Invalid user id.");
+        }
         return bookingDAO.getBookingsByUserId(userId);
     }
     
@@ -110,7 +138,10 @@ public class BookingServiceImpl implements BookingInterface {
      * @return the bookings by gym id
      */
     @Override
-    public List<Booking> getBookingsByGymId(String gymId) {
+    public List<Booking> getBookingsByGymId(String gymId) throws InvalidInputException {
+        if (gymId == null || gymId.isBlank()) {
+            throw new InvalidInputException("Invalid gym id.");
+        }
         return bookingDAO.getBookingsByGymId(gymId);
     }
 }
