@@ -62,13 +62,13 @@ public class GymCustomerServiceImpl implements GymCustomerInterface {
             System.out.println("No slots available for this gym.");
         } else {
             System.out.println("\n--- Available Slots for Gym " + gymId + " on " + date + " ---");
-            for (Slot slot : slots) {
+            slots.forEach(slot -> {
                 String availability = slot.getAvailableSeats() > 0 ? "Available" : "Full";
-                System.out.println("Slot ID: " + slot.getSlotId() + 
-                                   " | Time: " + slot.getStartTime() + " - " + slot.getEndTime() + 
-                                   " | Available: " + slot.getAvailableSeats() + "/" + slot.getCapacity() + 
-                                   " | Status: " + availability);
-            }
+                System.out.println("Slot ID: " + slot.getSlotId() +
+                        " | Time: " + slot.getStartTime() + " - " + slot.getEndTime() +
+                        " | Available: " + slot.getAvailableSeats() + "/" + slot.getCapacity() +
+                        " | Status: " + availability);
+            });
         }
     }
 
@@ -158,15 +158,15 @@ public class GymCustomerServiceImpl implements GymCustomerInterface {
             System.out.println("You have no bookings.");
         } else {
             System.out.println("\n--- Your Bookings ---");
-            for (Booking booking : userBookings) {
+            userBookings.forEach(booking -> {
                 Slot slot = slotDAO.getSlotById(booking.getSlotId());
                 String timeInfo = (slot != null) ? " | Time: " + slot.getStartTime() + " - " + slot.getEndTime() : "";
-                
-                System.out.println("Booking ID: " + booking.getBookingId() + 
-                                   " | Gym: " + booking.getGymId() +
-                                   " | Date: " + booking.getBookingDate() + timeInfo + 
-                                   " | Status: " + booking.getStatus());
-            }
+
+                System.out.println("Booking ID: " + booking.getBookingId() +
+                        " | Gym: " + booking.getGymId() +
+                        " | Date: " + booking.getBookingDate() + timeInfo +
+                        " | Status: " + booking.getStatus());
+            });
         }
     }
 }

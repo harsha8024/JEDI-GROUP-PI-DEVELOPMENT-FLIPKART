@@ -86,9 +86,7 @@ public class DataInitializer {
             System.out.println("\n3. Approving gyms...");
             // Use ownerId to fetch specific gyms as per updated interface
             java.util.List<Gym> ownerGyms = ownerService.viewMyGyms(owner1Id);
-            for (Gym gym : ownerGyms) {
-                adminService.approveGym(gym.getGymId());
-            }
+            ownerGyms.forEach(gym -> adminService.approveGym(gym.getGymId()));
             System.out.println("   ✓ All gyms approved");
 
             // 4. Creating time slots

@@ -100,14 +100,14 @@ public class GymAdminServiceImpl implements GymAdminInterface {
             System.out.println("\n========================================");
             System.out.println("         ALL REGISTERED GYMS");
             System.out.println("========================================");
-            for (Gym gym : allGyms) {
+            allGyms.forEach(gym -> {
                 String status = gym.isApproved() ? "✓ APPROVED" : "⏳ PENDING";
                 System.out.println("ID: " + gym.getGymId() +
                         " | Name: " + gym.getGymName() +
                         " | Location: " + gym.getLocation() +
                         " | Owner: " + gym.getGymOwnerId() +
                         " | Status: " + status);
-            }
+            });
             System.out.println("========================================");
             System.out.println("Total Gyms: " + allGyms.size());
         }
@@ -126,15 +126,15 @@ public class GymAdminServiceImpl implements GymAdminInterface {
             System.out.println("\n========================================");
             System.out.println("          ALL BOOKINGS");
             System.out.println("========================================");
-            for (Booking booking : allBookings) {
-                System.out.println("Booking ID: " + booking.getBookingId() +
-                        " | User: " + booking.getUserId() +
-                        " | Gym: " + booking.getGymId() +
-                        " | Slot: " + booking.getSlotId() +
-                        " | Date: " + booking.getBookingDate() +
-                        " | Status: " + booking.getStatus() +
-                        " | Created: " + booking.getCreatedAt());
-            }
+            allBookings.forEach(booking ->
+                    System.out.println("Booking ID: " + booking.getBookingId() +
+                            " | User: " + booking.getUserId() +
+                            " | Gym: " + booking.getGymId() +
+                            " | Slot: " + booking.getSlotId() +
+                            " | Date: " + booking.getBookingDate() +
+                            " | Status: " + booking.getStatus() +
+                            " | Created: " + booking.getCreatedAt())
+            );
             System.out.println("========================================");
             System.out.println("Total Bookings: " + allBookings.size());
         }
