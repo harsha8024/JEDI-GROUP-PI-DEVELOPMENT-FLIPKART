@@ -95,8 +95,9 @@ public class GymCustomerServiceImpl implements GymCustomerInterface {
         String bookingId = bookingService.addBooking(userId, slotId);
         
         if (bookingId != null) {
-            // 3. Process Payment via PaymentService
-            boolean paymentSuccess = paymentService.processPayment(bookingId, 500.0, "UPI");
+            // 3. Get slot price and process payment via PaymentService
+            double slotPrice = targetSlot.getPrice() != null ? targetSlot.getPrice().doubleValue() : 500.0;
+            boolean paymentSuccess = paymentService.processPayment(bookingId, slotPrice, "UPI");
             
             if (paymentSuccess) {
                 // 4. Update Seats in DB
@@ -104,11 +105,11 @@ public class GymCustomerServiceImpl implements GymCustomerInterface {
                 
                 // 5. Send Notification
                 notificationService.sendNotification(userId, 
-                    "Booking Confirmed! ID: " + bookingId, 
+                    "Booking Confirmed! ID: " + bookingId + " | Amount Paid: ₹" + slotPrice, 
                     "Booking Success"
                 );
                 
-                System.out.println("Successfully booked slot: " + slotId);
+                System.out.println("Successfully booked slot: " + slotId + " | Amount: ₹" + slotPrice);
                 return true;
             } else {
                 // Rollback booking if payment fails
