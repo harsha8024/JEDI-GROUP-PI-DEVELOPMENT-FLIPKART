@@ -23,7 +23,7 @@ public class BookingServiceImpl implements BookingInterface {
     }
 
     @Override
-    public String addBooking(String userId, String slotId) {
+    public String addBooking(String userId, String slotId, String gymId) {
         // Use your DAO's ID generator if it exists, otherwise use UUID
         String bookingId = UUID.randomUUID().toString(); 
         
@@ -31,6 +31,7 @@ public class BookingServiceImpl implements BookingInterface {
         newBooking.setBookingId(bookingId);
         newBooking.setUserId(userId);
         newBooking.setSlotId(slotId);
+        newBooking.setGymId(gymId);
         newBooking.setBookingDate(LocalDate.now()); 
         newBooking.setStatus("CONFIRMED");
         newBooking.setCreatedAt(LocalDateTime.now());

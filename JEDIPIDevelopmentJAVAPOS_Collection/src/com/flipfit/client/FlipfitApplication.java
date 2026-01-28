@@ -227,9 +227,11 @@ public class FlipfitApplication {
                 owner.setPanNumber(scanner.nextLine());
                 System.out.print("Aadhar Number: ");
                 owner.setAadharNumber(scanner.nextLine());
+                System.out.print("GSTIN Number (optional): ");
+                owner.setGstinNumber(scanner.nextLine());
 
                 userService.register(owner);
-                System.out.println("\n✓ Gym Owner registration successful! Pending admin approval.");
+                System.out.println("\n✓ Gym Owner registration successful! You can now log in.");
             } else {
                 userService.register(newUser);
                 System.out.println("\n✓ Customer registration successful! You can now log in.");

@@ -15,6 +15,9 @@ public class GymOwner extends User {
 	/** The aadhar number. */
 	private String aadharNumber;
 
+	/** The gstin number. */
+	private String gstinNumber;
+
 	/** The registration. */
 	private Registration registration;
 
@@ -80,6 +83,24 @@ public class GymOwner extends User {
 	 */
 	public void setAadharNumber(String aadharNumber) {
 		this.aadharNumber = aadharNumber;
+	}
+
+	/**
+	 * Gets the gstin number.
+	 *
+	 * @return the gstin number
+	 */
+	public String getGstinNumber() {
+		return gstinNumber;
+	}
+
+	/**
+	 * Sets the gstin number.
+	 *
+	 * @param gstinNumber the new gstin number
+	 */
+	public void setGstinNumber(String gstinNumber) {
+		this.gstinNumber = gstinNumber;
 	}
 
 	/**

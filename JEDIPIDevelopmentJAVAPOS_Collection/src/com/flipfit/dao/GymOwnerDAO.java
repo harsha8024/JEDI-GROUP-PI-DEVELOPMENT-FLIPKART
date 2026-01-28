@@ -72,13 +72,15 @@ public class GymOwnerDAO {
             pstmt.setString(6, owner.getPassword());
             pstmt.setString(7, owner.getPanNumber());
             pstmt.setString(8, owner.getAadharNumber());
-            pstmt.setBoolean(9, owner.isActive());
+            pstmt.setString(9, owner.getGstinNumber());
+            pstmt.setBoolean(10, owner.isActive());
 
             int rowsAffected = pstmt.executeUpdate();
             return rowsAffected > 0;
 
         } catch (SQLException e) {
             System.err.println("Error saving gym owner: " + e.getMessage());
+            e.printStackTrace();
             return false;
         }
     }
@@ -165,8 +167,9 @@ public class GymOwnerDAO {
             pstmt.setString(4, owner.getPassword());
             pstmt.setString(5, owner.getPanNumber());
             pstmt.setString(6, owner.getAadharNumber());
-            pstmt.setBoolean(7, owner.isActive());
-            pstmt.setString(8, owner.getEmail());
+            pstmt.setString(7, owner.getGstinNumber());
+            pstmt.setBoolean(8, owner.isActive());
+            pstmt.setString(9, owner.getEmail());
 
             int rowsAffected = pstmt.executeUpdate();
             return rowsAffected > 0;
@@ -236,6 +239,7 @@ public class GymOwnerDAO {
         owner.setPassword(rs.getString("password"));
         owner.setPanNumber(rs.getString("pan_number"));
         owner.setAadharNumber(rs.getString("aadhar_number"));
+        owner.setGstinNumber(rs.getString("gstin_number"));
 
         Role role = new Role();
         role.setRoleName("OWNER");

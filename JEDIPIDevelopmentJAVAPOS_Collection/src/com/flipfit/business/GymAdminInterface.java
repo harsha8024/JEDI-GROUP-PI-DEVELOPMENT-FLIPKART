@@ -61,6 +61,19 @@ public interface GymAdminInterface {
     void generateReports(int reportType);
 
     /**
+     * View payment reports and revenue.
+     */
+    void viewPaymentReports();
+
+    /**
+     * View revenue by date range.
+     *
+     * @param startDate the start date (yyyy-MM-dd)
+     * @param endDate the end date (yyyy-MM-dd)
+     */
+    void viewRevenueByDateRange(String startDate, String endDate);
+
+    /**
      * View pending slots.
      *
      * @return the list of pending slots

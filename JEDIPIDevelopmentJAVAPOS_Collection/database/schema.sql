@@ -55,12 +55,14 @@ CREATE TABLE IF NOT EXISTS gym_owners (
     password VARCHAR(255) NOT NULL,
     pan_number VARCHAR(20),
     aadhar_number VARCHAR(20),
-    is_active BOOLEAN DEFAULT FALSE,
+    gstin_number VARCHAR(20),
+    is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_email (email),
     INDEX idx_city (city),
     INDEX idx_pan (pan_number),
-    INDEX idx_aadhar (aadhar_number)
+    INDEX idx_aadhar (aadhar_number),
+    INDEX idx_gstin (gstin_number)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ========================================
@@ -107,6 +109,7 @@ CREATE TABLE IF NOT EXISTS slots (
     end_time TIME NOT NULL,
     capacity INT NOT NULL,
     available_seats INT NOT NULL,
+    price DECIMAL(10,2) DEFAULT 500.00,
     is_approved BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (gym_id) REFERENCES gyms(gym_id) ON DELETE CASCADE,

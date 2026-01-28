@@ -33,6 +33,9 @@ public class GymAdminServiceImpl implements GymAdminInterface {
     /** The slot DAO. */
     private SlotDAO slotDAO;
 
+    /** The payment DAO. */
+    private PaymentDAO paymentDAO;
+
     /**
      * Instantiates a new gym admin service impl.
      */
@@ -43,6 +46,7 @@ public class GymAdminServiceImpl implements GymAdminInterface {
         this.gymOwnerDAO = new GymOwnerDAO();
         this.adminDAO = new AdminDAO();
         this.slotDAO = new SlotDAO();
+        this.paymentDAO = new PaymentDAO();
     }
 
     /**
@@ -320,5 +324,82 @@ public class GymAdminServiceImpl implements GymAdminInterface {
             throw new ApprovalFailedException("Slot ID " + slotId + " not found or could not be rejected."); //
         }
         System.out.println("✓ Successfully rejected slot: " + slotId);
+    }
+
+    /**
+     * View payment reports and revenue.
+     */
+    @Override
+    public void viewPaymentReports() {
+        System.out.println("\n========================================");
+        System.out.println("       PAYMENT & REVENUE REPORTS");
+        System.out.println("========================================");
+
+        // Get total revenue
+        java.math.BigDecimal totalRevenue = paymentDAO.getTotalRevenue();
+        System.out.println("\nTotal Revenue (All Time): ₹" + totalRevenue);
+
+        // Get all payments
+        List<Payment> allPayments = paymentDAO.getAllPayments();
+        System.out.println("\nTotal Transactions: " + allPayments.size());
+
+        if (!allPayments.isEmpty()) {
+            System.out.println("\n--- Recent Payments (Last 10) ---");
+            int count = 0;
+            for (Payment payment : allPayments) {
+                if (count >= 10) break;
+                System.out.println(String.format("Payment ID: %s | Booking: %s | Customer: %s | Amount: ₹%.2f | Method: %s | Status: %s | Date: %s",
+                    payment.getPaymentId(),
+                    payment.getBookingId(),
+                    payment.getUserId(),
+                    payment.getAmount(),
+                    payment.getPaymentMethod(),
+                    payment.getPaymentStatus(),
+                    payment.getPaymentDate()));
+                count++;
+            }
+        }
+
+        System.out.println("\n========================================");
+    }
+
+    /**
+     * View revenue by date range.
+     *
+     * @param startDate the start date (yyyy-MM-dd)
+     * @param endDate the end date (yyyy-MM-dd)
+     */
+    @Override
+    public void viewRevenueByDateRange(String startDate, String endDate) {
+        try {
+            java.sql.Timestamp start = java.sql.Timestamp.valueOf(startDate + " 00:00:00");
+            java.sql.Timestamp end = java.sql.Timestamp.valueOf(endDate + " 23:59:59");
+
+            System.out.println("\n========================================");
+            System.out.println("   REVENUE REPORT: " + startDate + " to " + endDate);
+            System.out.println("========================================");
+
+            java.math.BigDecimal revenue = paymentDAO.getRevenueByDateRange(start, end);
+            List<Payment> payments = paymentDAO.getPaymentsByDateRange(start, end);
+
+            System.out.println("\nTotal Revenue: ₹" + revenue);
+            System.out.println("Total Transactions: " + payments.size());
+
+            if (!payments.isEmpty()) {
+                System.out.println("\n--- Payment Details ---");
+                for (Payment payment : payments) {
+                    System.out.println(String.format("Payment ID: %s | Amount: ₹%.2f | Customer: %s | Date: %s | Status: %s",
+                        payment.getPaymentId(),
+                        payment.getAmount(),
+                        payment.getUserId(),
+                        payment.getPaymentDate(),
+                        payment.getPaymentStatus()));
+                }
+            }
+
+            System.out.println("\n========================================");
+        } catch (Exception e) {
+            System.err.println("Error: Invalid date format. Please use yyyy-MM-dd format.");
+        }
     }
 }

@@ -20,11 +20,11 @@ public class SQLConstants {
     public static final String COUNT_CUSTOMER_BY_EMAIL = "SELECT COUNT(*) FROM customers WHERE email = ?";
     
     // ==================== GYM OWNER QUERIES ====================
-    public static final String INSERT_GYM_OWNER = "INSERT INTO gym_owners (owner_id, name, email, phone_number, city, password, pan_number, aadhar_number, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    public static final String INSERT_GYM_OWNER = "INSERT INTO gym_owners (owner_id, name, email, phone_number, city, password, pan_number, aadhar_number, gstin_number, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     public static final String SELECT_GYM_OWNER_BY_EMAIL = "SELECT * FROM gym_owners WHERE email = ?";
     public static final String SELECT_GYM_OWNER_BY_ID = "SELECT * FROM gym_owners WHERE owner_id = ?";
     public static final String SELECT_ALL_GYM_OWNERS = "SELECT * FROM gym_owners";
-    public static final String UPDATE_GYM_OWNER = "UPDATE gym_owners SET name = ?, phone_number = ?, city = ?, password = ?, pan_number = ?, aadhar_number = ?, is_active = ? WHERE email = ?";
+    public static final String UPDATE_GYM_OWNER = "UPDATE gym_owners SET name = ?, phone_number = ?, city = ?, password = ?, pan_number = ?, aadhar_number = ?, gstin_number = ?, is_active = ? WHERE email = ?";
     public static final String DELETE_GYM_OWNER = "DELETE FROM gym_owners WHERE owner_id = ?";
     public static final String COUNT_GYM_OWNER_BY_EMAIL = "SELECT COUNT(*) FROM gym_owners WHERE email = ?";
     
@@ -50,7 +50,7 @@ public class SQLConstants {
     public static final String DELETE_GYM = "DELETE FROM gyms WHERE gym_id = ?";
     
     // ==================== SLOT QUERIES ====================
-    public static final String INSERT_SLOT = "INSERT INTO slots (slot_id, gym_id, start_time, end_time, capacity, available_seats, is_approved) VALUES (?, ?, ?, ?, ?, ?, ?)";
+    public static final String INSERT_SLOT = "INSERT INTO slots (slot_id, gym_id, start_time, end_time, capacity, available_seats, price, is_approved) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
     public static final String SELECT_SLOT_BY_ID = "SELECT * FROM slots WHERE slot_id = ?";
     public static final String SELECT_ALL_SLOTS = "SELECT * FROM slots ORDER BY start_time";
     public static final String SELECT_SLOTS_BY_GYM_ID = "SELECT * FROM slots WHERE gym_id = ? ORDER BY start_time";
@@ -58,7 +58,7 @@ public class SQLConstants {
     public static final String SELECT_PENDING_SLOTS = "SELECT * FROM slots WHERE is_approved = 0 ORDER BY created_at";
     public static final String APPROVE_SLOT = "UPDATE slots SET is_approved = 1 WHERE slot_id = ?";
     public static final String REJECT_SLOT = "DELETE FROM slots WHERE slot_id = ?";
-    public static final String UPDATE_SLOT = "UPDATE slots SET start_time = ?, end_time = ?, capacity = ?, available_seats = ? WHERE slot_id = ?";
+    public static final String UPDATE_SLOT = "UPDATE slots SET start_time = ?, end_time = ?, capacity = ?, available_seats = ?, price = ? WHERE slot_id = ?";
     public static final String DECREASE_AVAILABLE_SEATS = "UPDATE slots SET available_seats = available_seats - 1 WHERE slot_id = ? AND available_seats > 0";
     public static final String INCREASE_AVAILABLE_SEATS = "UPDATE slots SET available_seats = available_seats + 1 WHERE slot_id = ? AND available_seats < capacity";
     public static final String DELETE_SLOT = "DELETE FROM slots WHERE slot_id = ?";
@@ -87,6 +87,8 @@ public class SQLConstants {
     public static final String DELETE_PAYMENT = "DELETE FROM payments WHERE payment_id = ?";
     public static final String CALCULATE_TOTAL_REVENUE = "SELECT SUM(amount) as total FROM payments WHERE payment_status = 'SUCCESS'";
     public static final String CALCULATE_TOTAL_REVENUE_BY_CUSTOMER = "SELECT SUM(amount) as total FROM payments WHERE customer_id = ? AND payment_status = 'SUCCESS'";
+    public static final String SELECT_PAYMENTS_BY_DATE_RANGE = "SELECT * FROM payments WHERE payment_status = 'SUCCESS' AND payment_date BETWEEN ? AND ? ORDER BY payment_date DESC";
+    public static final String CALCULATE_REVENUE_BY_DATE_RANGE = "SELECT SUM(amount) as total FROM payments WHERE payment_status = 'SUCCESS' AND payment_date BETWEEN ? AND ?";
     
     // ==================== NOTIFICATION QUERIES ====================
     public static final String INSERT_NOTIFICATION = "INSERT INTO notifications (notification_id, user_id, user_type, title, message, is_read, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)";

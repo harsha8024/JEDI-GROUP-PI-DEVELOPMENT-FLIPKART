@@ -9,6 +9,7 @@ import com.flipfit.exception.BookingFailedException;
 import com.flipfit.exception.SlotNotAvailableException;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -58,8 +59,17 @@ public class GymCustomerServiceImpl implements GymCustomerInterface {
     @Override
     public void viewSlotsForGym(String gymId, LocalDate date) {
         List<Slot> slots = slotDAO.getSlotsByGymId(gymId);
-        if (slots.isEmpty()) {
-            System.out.println("No slots available for this gym.");
+        
+        // Filter only approved slots
+        List<Slot> approvedSlots = new ArrayList<>();
+        for (Slot slot : slots) {
+            if (slot.isApproved()) {
+                approvedSlots.add(slot);
+            }
+        }
+        
+        if (approvedSlots.isEmpty()) {
+            System.out.println("No approved slots available for this gym.");
         } else {
             System.out.println("\n--- Available Slots for Gym " + gymId + " on " + date + " ---");
             slots.forEach(slot -> {
@@ -85,30 +95,43 @@ public class GymCustomerServiceImpl implements GymCustomerInterface {
     public boolean bookSlot(String userId, String slotId, String gymId, LocalDate date) 
             throws BookingFailedException, SlotNotAvailableException {
         
-        // 1. Validate Slot Availability
+        // 1. Validate Slot Availability and Approval
         Slot targetSlot = slotDAO.getSlotById(slotId);
-        if (targetSlot == null || targetSlot.getAvailableSeats() <= 0) {
-            throw new SlotNotAvailableException("Slot " + slotId + " is full or does not exist.");
+        if (targetSlot == null) {
+            throw new SlotNotAvailableException("Slot " + slotId + " does not exist.");
+        }
+        if (!targetSlot.isApproved()) {
+            throw new BookingFailedException("Slot " + slotId + " is not approved by admin yet. Cannot book unapproved slots.");
+        }
+        if (targetSlot.getAvailableSeats() <= 0) {
+            throw new SlotNotAvailableException("Slot " + slotId + " is full.");
         }
 
-        // 2. Create Booking via BookingService
-        String bookingId = bookingService.addBooking(userId, slotId);
+        // 2. Validate Gym is Approved
+        Gym targetGym = gymDAO.getGymById(gymId);
+        if (targetGym == null || !targetGym.isApproved()) {
+            throw new BookingFailedException("Gym is not approved by admin yet. Cannot book slots from unapproved gyms.");
+        }
+
+        // 3. Create Booking via BookingService
+        String bookingId = bookingService.addBooking(userId, slotId, gymId);
         
         if (bookingId != null) {
-            // 3. Process Payment via PaymentService
-            boolean paymentSuccess = paymentService.processPayment(bookingId, 500.0, "UPI");
+            // 4. Get slot price and process payment via PaymentService
+            double slotPrice = targetSlot.getPrice() != null ? targetSlot.getPrice().doubleValue() : 500.0;
+            boolean paymentSuccess = paymentService.processPayment(bookingId, slotPrice, "UPI");
             
             if (paymentSuccess) {
-                // 4. Update Seats in DB
+                // 5. Update Seats in DB
                 slotDAO.decreaseAvailableSeats(slotId);
                 
-                // 5. Send Notification
+                // 6. Send Notification
                 notificationService.sendNotification(userId, 
-                    "Booking Confirmed! ID: " + bookingId, 
+                    "Booking Confirmed! ID: " + bookingId + " | Amount Paid: ₹" + slotPrice, 
                     "Booking Success"
                 );
                 
-                System.out.println("Successfully booked slot: " + slotId);
+                System.out.println("Successfully booked slot: " + slotId + " | Amount: ₹" + slotPrice);
                 return true;
             } else {
                 // Rollback booking if payment fails
