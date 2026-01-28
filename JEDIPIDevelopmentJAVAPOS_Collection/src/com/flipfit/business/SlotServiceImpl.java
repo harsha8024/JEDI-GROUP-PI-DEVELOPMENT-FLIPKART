@@ -4,6 +4,9 @@ package com.flipfit.business;
 import com.flipfit.bean.Slot;
 import com.flipfit.dao.SlotDAO;
 import com.flipfit.exception.RegistrationFailedException;
+import com.flipfit.exception.InvalidInputException;
+import com.flipfit.exception.SlotNotFoundException;
+import com.flipfit.exception.SlotOperationException;
 
 import java.time.LocalTime;
 import java.util.List;
@@ -37,7 +40,17 @@ public class SlotServiceImpl implements SlotServiceInterface {
      */
     @Override
     public void createSlot(String gymId, LocalTime startTime, LocalTime endTime, int capacity)
-            throws RegistrationFailedException {
+            throws RegistrationFailedException, InvalidInputException {
+        if (gymId == null || gymId.isBlank()) {
+            throw new InvalidInputException("Gym ID must be provided.");
+        }
+        if (startTime == null || endTime == null || !startTime.isBefore(endTime)) {
+            throw new InvalidInputException("Start time must be before end time.");
+        }
+        if (capacity <= 0) {
+            throw new InvalidInputException("Capacity must be greater than zero.");
+        }
+
         String slotId = slotDAO.generateSlotId();
 
         Slot slot = new Slot();
@@ -62,7 +75,8 @@ public class SlotServiceImpl implements SlotServiceInterface {
      * @return the slots for gym
      */
     @Override
-    public List<Slot> getSlotsForGym(String gymId) {
+    public List<Slot> getSlotsForGym(String gymId) throws InvalidInputException {
+        if (gymId == null || gymId.isBlank()) throw new InvalidInputException("Gym ID must be provided.");
         return slotDAO.getSlotsByGymId(gymId);
     }
 
@@ -73,7 +87,10 @@ public class SlotServiceImpl implements SlotServiceInterface {
      * @param capacity the capacity
      */
     @Override
-    public void updateSlot(String slotId, int capacity) {
+    public void updateSlot(String slotId, int capacity) throws InvalidInputException, SlotNotFoundException, SlotOperationException {
+        if (slotId == null || slotId.isBlank()) throw new InvalidInputException("Slot ID must be provided.");
+        if (capacity <= 0) throw new InvalidInputException("Capacity must be greater than zero.");
+
         Slot slot = slotDAO.getSlotById(slotId);
 
         if (slot != null) {
@@ -84,10 +101,10 @@ public class SlotServiceImpl implements SlotServiceInterface {
             if (slotDAO.updateSlot(slot)) {
                 System.out.println("✓ Slot updated successfully: " + slotId);
             } else {
-                System.err.println("Slot update failed.");
+                throw new SlotOperationException("Slot update failed.");
             }
         } else {
-            System.out.println("Error: Slot not found.");
+            throw new SlotNotFoundException("Error: Slot not found.");
         }
     }
 
@@ -97,11 +114,12 @@ public class SlotServiceImpl implements SlotServiceInterface {
      * @param slotId the slot id
      */
     @Override
-    public void deleteSlot(String slotId) {
+    public void deleteSlot(String slotId) throws InvalidInputException, SlotNotFoundException {
+        if (slotId == null || slotId.isBlank()) throw new InvalidInputException("Slot ID must be provided.");
         if (slotDAO.deleteSlot(slotId)) {
             System.out.println("✓ Slot deleted successfully.");
         } else {
-            System.out.println("Error: Slot not found or could not be deleted.");
+            throw new SlotNotFoundException("Error: Slot not found or could not be deleted.");
         }
     }
 
@@ -112,7 +130,10 @@ public class SlotServiceImpl implements SlotServiceInterface {
      * @return the slot by id
      */
     @Override
-    public Slot getSlotById(String slotId) {
-        return slotDAO.getSlotById(slotId);
+    public Slot getSlotById(String slotId) throws InvalidInputException, SlotNotFoundException {
+        if (slotId == null || slotId.isBlank()) throw new InvalidInputException("Slot ID must be provided.");
+        Slot slot = slotDAO.getSlotById(slotId);
+        if (slot == null) throw new SlotNotFoundException("Slot not found for id: " + slotId);
+        return slot;
     }
 }

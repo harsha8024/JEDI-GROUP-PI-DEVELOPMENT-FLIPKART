@@ -4,6 +4,7 @@ package com.flipfit.business;
 import com.flipfit.bean.Gym;
 import com.flipfit.exception.RegistrationFailedException;
 import com.flipfit.exception.UserNotFoundException;
+import com.flipfit.exception.InvalidInputException;
 
 import java.util.List;
 
@@ -21,7 +22,7 @@ public interface GymOwnerInterface {
      * @param gym the gym
      * @throws RegistrationFailedException the registration failed exception
      */
-    void registerGym(Gym gym) throws RegistrationFailedException;
+    void registerGym(Gym gym) throws RegistrationFailedException, InvalidInputException;
 
     /**
      * View bookings.
@@ -34,14 +35,14 @@ public interface GymOwnerInterface {
      * @param ownerId the owner id
      * @throws UserNotFoundException the user not found exception
      */
-    void viewBookings(String ownerId) throws UserNotFoundException;
+    void viewBookings(String ownerId) throws UserNotFoundException, InvalidInputException;
 
     /**
      * Update schedule.
      *
      * @param gymId the gym id
      */
-    void updateSchedule(String gymId);
+    void updateSchedule(String gymId) throws InvalidInputException;
 
     /**
      * View my gyms.
@@ -57,5 +58,5 @@ public interface GymOwnerInterface {
      * @return the list
      * @throws UserNotFoundException the user not found exception
      */
-    List<Gym> viewMyGyms(String ownerId) throws UserNotFoundException;
+    List<Gym> viewMyGyms(String ownerId) throws UserNotFoundException, InvalidInputException;
 }
