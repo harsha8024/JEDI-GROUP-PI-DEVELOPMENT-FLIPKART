@@ -1,0 +1,8 @@
+module:JEDIPIDevelopmentJAVAPOS
+com.flipfit.bean
+com.flipfit.business
+com.flipfit.client
+com.flipfit.constants
+com.flipfit.dao
+com.flipfit.exception
+com.flipfit.utils

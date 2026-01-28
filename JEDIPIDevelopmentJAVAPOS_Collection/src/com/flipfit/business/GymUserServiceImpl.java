@@ -11,6 +11,10 @@ import com.flipfit.dao.GymOwnerDAO;
 import com.flipfit.exception.InvalidCredentialsException;
 import com.flipfit.exception.RegistrationFailedException;
 import com.flipfit.exception.UserNotFoundException;
+import com.flipfit.exception.InvalidInputException;
+import com.flipfit.exception.RegistrationFailedException;
+import com.flipfit.exception.RegistrationAlreadyExistsException;
+import com.flipfit.dao.AdminDAO;
 import java.util.Map;
 import java.util.HashMap;
 
@@ -69,7 +73,11 @@ public class GymUserServiceImpl implements GymUserInterface {
      * @param user the user
      */
     @Override
-    public void register(User user) throws RegistrationFailedException {
+    public void register(User user) throws RegistrationFailedException, InvalidInputException {
+        if (user == null || user.getEmail() == null || user.getEmail().isBlank() || user.getPassword() == null || user.getPassword().isBlank()) {
+            throw new com.flipfit.exception.InvalidInputException("User information is incomplete or invalid.");
+        }
+
         String roleName = user.getRole() != null ? user.getRole().getRoleName() : "CUSTOMER";
 
         switch (roleName.toUpperCase()) {
@@ -84,11 +92,11 @@ public class GymUserServiceImpl implements GymUserInterface {
                 registerAdmin(user);
                 break;
             default:
-                throw new RegistrationFailedException("Invalid role: " + roleName);
+                throw new com.flipfit.exception.RegistrationFailedException("Invalid role: " + roleName);
         }
     }
-
-    private void registerCustomer(User user) throws RegistrationFailedException {
+    
+    private void registerCustomer(User user) throws RegistrationFailedException, InvalidInputException {
         String customerId = customerDAO.generateCustomerId();
         user.setUserID(customerId);
 
@@ -109,8 +117,12 @@ public class GymUserServiceImpl implements GymUserInterface {
 
         if (customerDAO.saveCustomer(customer)) {
             System.out.println("Customer data saved. Creating registration request...");
-            registrationService.createRegistration(customerId, "CUSTOMER");
-            System.out.println("\n✓ Customer registration successful! Your account is pending Admin approval.");
+            try {
+                registrationService.createRegistration(customerId, "CUSTOMER");
+                System.out.println("Registration successful! Your account is pending Admin approval.");
+            } catch (RegistrationAlreadyExistsException raee) {
+                System.out.println("Registration request already exists for user: " + customerId);
+            }
         } else {
             throw new RegistrationFailedException("Customer registration failed for: " + customer.getName());
         }
@@ -173,7 +185,11 @@ public class GymUserServiceImpl implements GymUserInterface {
     }
 
     @Override
-    public boolean login(String email, String password) throws UserNotFoundException, InvalidCredentialsException {
+    public boolean login(String email, String password) throws UserNotFoundException, InvalidCredentialsException, InvalidInputException {
+        if (email == null || email.isBlank() || password == null || password.isBlank()) {
+            throw new InvalidInputException("Email and password must be provided.");
+        }
+
         GymCustomer customer = customerDAO.getCustomerByEmail(email);
         if (customer != null) {
             if (!customer.getPassword().equals(password))
@@ -203,13 +219,19 @@ public class GymUserServiceImpl implements GymUserInterface {
     }
 
     @Override
-    public void updatePassword(String email, String newPassword) {
+    public void updatePassword(String email, String newPassword) throws InvalidInputException, UserNotFoundException {
+        if (email == null || email.isBlank() || newPassword == null || newPassword.isBlank()) {
+            throw new InvalidInputException("Email and new password must be provided.");
+        }
+
         GymCustomer customer = customerDAO.getCustomerByEmail(email);
         if (customer != null) {
             customer.setPassword(newPassword);
             if (customerDAO.updateCustomer(customer)) {
                 System.out.println("Password updated successfully!");
                 return;
+            } else {
+                throw new UserNotFoundException("Failed to update password for user: " + email);
             }
         }
 
@@ -219,6 +241,8 @@ public class GymUserServiceImpl implements GymUserInterface {
             if (gymOwnerDAO.updateGymOwner(owner)) {
                 System.out.println("Password updated successfully!");
                 return;
+            } else {
+                throw new UserNotFoundException("Failed to update password for owner: " + email);
             }
         }
 
@@ -228,9 +252,11 @@ public class GymUserServiceImpl implements GymUserInterface {
             if (adminDAO.updateAdmin(admin)) {
                 System.out.println("Password updated successfully!");
                 return;
+            } else {
+                throw new UserNotFoundException("Failed to update password for admin: " + email);
             }
         }
-        System.out.println("User not found!");
+        throw new UserNotFoundException("User not found: " + email);
     }
 
     @Override

@@ -4,6 +4,8 @@ package com.flipfit.business;
 import com.flipfit.bean.*;
 import com.flipfit.dao.*;
 import com.flipfit.exception.ApprovalFailedException;
+import com.flipfit.exception.InvalidDateRangeException;
+import com.flipfit.exception.InvalidInputException;
 
 import java.util.*;
 
@@ -66,7 +68,8 @@ public class GymAdminServiceImpl implements GymAdminInterface {
      * @throws ApprovalFailedException the approval failed exception
      */
     @Override
-    public void approveGym(String gymId) throws ApprovalFailedException {
+    public void approveGym(String gymId) throws ApprovalFailedException, InvalidInputException {
+        if (gymId == null || gymId.isBlank()) throw new InvalidInputException("Invalid Gym ID.");
         if (!adminDAO.approveGym(gymId)) { //
             throw new ApprovalFailedException("Gym ID " + gymId + " not found or could not be approved."); //
         }
@@ -80,7 +83,8 @@ public class GymAdminServiceImpl implements GymAdminInterface {
      * @throws ApprovalFailedException the approval failed exception
      */
     @Override
-    public void rejectGym(String gymId) throws ApprovalFailedException {
+    public void rejectGym(String gymId) throws ApprovalFailedException, InvalidInputException {
+        if (gymId == null || gymId.isBlank()) throw new InvalidInputException("Invalid Gym ID.");
         Gym gym = gymDAO.getGymById(gymId); //
         if (gym == null) {
             throw new ApprovalFailedException("Error: Gym ID " + gymId + " not found."); //
@@ -105,7 +109,7 @@ public class GymAdminServiceImpl implements GymAdminInterface {
             System.out.println("         ALL REGISTERED GYMS");
             System.out.println("========================================");
             allGyms.forEach(gym -> {
-                String status = gym.isApproved() ? "✓ APPROVED" : "⏳ PENDING";
+                String status = gym.isApproved() ? "APPROVED" : "PENDING";
                 System.out.println("ID: " + gym.getGymId() +
                         " | Name: " + gym.getGymName() +
                         " | Location: " + gym.getLocation() +
@@ -280,7 +284,7 @@ public class GymAdminServiceImpl implements GymAdminInterface {
      * @param reportType the report type
      */
     @Override
-    public void generateReports(int reportType) {
+    public void generateReports(int reportType) throws InvalidInputException {
         System.out.println("\n========================================");
         System.out.println("          SYSTEM REPORT");
         System.out.println("========================================");
@@ -303,7 +307,7 @@ public class GymAdminServiceImpl implements GymAdminInterface {
                 generateBookingReport();
                 break;
             default:
-                System.out.println("Invalid report type.");
+                throw new InvalidInputException("Invalid report type.");
         }
         System.out.println("========================================");
     }
@@ -395,7 +399,8 @@ public class GymAdminServiceImpl implements GymAdminInterface {
      * @throws ApprovalFailedException the approval failed exception
      */
     @Override
-    public void approveSlot(String slotId) throws ApprovalFailedException {
+    public void approveSlot(String slotId) throws ApprovalFailedException, InvalidInputException {
+        if (slotId == null || slotId.isBlank()) throw new InvalidInputException("Invalid slot ID.");
         if (!adminDAO.approveSlot(slotId)) { //
             throw new ApprovalFailedException("Slot ID " + slotId + " could not be approved."); //
         }
@@ -409,7 +414,8 @@ public class GymAdminServiceImpl implements GymAdminInterface {
      * @throws ApprovalFailedException the approval failed exception
      */
     @Override
-    public void rejectSlot(String slotId) throws ApprovalFailedException {
+    public void rejectSlot(String slotId) throws ApprovalFailedException, InvalidInputException {
+        if (slotId == null || slotId.isBlank()) throw new InvalidInputException("Invalid slot ID.");
         if (!adminDAO.rejectSlot(slotId)) { //
             throw new ApprovalFailedException("Slot ID " + slotId + " not found or could not be rejected."); //
         }
@@ -462,7 +468,7 @@ public class GymAdminServiceImpl implements GymAdminInterface {
      * @param endDate   the end date (yyyy-MM-dd)
      */
     @Override
-    public void viewRevenueByDateRange(String startDate, String endDate) {
+    public void viewRevenueByDateRange(String startDate, String endDate) throws InvalidDateRangeException {
         try {
             java.sql.Timestamp start = java.sql.Timestamp.valueOf(startDate + " 00:00:00");
             java.sql.Timestamp end = java.sql.Timestamp.valueOf(endDate + " 23:59:59");
@@ -492,7 +498,7 @@ public class GymAdminServiceImpl implements GymAdminInterface {
 
             System.out.println("\n========================================");
         } catch (Exception e) {
-            System.err.println("Error: Invalid date format. Please use yyyy-MM-dd format.");
+            throw new InvalidDateRangeException("Invalid date format. Please use yyyy-MM-dd format.", e);
         }
     }
 }

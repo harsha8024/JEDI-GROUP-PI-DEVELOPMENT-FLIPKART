@@ -3,6 +3,9 @@ package com.flipfit.business;
 
 import com.flipfit.bean.Slot;
 import com.flipfit.exception.RegistrationFailedException;
+import com.flipfit.exception.InvalidInputException;
+import com.flipfit.exception.SlotNotFoundException;
+import com.flipfit.exception.SlotOperationException;
 
 import java.time.LocalTime;
 import java.util.List;
@@ -25,7 +28,7 @@ public interface SlotServiceInterface {
      * @throws RegistrationFailedException the registration failed exception
      */
     void createSlot(String gymId, LocalTime startTime, LocalTime endTime, int capacity)
-            throws RegistrationFailedException;
+            throws RegistrationFailedException, InvalidInputException;
 
     /**
      * Gets the slots for gym.
@@ -33,7 +36,7 @@ public interface SlotServiceInterface {
      * @param gymId the gym id
      * @return the slots for gym
      */
-    List<Slot> getSlotsForGym(String gymId);
+    List<Slot> getSlotsForGym(String gymId) throws InvalidInputException;
 
     /**
      * Update slot.
@@ -41,14 +44,14 @@ public interface SlotServiceInterface {
      * @param slotId   the slot id
      * @param capacity the capacity
      */
-    void updateSlot(String slotId, int capacity);
+    void updateSlot(String slotId, int capacity) throws InvalidInputException, SlotNotFoundException, SlotOperationException;
 
     /**
      * Delete slot.
      *
      * @param slotId the slot id
      */
-    void deleteSlot(String slotId);
+    void deleteSlot(String slotId) throws InvalidInputException, SlotNotFoundException;
 
     /**
      * Gets the slot by id.
@@ -56,5 +59,5 @@ public interface SlotServiceInterface {
      * @param slotId the slot id
      * @return the slot by id
      */
-    Slot getSlotById(String slotId);
+    Slot getSlotById(String slotId) throws InvalidInputException, SlotNotFoundException;
 }

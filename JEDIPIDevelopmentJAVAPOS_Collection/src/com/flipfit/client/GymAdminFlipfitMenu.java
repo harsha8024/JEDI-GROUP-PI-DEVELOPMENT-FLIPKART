@@ -64,8 +64,14 @@ public class GymAdminFlipfitMenu {
                     String approveId = scanner.nextLine();
                     try {
                         adminService.approveGym(approveId);
-                    } catch (ApprovalFailedException e) {
-                        System.out.println("[ADMIN ERROR] " + e.getMessage());
+                    } catch (Exception e) {
+                        if (e instanceof ApprovalFailedException) {
+                            System.out.println("[ADMIN ERROR] " + e.getMessage());
+                        } else if (e instanceof com.flipfit.exception.InvalidInputException) {
+                            System.out.println("[INPUT ERROR] " + e.getMessage());
+                        } else {
+                            System.out.println("[ERROR] " + e.getMessage());
+                        }
                     }
                     break;
 
@@ -74,8 +80,14 @@ public class GymAdminFlipfitMenu {
                     String rejectId = scanner.nextLine();
                     try {
                         adminService.rejectGym(rejectId);
-                    } catch (ApprovalFailedException e) {
-                        System.out.println("[ADMIN ERROR] " + e.getMessage());
+                    } catch (Exception e) {
+                        if (e instanceof ApprovalFailedException) {
+                            System.out.println("[ADMIN ERROR] " + e.getMessage());
+                        } else if (e instanceof com.flipfit.exception.InvalidInputException) {
+                            System.out.println("[INPUT ERROR] " + e.getMessage());
+                        } else {
+                            System.out.println("[ERROR] " + e.getMessage());
+                        }
                     }
                     break;
                 case 4:
@@ -86,8 +98,14 @@ public class GymAdminFlipfitMenu {
                     String approveSlotId = scanner.nextLine();
                     try {
                         adminService.approveSlot(approveSlotId);
-                    } catch (ApprovalFailedException e) {
-                        System.out.println("[ADMIN ERROR] " + e.getMessage());
+                    } catch (Exception e) {
+                        if (e instanceof ApprovalFailedException) {
+                            System.out.println("[ADMIN ERROR] " + e.getMessage());
+                        } else if (e instanceof com.flipfit.exception.InvalidInputException) {
+                            System.out.println("[INPUT ERROR] " + e.getMessage());
+                        } else {
+                            System.out.println("[ERROR] " + e.getMessage());
+                        }
                     }
                     break;
                 case 6:
@@ -97,8 +115,14 @@ public class GymAdminFlipfitMenu {
                         adminService.rejectSlot(rejectSlotId);
                         // Successful message is usually handled inside the serviceImpl,
                         // but we catch the failure here.
-                    } catch (ApprovalFailedException e) {
-                        System.out.println("\n[ADMIN ACTION FAILED] " + e.getMessage());
+                    } catch (Exception e) {
+                        if (e instanceof ApprovalFailedException) {
+                            System.out.println("\n[ADMIN ACTION FAILED] " + e.getMessage());
+                        } else if (e instanceof com.flipfit.exception.InvalidInputException) {
+                            System.out.println("\n[INPUT ERROR] " + e.getMessage());
+                        } else {
+                            System.out.println("\n[ERROR] " + e.getMessage());
+                        }
                     }
                     break;
                 case 7:
@@ -123,7 +147,11 @@ public class GymAdminFlipfitMenu {
                     String startDate = scanner.nextLine();
                     System.out.print("Enter end date (yyyy-MM-dd): ");
                     String endDate = scanner.nextLine();
-                    adminService.viewRevenueByDateRange(startDate, endDate);
+                    try {
+                        adminService.viewRevenueByDateRange(startDate, endDate);
+                    } catch (com.flipfit.exception.InvalidDateRangeException e) {
+                        System.out.println("[DATE RANGE ERROR] " + e.getMessage());
+                    }
                     break;
                 case 13:
                     adminService.viewApprovedGyms();
@@ -215,7 +243,11 @@ public class GymAdminFlipfitMenu {
         int reportType = scanner.nextInt();
         scanner.nextLine();
 
-        adminService.generateReports(reportType);
+        try {
+            adminService.generateReports(reportType);
+        } catch (com.flipfit.exception.InvalidInputException e) {
+            System.out.println("[REPORT ERROR] " + e.getMessage());
+        }
     }
 
     private static void filterGymCenters(Scanner scanner, GymAdminInterface adminService) {

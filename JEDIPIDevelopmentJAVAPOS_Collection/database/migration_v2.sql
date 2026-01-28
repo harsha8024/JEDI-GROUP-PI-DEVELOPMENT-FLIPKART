@@ -10,11 +10,11 @@ USE flipfit_db;
 -- 1. ADD GSTIN NUMBER TO GYM OWNERS
 -- ========================================
 ALTER TABLE gym_owners 
-ADD COLUMN IF NOT EXISTS gstin_number VARCHAR(20) AFTER aadhar_number;
+ADD COLUMN gstin_number VARCHAR(20) AFTER aadhar_number;
 
 -- Add index for faster GSTIN lookups
 ALTER TABLE gym_owners 
-ADD INDEX IF NOT EXISTS idx_gstin (gstin_number);
+ADD INDEX idx_gstin (gstin_number);
 
 -- ========================================
 -- 2. FIX GYM OWNER ACTIVE STATUS DEFAULT
@@ -32,7 +32,7 @@ WHERE is_active = FALSE;
 -- 3. ADD PRICE TO SLOTS
 -- ========================================
 ALTER TABLE slots 
-ADD COLUMN IF NOT EXISTS price DECIMAL(10,2) DEFAULT 500.00 AFTER available_seats;
+ADD COLUMN price DECIMAL(10,2) DEFAULT 500.00 AFTER available_seats;
 
 -- Update existing slots to have default price
 UPDATE slots 
