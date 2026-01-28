@@ -18,7 +18,7 @@ public class InsufficientFundException extends Exception {
     		    	
 	}
 		
-    // custom method which is return the less amont how mush less for withdrawal	
+    // custom method which is return the less amount how much less for withdrawal	
 
      public double getAmount() {
     	 
