@@ -1,9 +1,15 @@
 package com.flipfit.business;
 
-import com.flipfit.bean.*;
+import com.flipfit.bean.GymAdmin;
+import com.flipfit.bean.GymCustomer;
+import com.flipfit.bean.GymOwner;
+import com.flipfit.bean.Role;
+import com.flipfit.bean.User;
+import com.flipfit.dao.AdminDAO;
 import com.flipfit.dao.CustomerDAO;
 import com.flipfit.dao.GymOwnerDAO;
 import com.flipfit.exception.InvalidCredentialsException;
+import com.flipfit.exception.RegistrationFailedException;
 import com.flipfit.exception.UserNotFoundException;
 import com.flipfit.exception.InvalidInputException;
 import com.flipfit.exception.RegistrationFailedException;
@@ -49,16 +55,16 @@ public class GymUserServiceImpl implements GymUserInterface {
      */
     public static Map<String, User> getUserMap() {
         Map<String, User> allUsers = new HashMap<>();
-        
+
         CustomerDAO customerDAO = new CustomerDAO();
         allUsers.putAll(customerDAO.getAllCustomers());
-        
+
         GymOwnerDAO ownerDAO = new GymOwnerDAO();
         allUsers.putAll(ownerDAO.getAllGymOwners());
-        
+
         AdminDAO adminDAO = new AdminDAO();
         allUsers.putAll(adminDAO.getAllAdmins());
-        
+
         return allUsers;
     }
 
@@ -83,7 +89,7 @@ public class GymUserServiceImpl implements GymUserInterface {
         }
 
         String roleName = user.getRole() != null ? user.getRole().getRoleName() : "CUSTOMER";
-        
+
         switch (roleName.toUpperCase()) {
             case "CUSTOMER":
                 registerCustomer(user);
@@ -103,7 +109,7 @@ public class GymUserServiceImpl implements GymUserInterface {
     private void registerCustomer(User user) throws RegistrationFailedException, InvalidInputException {
         String customerId = customerDAO.generateCustomerId();
         user.setUserID(customerId);
-        
+
         GymCustomer customer = new GymCustomer();
         customer.setUserID(customerId);
         customer.setName(user.getName());
@@ -111,14 +117,14 @@ public class GymUserServiceImpl implements GymUserInterface {
         customer.setPhoneNumber(user.getPhoneNumber());
         customer.setCity(user.getCity());
         customer.setPassword(user.getPassword());
-        
+
         // Account is INACTIVE until Admin approves
         customer.setActive(false);
-        
+
         Role role = new Role();
         role.setRoleName("CUSTOMER");
         customer.setRole(role);
-        
+
         if (customerDAO.saveCustomer(customer)) {
             System.out.println("Customer data saved. Creating registration request...");
             try {
@@ -131,11 +137,11 @@ public class GymUserServiceImpl implements GymUserInterface {
             throw new RegistrationFailedException("Customer registration failed for: " + customer.getName());
         }
     }
-    
-    private void registerGymOwner(User user) throws InvalidInputException {
+
+    private void registerGymOwner(User user) throws RegistrationFailedException {
         String ownerId = gymOwnerDAO.generateOwnerId();
         user.setUserID(ownerId);
-        
+
         GymOwner owner = new GymOwner();
         owner.setUserID(ownerId);
         owner.setName(user.getName());
@@ -143,9 +149,9 @@ public class GymUserServiceImpl implements GymUserInterface {
         owner.setPhoneNumber(user.getPhoneNumber());
         owner.setCity(user.getCity());
         owner.setPassword(user.getPassword());
-        
-        owner.setActive(true); // Make gym owner active immediately
-        
+
+        owner.setActive(false); // Make gym owner inactive initially (requires Admin approval)
+
         if (user instanceof GymOwner) {
             String pan = ((GymOwner) user).getPanNumber();
             String aadhar = ((GymOwner) user).getAadharNumber();
@@ -170,23 +176,23 @@ public class GymUserServiceImpl implements GymUserInterface {
                 owner.setGstinNumber(gstin);
             }
         }
-        
+
         Role role = new Role();
         role.setRoleName("OWNER");
         owner.setRole(role);
-        
+
         if (gymOwnerDAO.saveGymOwner(owner)) {
-            System.out.println("Gym Owner registration successful: " + owner.getName() + " (ID: " + ownerId + ")");
-            System.out.println("You can now log in. Note: Gyms and slots you create may still require admin approval.");
+            System.out.println("\n✓ Gym Owner registration successful: " + owner.getName() + " (ID: " + ownerId + ")");
+            System.out.println("You can now log in once Admin approves your account.");
         } else {
-            System.err.println("Gym Owner registration failed for: " + owner.getName());
+            throw new RegistrationFailedException("Gym Owner registration failed for: " + owner.getName());
         }
     }
-    
+
     private void registerAdmin(User user) {
         String adminId = adminDAO.generateAdminId();
         user.setUserID(adminId);
-        
+
         GymAdmin admin = new GymAdmin();
         admin.setUserID(adminId);
         admin.setName(user.getName());
@@ -194,12 +200,12 @@ public class GymUserServiceImpl implements GymUserInterface {
         admin.setPhoneNumber(user.getPhoneNumber());
         admin.setCity(user.getCity());
         admin.setPassword(user.getPassword());
-        admin.setActive(true); 
-        
+        admin.setActive(true);
+
         Role role = new Role();
         role.setRoleName("ADMIN");
         admin.setRole(role);
-        
+
         if (adminDAO.saveAdmin(admin)) {
             System.out.println("Admin registration successful: " + admin.getName() + " (ID: " + adminId + ")");
         } else {
@@ -215,21 +221,26 @@ public class GymUserServiceImpl implements GymUserInterface {
 
         GymCustomer customer = customerDAO.getCustomerByEmail(email);
         if (customer != null) {
-            if (!customer.getPassword().equals(password)) throw new InvalidCredentialsException("Incorrect password.");
-            if (!customer.isActive()) throw new InvalidCredentialsException("Account is inactive. Please wait for Admin approval.");
+            if (!customer.getPassword().equals(password))
+                throw new InvalidCredentialsException("Incorrect password.");
+            if (!customer.isActive())
+                throw new InvalidCredentialsException("Account is inactive. Please wait for Admin approval.");
             return true;
         }
 
         GymOwner owner = gymOwnerDAO.getGymOwnerByEmail(email);
         if (owner != null) {
-            if (!owner.getPassword().equals(password)) throw new InvalidCredentialsException("Incorrect password.");
-            if (!owner.isActive()) throw new InvalidCredentialsException("Owner account pending approval.");
+            if (!owner.getPassword().equals(password))
+                throw new InvalidCredentialsException("Incorrect password.");
+            if (!owner.isActive())
+                throw new InvalidCredentialsException("Owner account pending approval.");
             return true;
         }
 
         GymAdmin admin = adminDAO.getAdminByEmail(email);
         if (admin != null) {
-            if (!admin.getPassword().equals(password)) throw new InvalidCredentialsException("Incorrect password.");
+            if (!admin.getPassword().equals(password))
+                throw new InvalidCredentialsException("Incorrect password.");
             return true;
         }
 
@@ -252,7 +263,7 @@ public class GymUserServiceImpl implements GymUserInterface {
                 throw new UserNotFoundException("Failed to update password for user: " + email);
             }
         }
-        
+
         GymOwner owner = gymOwnerDAO.getGymOwnerByEmail(email);
         if (owner != null) {
             owner.setPassword(newPassword);
@@ -263,7 +274,7 @@ public class GymUserServiceImpl implements GymUserInterface {
                 throw new UserNotFoundException("Failed to update password for owner: " + email);
             }
         }
-        
+
         GymAdmin admin = adminDAO.getAdminByEmail(email);
         if (admin != null) {
             admin.setPassword(newPassword);
