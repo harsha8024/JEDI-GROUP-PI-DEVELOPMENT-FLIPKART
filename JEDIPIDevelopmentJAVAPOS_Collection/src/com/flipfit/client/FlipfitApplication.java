@@ -3,6 +3,8 @@ package com.flipfit.client;
 
 import java.util.Map;
 import java.util.Scanner;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import com.flipfit.bean.User;
 import com.flipfit.business.*;
 import com.flipfit.exception.RegistrationFailedException;
@@ -112,7 +114,11 @@ public class FlipfitApplication {
         // Check if user is admin with hardcoded credentials
         if (email.equals(ADMIN_EMAIL) && password.equals(ADMIN_PASSWORD)) {
             System.out.println("\n✓ Admin login successful!");
-            System.out.println("Welcome, Administrator!");
+
+            LocalDateTime now = LocalDateTime.now();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+            System.out.printf("\n%-30s %50s%n", "Welcome, Administrator!", "Login Time: " + now.format(formatter));
+
             // Admin directly goes to admin menu - no role selection
             GymAdminFlipfitMenu.showAdminMenu(scanner, adminService);
             return;
@@ -134,7 +140,11 @@ public class FlipfitApplication {
                 String roleName = loggedInUser.getRole() != null ? loggedInUser.getRole().getRoleName() : "CUSTOMER";
 
                 System.out.println("\n✓ Login successful!");
-                System.out.println("Welcome, " + loggedInUser.getName() + "!");
+
+                LocalDateTime now = LocalDateTime.now();
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+                System.out.printf("\n%-30s %50s%n", "Welcome, " + loggedInUser.getName() + "!",
+                        "Login Time: " + now.format(formatter));
 
                 // Automatically redirect to appropriate menu based on registered role
                 switch (roleName.toUpperCase()) {
@@ -229,7 +239,7 @@ public class FlipfitApplication {
                 owner.setAadharNumber(scanner.nextLine());
 
                 userService.register(owner);
-                System.out.println("\n✓ Gym Owner registration successful! Pending admin approval.");
+                System.out.println("\n✓ Gym Owner registration successful! Your account is active for testing.");
             } else {
                 userService.register(newUser);
                 System.out.println("\n✓ Customer registration successful! You can now log in.");
