@@ -1,8 +1,11 @@
 // TODO: Auto-generated Javadoc
 package com.flipfit.client;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.Scanner;
+
 import com.flipfit.bean.User;
 import com.flipfit.business.*;
 import com.flipfit.exception.RegistrationFailedException;
@@ -15,11 +18,8 @@ import com.flipfit.exception.RegistrationFailedException;
  */
 public class FlipfitApplication {
 
-    /** The Constant ADMIN_EMAIL. */
-    // Hardcoded Admin Credentials - Single admin for the system
+    // Hardcoded Admin Credentials
     private static final String ADMIN_EMAIL = "admin@flipfit.com";
-
-    /** The Constant ADMIN_PASSWORD. */
     private static final String ADMIN_PASSWORD = "admin@123";
 
     /**
@@ -99,9 +99,9 @@ public class FlipfitApplication {
      * @param adminService    the admin service
      */
     private static void handleLogin(Scanner scanner, GymUserInterface userService,
-            GymCustomerInterface customerService,
-            GymOwnerInterface ownerService,
-            GymAdminInterface adminService) {
+                                    GymCustomerInterface customerService,
+                                    GymOwnerInterface ownerService,
+                                    GymAdminInterface adminService) {
 
         System.out.println("\n--- Login ---");
         System.out.print("Email: ");
@@ -111,17 +111,21 @@ public class FlipfitApplication {
 
         // Check if user is admin with hardcoded credentials
         if (email.equals(ADMIN_EMAIL) && password.equals(ADMIN_PASSWORD)) {
+            // --- Assignment: Date/Time for Admin ---
+            LocalDateTime now = LocalDateTime.now();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+            
             System.out.println("\n✓ Admin login successful!");
-            System.out.println("Welcome, Administrator!");
-            // Admin directly goes to admin menu - no role selection
+            System.out.printf("%-40s %s\n", "Welcome Administrator", formatter.format(now));
+            // ---------------------------------------
+            
             GymAdminFlipfitMenu.showAdminMenu(scanner, adminService);
             return;
         }
 
-        // For regular users, validate from database
+        // For regular users
         try {
             if (userService.login(email, password)) {
-                // Get user details to retrieve ID and role
                 Map<String, User> userMap = GymUserServiceImpl.getUserMap();
                 User loggedInUser = userMap.get(email);
 
@@ -134,9 +138,15 @@ public class FlipfitApplication {
                 String roleName = loggedInUser.getRole() != null ? loggedInUser.getRole().getRoleName() : "CUSTOMER";
 
                 System.out.println("\n✓ Login successful!");
-                System.out.println("Welcome, " + loggedInUser.getName() + "!");
+                
+                // --- Assignment: Date/Time for Users ---
+                LocalDateTime now = LocalDateTime.now();
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+                
+                // Print Format: "Welcome [Name]" (Left aligned, 40 chars width) + Date/Time (Right)
+                System.out.printf("%-40s %s\n", "Welcome " + loggedInUser.getName(), formatter.format(now));
+                // ---------------------------------------
 
-                // Automatically redirect to appropriate menu based on registered role
                 switch (roleName.toUpperCase()) {
                     case "CUSTOMER":
                         System.out.println("Logging in as Customer...");
@@ -154,7 +164,6 @@ public class FlipfitApplication {
                     default:
                         System.out.println("[ERROR] Unknown role: " + roleName);
                 }
-
             }
         } catch (com.flipfit.exception.UserNotFoundException e) {
             System.out.println("\n[LOGIN ERROR] " + e.getMessage());
@@ -184,12 +193,8 @@ public class FlipfitApplication {
 
         String roleName;
         switch (roleChoice) {
-            case 1:
-                roleName = "CUSTOMER";
-                break;
-            case 2:
-                roleName = "OWNER";
-                break;
+            case 1: roleName = "CUSTOMER"; break;
+            case 2: roleName = "OWNER"; break;
             default:
                 System.out.println("[ERROR] Invalid role selection!");
                 return;
@@ -215,7 +220,6 @@ public class FlipfitApplication {
         try {
             if (roleName.equals("OWNER")) {
                 com.flipfit.bean.GymOwner owner = new com.flipfit.bean.GymOwner();
-                // Mapping common fields
                 owner.setName(newUser.getName());
                 owner.setEmail(newUser.getEmail());
                 owner.setPassword(newUser.getPassword());
@@ -227,6 +231,11 @@ public class FlipfitApplication {
                 owner.setPanNumber(scanner.nextLine());
                 System.out.print("Aadhar Number: ");
                 owner.setAadharNumber(scanner.nextLine());
+                
+                // --- Assignment: Capture GSTIN ---
+                System.out.print("GSTIN Number: ");
+                owner.setGstinNumber(scanner.nextLine());
+                // ---------------------------------
 
                 userService.register(owner);
                 System.out.println("\n✓ Gym Owner registration successful! Pending admin approval.");
@@ -249,7 +258,7 @@ public class FlipfitApplication {
         System.out.print("Enter Email: ");
         String email = scanner.nextLine();
         System.out.print("Current Password: ");
-        scanner.nextLine(); // Read but don't use (for future validation)
+        scanner.nextLine(); // For validation in future
         System.out.print("New Password: ");
         String newPass = scanner.nextLine();
 

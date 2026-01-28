@@ -123,21 +123,21 @@ public class GymUserServiceImpl implements GymUserInterface {
         owner.setCity(user.getCity());
         owner.setPassword(user.getPassword());
         
-        owner.setActive(false);
+        owner.setActive(true); // Make gym owner active immediately
         
         if (user instanceof GymOwner) {
             owner.setPanNumber(((GymOwner) user).getPanNumber());
             owner.setAadharNumber(((GymOwner) user).getAadharNumber());
+            owner.setGstinNumber(((GymOwner) user).getGstinNumber());
         }
         
         Role role = new Role();
-        role.setRoleName("GYM_OWNER");
+        role.setRoleName("OWNER");
         owner.setRole(role);
         
         if (gymOwnerDAO.saveGymOwner(owner)) {
-            System.out.println("Gym Owner data saved. Creating registration request...");
-            registrationService.createRegistration(ownerId, "GYM_OWNER");
-            System.out.println("Registration successful! Your account is pending Admin approval.");
+            System.out.println("Gym Owner registration successful: " + owner.getName() + " (ID: " + ownerId + ")");
+            System.out.println("You can now log in. Note: Gyms and slots you create may still require admin approval.");
         } else {
             System.err.println("Gym Owner registration failed for: " + owner.getName());
         }

@@ -69,13 +69,15 @@ public class SlotDAO {
             pstmt.setTime(4, Time.valueOf(slot.getEndTime()));
             pstmt.setInt(5, slot.getCapacity());
             pstmt.setInt(6, slot.getAvailableSeats());
-            pstmt.setBoolean(7, slot.isApproved());
+            pstmt.setBigDecimal(7, slot.getPrice() != null ? slot.getPrice() : java.math.BigDecimal.valueOf(500.00));
+            pstmt.setBoolean(8, slot.isApproved());
 
             int rowsAffected = pstmt.executeUpdate();
             return rowsAffected > 0;
 
         } catch (SQLException e) {
             System.err.println("Error saving slot: " + e.getMessage());
+            e.printStackTrace();
             return false;
         }
     }
@@ -185,7 +187,8 @@ public class SlotDAO {
             pstmt.setTime(2, Time.valueOf(slot.getEndTime()));
             pstmt.setInt(3, slot.getCapacity());
             pstmt.setInt(4, slot.getAvailableSeats());
-            pstmt.setString(5, slot.getSlotId());
+            pstmt.setBigDecimal(5, slot.getPrice() != null ? slot.getPrice() : java.math.BigDecimal.valueOf(500.00));
+            pstmt.setString(6, slot.getSlotId());
 
             int rowsAffected = pstmt.executeUpdate();
             return rowsAffected > 0;
@@ -271,6 +274,7 @@ public class SlotDAO {
         slot.setEndTime(rs.getTime("end_time").toLocalTime());
         slot.setCapacity(rs.getInt("capacity"));
         slot.setAvailableSeats(rs.getInt("available_seats"));
+        slot.setPrice(rs.getBigDecimal("price"));
         slot.setApproved(rs.getBoolean("is_approved"));
         return slot;
     }

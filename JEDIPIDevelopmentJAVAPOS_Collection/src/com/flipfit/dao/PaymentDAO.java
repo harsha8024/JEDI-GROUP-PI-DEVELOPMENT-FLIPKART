@@ -262,6 +262,77 @@ public class PaymentDAO {
     }
 
     /**
+     * Gets the total revenue across all successful payments.
+     *
+     * @return the total revenue
+     */
+    public BigDecimal getTotalRevenue() {
+        try (Connection conn = dbManager.getConnection();
+                Statement stmt = conn.createStatement();
+                ResultSet rs = stmt.executeQuery(SQLConstants.CALCULATE_TOTAL_REVENUE)) {
+
+            if (rs.next()) {
+                BigDecimal total = rs.getBigDecimal("total");
+                return total != null ? total : BigDecimal.ZERO;
+            }
+        } catch (SQLException e) {
+            System.err.println("Error getting total revenue: " + e.getMessage());
+        }
+        return BigDecimal.ZERO;
+    }
+
+    /**
+     * Gets payments within a date range.
+     *
+     * @param startDate the start date
+     * @param endDate the end date
+     * @return the list of payments
+     */
+    public List<Payment> getPaymentsByDateRange(Timestamp startDate, Timestamp endDate) {
+        List<Payment> payments = new ArrayList<>();
+
+        try (Connection conn = dbManager.getConnection();
+                PreparedStatement pstmt = conn.prepareStatement(SQLConstants.SELECT_PAYMENTS_BY_DATE_RANGE)) {
+
+            pstmt.setTimestamp(1, startDate);
+            pstmt.setTimestamp(2, endDate);
+            ResultSet rs = pstmt.executeQuery();
+
+            while (rs.next()) {
+                payments.add(mapResultSetToPayment(rs));
+            }
+        } catch (SQLException e) {
+            System.err.println("Error getting payments by date range: " + e.getMessage());
+        }
+        return payments;
+    }
+
+    /**
+     * Gets revenue within a date range.
+     *
+     * @param startDate the start date
+     * @param endDate the end date
+     * @return the total revenue
+     */
+    public BigDecimal getRevenueByDateRange(Timestamp startDate, Timestamp endDate) {
+        try (Connection conn = dbManager.getConnection();
+                PreparedStatement pstmt = conn.prepareStatement(SQLConstants.CALCULATE_REVENUE_BY_DATE_RANGE)) {
+
+            pstmt.setTimestamp(1, startDate);
+            pstmt.setTimestamp(2, endDate);
+            ResultSet rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                BigDecimal total = rs.getBigDecimal("total");
+                return total != null ? total : BigDecimal.ZERO;
+            }
+        } catch (SQLException e) {
+            System.err.println("Error getting revenue by date range: " + e.getMessage());
+        }
+        return BigDecimal.ZERO;
+    }
+
+    /**
      * Map result set to payment.
      *
      * @param rs the rs

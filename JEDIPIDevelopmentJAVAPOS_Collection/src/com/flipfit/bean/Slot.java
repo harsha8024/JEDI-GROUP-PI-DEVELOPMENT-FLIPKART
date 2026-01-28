@@ -1,6 +1,7 @@
 // TODO: Auto-generated Javadoc
 package com.flipfit.bean;
 
+import java.math.BigDecimal;
 import java.time.LocalTime;
 
 /**
@@ -31,6 +32,9 @@ public class Slot {
 
 	/** The is approved. */
 	private boolean isApproved;
+
+	/** The price per booking. */
+	private BigDecimal price;
 
 	/**
 	 * Instantiates a new slot.
@@ -187,6 +191,24 @@ public class Slot {
 	}
 
 	/**
+	 * Gets the price.
+	 *
+	 * @return the price
+	 */
+	public BigDecimal getPrice() {
+		return price;
+	}
+
+	/**
+	 * Sets the price.
+	 *
+	 * @param price the new price
+	 */
+	public void setPrice(BigDecimal price) {
+		this.price = price;
+	}
+
+	/**
 	 * Returns a string representation of the slot.
 	 *
 	 * @return a string representation of the object
@@ -194,7 +216,8 @@ public class Slot {
 	@Override
 	public String toString() {
 		return "Slot [slotId=" + slotId + ", gymId=" + gymId + ", startTime=" + startTime + ", endTime=" + endTime
-				+ ", capacity=" + capacity + ", availableSeats=" + availableSeats + ", isApproved=" + isApproved + "]";
+				+ ", capacity=" + capacity + ", availableSeats=" + availableSeats + ", isApproved=" + isApproved 
+				+ ", price=" + price + "]";
 	}
 
 }

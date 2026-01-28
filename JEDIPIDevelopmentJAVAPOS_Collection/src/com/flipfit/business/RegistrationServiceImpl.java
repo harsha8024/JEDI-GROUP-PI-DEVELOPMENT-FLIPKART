@@ -1,3 +1,4 @@
+// TODO: Auto-generated Javadoc
 package com.flipfit.business;
 
 import com.flipfit.bean.Registration;
@@ -9,11 +10,29 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * The Class RegistrationServiceImpl.
+ * Implementation of RegistrationInterface that provides registration management functionality.
+ *
+ * @author team pi
+ * @ClassName "RegistrationServiceImpl"
+ */
 public class RegistrationServiceImpl implements RegistrationInterface {
 
+    /** The registration DAO. */
     private RegistrationDAO registrationDAO = new RegistrationDAO();
+    
+    /** The admin DAO. */
     private AdminDAO adminDAO = new AdminDAO();
 
+    /**
+     * Creates the registration.
+     * Creates a new registration request for a user with specified role.
+     *
+     * @param userId the user id
+     * @param role the role
+     * @return the registration
+     */
     @Override
     public Registration createRegistration(String userId, String role) {
         Registration registration = new Registration();
@@ -32,6 +51,14 @@ public class RegistrationServiceImpl implements RegistrationInterface {
         }
     }
 
+    /**
+     * Approve registration.
+     * Approves a pending registration request and activates the user account.
+     *
+     * @param registrationId the registration id
+     * @param adminId the admin id
+     * @return true, if successful
+     */
     @Override
     public boolean approveRegistration(String registrationId, String adminId) {
         // 1. Fetch the registration to find out who the user is and what role they have
@@ -77,6 +104,14 @@ public class RegistrationServiceImpl implements RegistrationInterface {
         return false;
     }
 
+    /**
+     * Reject registration.
+     * Rejects a pending registration request.
+     *
+     * @param registrationId the registration id
+     * @param adminId the admin id
+     * @return true, if successful
+     */
     @Override
     public boolean rejectRegistration(String registrationId, String adminId) {
         // Simple update to "REJECTED" - no need to touch the User table
@@ -89,6 +124,12 @@ public class RegistrationServiceImpl implements RegistrationInterface {
         return false;
     }
 
+    /**
+     * Gets the pending registrations.
+     * Retrieves all registration requests with pending status.
+     *
+     * @return the pending registrations
+     */
     @Override
     public List<Registration> getPendingRegistrations() {
         List<Registration> pendingList = registrationDAO.getPendingRegistrations();
