@@ -61,6 +61,49 @@ public interface GymAdminInterface {
     void generateReports(int reportType);
 
     /**
+     * View approved gyms.
+     */
+    void viewApprovedGyms();
+
+    /**
+     * View pending gyms.
+     */
+    void viewPendingGyms();
+
+    /**
+     * View gyms by location.
+     *
+     * @param location the location
+     */
+    void viewGymsByLocation(String location);
+
+    /**
+     * View approved gym owners.
+     */
+    void viewApprovedGymOwners();
+
+    /**
+     * View pending gym owners.
+     */
+    void viewPendingGymOwners();
+
+    /**
+     * Approve gym owner.
+     *
+     * @param ownerId the owner id
+     * @throws ApprovalFailedException the approval failed exception
+     */
+    void approveGymOwner(String ownerId) throws ApprovalFailedException;
+
+    /**
+     * Reject gym owner.
+     *
+     * @param ownerId the owner id
+     * @throws ApprovalFailedException the approval failed exception
+     */
+    void rejectGymOwner(String ownerId) throws ApprovalFailedException;
+
+    /**
      * View payment reports and revenue.
      */
     void viewPaymentReports();
@@ -69,7 +112,7 @@ public interface GymAdminInterface {
      * View revenue by date range.
      *
      * @param startDate the start date (yyyy-MM-dd)
-     * @param endDate the end date (yyyy-MM-dd)
+     * @param endDate   the end date (yyyy-MM-dd)
      */
     void viewRevenueByDateRange(String startDate, String endDate);
 

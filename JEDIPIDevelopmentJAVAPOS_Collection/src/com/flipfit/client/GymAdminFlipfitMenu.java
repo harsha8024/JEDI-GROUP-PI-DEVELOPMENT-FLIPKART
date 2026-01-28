@@ -42,7 +42,13 @@ public class GymAdminFlipfitMenu {
             System.out.println("10. Generate Reports");
             System.out.println("11. View Payment & Revenue Reports");
             System.out.println("12. View Revenue by Date Range");
-            System.out.println("13. Logout");
+            System.out.println("13. View Approved Gyms");
+            System.out.println("14. View Approved Gym Owners");
+            System.out.println("15. View Pending Gym Owners");
+            System.out.println("16. Approve a Gym Owner");
+            System.out.println("17. Reject a Gym Owner");
+            System.out.println("18. Filter Gym Centers");
+            System.out.println("19. Logout");
             System.out.println("========================================");
             System.out.print("Enter your choice: ");
 
@@ -120,6 +126,36 @@ public class GymAdminFlipfitMenu {
                     adminService.viewRevenueByDateRange(startDate, endDate);
                     break;
                 case 13:
+                    adminService.viewApprovedGyms();
+                    break;
+                case 14:
+                    adminService.viewApprovedGymOwners();
+                    break;
+                case 15:
+                    adminService.viewPendingGymOwners();
+                    break;
+                case 16:
+                    System.out.print("Enter FULL Gym Owner ID to approve (e.g., OWN1500): ");
+                    String ownerId = scanner.nextLine();
+                    try {
+                        adminService.approveGymOwner(ownerId);
+                    } catch (ApprovalFailedException e) {
+                        System.out.println("[ADMIN ERROR] " + e.getMessage());
+                    }
+                    break;
+                case 17:
+                    System.out.print("Enter FULL Gym Owner ID to reject (e.g., OWN1500): ");
+                    String rejectOwnerId = scanner.nextLine();
+                    try {
+                        adminService.rejectGymOwner(rejectOwnerId);
+                    } catch (ApprovalFailedException e) {
+                        System.out.println("[ADMIN ERROR] " + e.getMessage());
+                    }
+                    break;
+                case 18:
+                    filterGymCenters(scanner, adminService);
+                    break;
+                case 19:
                     System.out.println("Logging out from Admin Session...");
                     back = true;
                     break;
@@ -180,5 +216,31 @@ public class GymAdminFlipfitMenu {
         scanner.nextLine();
 
         adminService.generateReports(reportType);
+    }
+
+    private static void filterGymCenters(Scanner scanner, GymAdminInterface adminService) {
+        System.out.println("\n--- Filter Gym Centers ---");
+        System.out.println("1. View Approved Gyms");
+        System.out.println("2. View Pending (Not Approved) Gyms");
+        System.out.println("3. View Gyms by Location");
+        System.out.print("Enter your choice: ");
+        int choice = scanner.nextInt();
+        scanner.nextLine();
+
+        switch (choice) {
+            case 1:
+                adminService.viewApprovedGyms();
+                break;
+            case 2:
+                adminService.viewPendingGyms();
+                break;
+            case 3:
+                System.out.print("Enter city/location: ");
+                String location = scanner.nextLine();
+                adminService.viewGymsByLocation(location);
+                break;
+            default:
+                System.out.println("Invalid choice.");
+        }
     }
 }
