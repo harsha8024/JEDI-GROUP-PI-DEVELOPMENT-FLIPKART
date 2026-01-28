@@ -134,14 +134,14 @@ public class GymOwnerServiceImpl implements GymOwnerInterface {
      */
     private void displayBookings(List<Booking> bookings) {
         System.out.println("\n--- Bookings for Your Gyms ---");
-        for (Booking booking : bookings) {
-            System.out.println("Booking ID: " + booking.getBookingId() +
-                    " | User: " + booking.getUserId() +
-                    " | Gym: " + booking.getGymId() +
-                    " | Slot: " + booking.getSlotId() +
-                    " | Date: " + booking.getBookingDate() +
-                    " | Status: " + booking.getStatus());
-        }
+        bookings.forEach(booking ->
+                System.out.println("Booking ID: " + booking.getBookingId() +
+                        " | User: " + booking.getUserId() +
+                        " | Gym: " + booking.getGymId() +
+                        " | Slot: " + booking.getSlotId() +
+                        " | Date: " + booking.getBookingDate() +
+                        " | Status: " + booking.getStatus())
+        );
     }
 
     /**
@@ -158,10 +158,10 @@ public class GymOwnerServiceImpl implements GymOwnerInterface {
             System.out.println("No slots found for this gym.");
         } else {
             System.out.println("Current slots:");
-            for (com.flipfit.bean.Slot slot : slots) {
-                System.out.println("Slot ID: " + slot.getSlotId() + " | " + slot.getStartTime() + " - "
-                        + slot.getEndTime() + " | Capacity: " + slot.getCapacity());
-            }
+            slots.forEach(slot ->
+                    System.out.println("Slot ID: " + slot.getSlotId() + " | " + slot.getStartTime() + " - "
+                            + slot.getEndTime() + " | Capacity: " + slot.getCapacity())
+            );
         }
     }
 }
