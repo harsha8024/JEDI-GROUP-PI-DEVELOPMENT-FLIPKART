@@ -13,11 +13,11 @@ import com.flipfit.exception.*;
 
 public class DataInitializer {
 
-    // Service instances (Adjust based on your actual instantiation logic)
-    private static UserService userService = new UserServiceImpl();
-    private static GymOwnerService ownerService = new GymOwnerServiceImpl();
-    private static AdminService adminService = new AdminServiceImpl();
-    private static SlotService slotService = new SlotServiceImpl();
+    // Service instances (use the project's actual interfaces/implementations)
+    private static GymUserInterface userService = new GymUserServiceImpl();
+    private static GymOwnerInterface ownerService = new GymOwnerServiceImpl();
+    private static GymAdminInterface adminService = new GymAdminServiceImpl();
+    private static SlotServiceInterface slotService = new SlotServiceImpl();
 
     public static void main(String[] args) {
         System.out.println("========================================");

@@ -11,6 +11,7 @@ import com.flipfit.exception.RegistrationAlreadyExistsException;
 import com.flipfit.dao.AdminDAO;
 import java.util.Map;
 import java.util.HashMap;
+import com.flipfit.utils.ValidationUtils;
 
 /**
  * The Class GymUserServiceImpl.
@@ -68,8 +69,17 @@ public class GymUserServiceImpl implements GymUserInterface {
      */
     @Override
     public void register(User user) throws RegistrationFailedException, InvalidInputException {
-        if (user == null || user.getEmail() == null || user.getEmail().isBlank() || user.getPassword() == null || user.getPassword().isBlank()) {
-            throw new com.flipfit.exception.InvalidInputException("User information is incomplete or invalid.");
+        if (user == null) {
+            throw new InvalidInputException("User cannot be null.");
+        }
+        if (user.getEmail() == null || user.getEmail().isBlank() || !ValidationUtils.isValidEmail(user.getEmail())) {
+            throw new InvalidInputException("Invalid or missing email address.");
+        }
+        if (user.getPassword() == null || user.getPassword().isBlank()) {
+            throw new InvalidInputException("Password must be provided.");
+        }
+        if (user.getPhoneNumber() == null || !ValidationUtils.isValidPhone(user.getPhoneNumber())) {
+            throw new InvalidInputException("Phone number must be 10 digits.");
         }
 
         String roleName = user.getRole() != null ? user.getRole().getRoleName() : "CUSTOMER";
@@ -122,7 +132,7 @@ public class GymUserServiceImpl implements GymUserInterface {
         }
     }
     
-    private void registerGymOwner(User user) {
+    private void registerGymOwner(User user) throws InvalidInputException {
         String ownerId = gymOwnerDAO.generateOwnerId();
         user.setUserID(ownerId);
         
@@ -137,9 +147,28 @@ public class GymUserServiceImpl implements GymUserInterface {
         owner.setActive(true); // Make gym owner active immediately
         
         if (user instanceof GymOwner) {
-            owner.setPanNumber(((GymOwner) user).getPanNumber());
-            owner.setAadharNumber(((GymOwner) user).getAadharNumber());
-            owner.setGstinNumber(((GymOwner) user).getGstinNumber());
+            String pan = ((GymOwner) user).getPanNumber();
+            String aadhar = ((GymOwner) user).getAadharNumber();
+            String gstin = ((GymOwner) user).getGstinNumber();
+
+            if (pan != null && !pan.isBlank()) {
+                if (!ValidationUtils.isValidPan(pan)) {
+                    throw new InvalidInputException("Invalid PAN number. Expected format: 5 letters, 4 digits, 1 letter.");
+                }
+                owner.setPanNumber(pan);
+            }
+            if (aadhar != null && !aadhar.isBlank()) {
+                if (!ValidationUtils.isValidAadhar(aadhar)) {
+                    throw new InvalidInputException("Invalid Aadhar number. Expected 12 digits.");
+                }
+                owner.setAadharNumber(aadhar);
+            }
+            if (gstin != null && !gstin.isBlank()) {
+                if (!ValidationUtils.isValidGstin(gstin)) {
+                    throw new InvalidInputException("Invalid GSTIN. Expected 15 characters.");
+                }
+                owner.setGstinNumber(gstin);
+            }
         }
         
         Role role = new Role();

@@ -165,7 +165,7 @@ public class GymOwnerServiceImpl implements GymOwnerInterface {
         } else {
             System.out.println("Current slots:");
             slots.forEach(slot -> {
-                String approvalStatus = slot.isApproved() ? "✓ Approved" : "✗ Pending Approval";
+                String approvalStatus = slot.isApproved() ? "Approved" : "Pending Approval";
                 System.out.println("Slot ID: " + slot.getSlotId() + " | " + slot.getStartTime() + " - "
                         + slot.getEndTime() + " | Capacity: " + slot.getCapacity() + " | Status: " + approvalStatus);
             });
