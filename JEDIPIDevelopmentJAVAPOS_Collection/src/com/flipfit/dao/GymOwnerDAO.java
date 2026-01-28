@@ -152,6 +152,46 @@ public class GymOwnerDAO {
     }
 
     /**
+     * Gets the pending gym owners.
+     *
+     * @return the list of pending gym owners
+     */
+    public java.util.List<GymOwner> getPendingGymOwners() {
+        java.util.List<GymOwner> owners = new java.util.ArrayList<>();
+        try (Connection conn = dbManager.getConnection();
+                Statement stmt = conn.createStatement();
+                ResultSet rs = stmt.executeQuery(SQLConstants.SELECT_PENDING_GYM_OWNERS)) {
+
+            while (rs.next()) {
+                owners.add(mapResultSetToGymOwner(rs));
+            }
+        } catch (SQLException e) {
+            System.err.println("Error getting pending gym owners: " + e.getMessage());
+        }
+        return owners;
+    }
+
+    /**
+     * Gets the approved gym owners.
+     *
+     * @return the list of approved gym owners
+     */
+    public java.util.List<GymOwner> getApprovedGymOwners() {
+        java.util.List<GymOwner> owners = new java.util.ArrayList<>();
+        try (Connection conn = dbManager.getConnection();
+                Statement stmt = conn.createStatement();
+                ResultSet rs = stmt.executeQuery(SQLConstants.SELECT_APPROVED_GYM_OWNERS)) {
+
+            while (rs.next()) {
+                owners.add(mapResultSetToGymOwner(rs));
+            }
+        } catch (SQLException e) {
+            System.err.println("Error getting approved gym owners: " + e.getMessage());
+        }
+        return owners;
+    }
+
+    /**
      * Update gym owner.
      *
      * @param owner the owner
