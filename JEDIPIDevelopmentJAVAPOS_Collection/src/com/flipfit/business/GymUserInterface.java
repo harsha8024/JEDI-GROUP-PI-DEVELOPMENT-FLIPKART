@@ -5,6 +5,7 @@ import com.flipfit.bean.User;
 import com.flipfit.exception.InvalidCredentialsException;
 import com.flipfit.exception.RegistrationFailedException;
 import com.flipfit.exception.UserNotFoundException;
+import com.flipfit.exception.InvalidInputException;
 
 /**
  * The Interface GymUserInterface.
@@ -20,7 +21,7 @@ public interface GymUserInterface {
      * @param user the user
      * @throws RegistrationFailedException the registration failed exception
      */
-    void register(User user) throws RegistrationFailedException;
+    void register(User user) throws RegistrationFailedException, InvalidInputException;
 
     /**
      * Login.
@@ -31,7 +32,7 @@ public interface GymUserInterface {
      * @throws UserNotFoundException       the user not found exception
      * @throws InvalidCredentialsException the invalid credentials exception
      */
-    boolean login(String email, String password) throws UserNotFoundException, InvalidCredentialsException;
+    boolean login(String email, String password) throws UserNotFoundException, InvalidCredentialsException, InvalidInputException;
 
     /**
      * Update password.
@@ -39,7 +40,7 @@ public interface GymUserInterface {
      * @param email       the email
      * @param newPassword the new password
      */
-    void updatePassword(String email, String newPassword);
+    void updatePassword(String email, String newPassword) throws InvalidInputException, UserNotFoundException;
 
     /**
      * Logout.

@@ -4,6 +4,8 @@ package com.flipfit.business;
 import com.flipfit.bean.Gym;
 import com.flipfit.bean.Slot;
 import com.flipfit.exception.ApprovalFailedException;
+import com.flipfit.exception.InvalidDateRangeException;
+import com.flipfit.exception.InvalidInputException;
 
 import java.util.List;
 
@@ -28,7 +30,7 @@ public interface GymAdminInterface {
      * @param gymId the gym id
      * @throws ApprovalFailedException the approval failed exception
      */
-    void approveGym(String gymId) throws ApprovalFailedException;
+    void approveGym(String gymId) throws ApprovalFailedException, InvalidInputException;
 
     /**
      * View all users.
@@ -41,7 +43,7 @@ public interface GymAdminInterface {
      * @param gymId the gym id
      * @throws ApprovalFailedException the approval failed exception
      */
-    void rejectGym(String gymId) throws ApprovalFailedException;
+    void rejectGym(String gymId) throws ApprovalFailedException, InvalidInputException;
 
     /**
      * View all gyms.
@@ -58,7 +60,50 @@ public interface GymAdminInterface {
      *
      * @param reportType the report type
      */
-    void generateReports(int reportType);
+    void generateReports(int reportType) throws InvalidInputException;
+
+    /**
+     * View approved gyms.
+     */
+    void viewApprovedGyms();
+
+    /**
+     * View pending gyms.
+     */
+    void viewPendingGyms();
+
+    /**
+     * View gyms by location.
+     *
+     * @param location the location
+     */
+    void viewGymsByLocation(String location);
+
+    /**
+     * View approved gym owners.
+     */
+    void viewApprovedGymOwners();
+
+    /**
+     * View pending gym owners.
+     */
+    void viewPendingGymOwners();
+
+    /**
+     * Approve gym owner.
+     *
+     * @param ownerId the owner id
+     * @throws ApprovalFailedException the approval failed exception
+     */
+    void approveGymOwner(String ownerId) throws ApprovalFailedException;
+
+    /**
+     * Reject gym owner.
+     *
+     * @param ownerId the owner id
+     * @throws ApprovalFailedException the approval failed exception
+     */
+    void rejectGymOwner(String ownerId) throws ApprovalFailedException;
 
     /**
      * View payment reports and revenue.
@@ -70,8 +115,9 @@ public interface GymAdminInterface {
      *
      * @param startDate the start date (yyyy-MM-dd)
      * @param endDate the end date (yyyy-MM-dd)
+     * @throws InvalidDateRangeException the invalid date range exception
      */
-    void viewRevenueByDateRange(String startDate, String endDate);
+    void viewRevenueByDateRange(String startDate, String endDate) throws InvalidDateRangeException;
 
     /**
      * View pending slots.
@@ -87,7 +133,7 @@ public interface GymAdminInterface {
      * @param slotId the slot id
      * @throws ApprovalFailedException the approval failed exception
      */
-    void approveSlot(String slotId) throws ApprovalFailedException;
+    void approveSlot(String slotId) throws ApprovalFailedException, InvalidInputException;
 
     /**
      * Reject slot.
@@ -95,5 +141,5 @@ public interface GymAdminInterface {
      * @param slotId the slot id
      * @throws ApprovalFailedException the approval failed exception
      */
-    void rejectSlot(String slotId) throws ApprovalFailedException;
+    void rejectSlot(String slotId) throws ApprovalFailedException, InvalidInputException;
 }

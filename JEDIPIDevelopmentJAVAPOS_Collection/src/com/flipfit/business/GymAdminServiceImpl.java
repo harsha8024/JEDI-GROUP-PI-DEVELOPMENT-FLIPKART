@@ -4,6 +4,8 @@ package com.flipfit.business;
 import com.flipfit.bean.*;
 import com.flipfit.dao.*;
 import com.flipfit.exception.ApprovalFailedException;
+import com.flipfit.exception.InvalidDateRangeException;
+import com.flipfit.exception.InvalidInputException;
 
 import java.util.*;
 
@@ -66,7 +68,8 @@ public class GymAdminServiceImpl implements GymAdminInterface {
      * @throws ApprovalFailedException the approval failed exception
      */
     @Override
-    public void approveGym(String gymId) throws ApprovalFailedException {
+    public void approveGym(String gymId) throws ApprovalFailedException, InvalidInputException {
+        if (gymId == null || gymId.isBlank()) throw new InvalidInputException("Invalid Gym ID.");
         if (!adminDAO.approveGym(gymId)) { //
             throw new ApprovalFailedException("Gym ID " + gymId + " not found or could not be approved."); //
         }
@@ -80,7 +83,8 @@ public class GymAdminServiceImpl implements GymAdminInterface {
      * @throws ApprovalFailedException the approval failed exception
      */
     @Override
-    public void rejectGym(String gymId) throws ApprovalFailedException {
+    public void rejectGym(String gymId) throws ApprovalFailedException, InvalidInputException {
+        if (gymId == null || gymId.isBlank()) throw new InvalidInputException("Invalid Gym ID.");
         Gym gym = gymDAO.getGymById(gymId); //
         if (gym == null) {
             throw new ApprovalFailedException("Error: Gym ID " + gymId + " not found."); //
@@ -105,7 +109,7 @@ public class GymAdminServiceImpl implements GymAdminInterface {
             System.out.println("         ALL REGISTERED GYMS");
             System.out.println("========================================");
             allGyms.forEach(gym -> {
-                String status = gym.isApproved() ? "✓ APPROVED" : "⏳ PENDING";
+                String status = gym.isApproved() ? "APPROVED" : "PENDING";
                 System.out.println("ID: " + gym.getGymId() +
                         " | Name: " + gym.getGymName() +
                         " | Location: " + gym.getLocation() +
@@ -115,6 +119,98 @@ public class GymAdminServiceImpl implements GymAdminInterface {
             System.out.println("========================================");
             System.out.println("Total Gyms: " + allGyms.size());
         }
+    }
+
+    @Override
+    public void viewApprovedGyms() {
+        List<Gym> approvedGyms = gymDAO.getApprovedGyms();
+        if (approvedGyms.isEmpty()) {
+            System.out.println("No approved gyms found.");
+        } else {
+            System.out.println("\n========================================");
+            System.out.println("            APPROVED GYMS");
+            System.out.println("========================================");
+            approvedGyms.forEach(gym -> System.out.println(
+                    "ID: " + gym.getGymId() + " | Name: " + gym.getGymName() + " | Location: " + gym.getLocation()
+                            + " | Owner: " + gym.getGymOwnerId()));
+            System.out.println("========================================");
+        }
+    }
+
+    @Override
+    public void viewPendingGyms() {
+        List<Gym> pendingGyms = gymDAO.getPendingGyms();
+        if (pendingGyms.isEmpty()) {
+            System.out.println("No pending gyms found.");
+        } else {
+            System.out.println("\n========================================");
+            System.out.println("         PENDING GYM APPROVALS");
+            System.out.println("========================================");
+            pendingGyms.forEach(gym -> System.out.println(
+                    "ID: " + gym.getGymId() + " | Name: " + gym.getGymName() + " | Location: " + gym.getLocation()
+                            + " | Owner: " + gym.getGymOwnerId()));
+            System.out.println("========================================");
+        }
+    }
+
+    @Override
+    public void viewGymsByLocation(String location) {
+        List<Gym> gyms = gymDAO.getGymsByLocation(location);
+        if (gyms.isEmpty()) {
+            System.out.println("No gyms found in location: " + location);
+        } else {
+            System.out.println("\n========================================");
+            System.out.println("        GYMS IN " + location.toUpperCase());
+            System.out.println("========================================");
+            gyms.forEach(gym -> {
+                String status = gym.isApproved() ? "✓ APPROVED" : "⏳ PENDING";
+                System.out.println("ID: " + gym.getGymId() +
+                        " | Name: " + gym.getGymName() +
+                        " | Status: " + status +
+                        " | Owner: " + gym.getGymOwnerId());
+            });
+            System.out.println("========================================");
+        }
+    }
+
+    @Override
+    public void viewApprovedGymOwners() {
+        List<GymOwner> approvedOwners = gymOwnerDAO.getApprovedGymOwners();
+        if (approvedOwners.isEmpty()) {
+            System.out.println("No approved gym owners found.");
+        } else {
+            System.out.println("\n--- Approved Gym Owners ---");
+            approvedOwners.forEach(owner -> System.out.println(
+                    "ID: " + owner.getUserID() + " | Name: " + owner.getName() + " | Email: " + owner.getEmail()));
+        }
+    }
+
+    @Override
+    public void viewPendingGymOwners() {
+        List<GymOwner> pendingOwners = gymOwnerDAO.getPendingGymOwners();
+        if (pendingOwners.isEmpty()) {
+            System.out.println("No pending gym owners found.");
+        } else {
+            System.out.println("\n--- Pending Gym Owners ---");
+            pendingOwners.forEach(owner -> System.out.println(
+                    "ID: " + owner.getUserID() + " | Name: " + owner.getName() + " | Email: " + owner.getEmail()));
+        }
+    }
+
+    @Override
+    public void approveGymOwner(String ownerId) throws ApprovalFailedException {
+        if (!adminDAO.approveGymOwner(ownerId)) {
+            throw new ApprovalFailedException("Gym Owner ID " + ownerId + " not found or could not be approved.");
+        }
+        System.out.println("✓ Successfully approved Gym Owner with ID: " + ownerId);
+    }
+
+    @Override
+    public void rejectGymOwner(String ownerId) throws ApprovalFailedException {
+        if (!adminDAO.deactivateGymOwner(ownerId)) {
+            throw new ApprovalFailedException("Gym Owner ID " + ownerId + " not found or could not be rejected.");
+        }
+        System.out.println("✓ Successfully rejected/deactivated Gym Owner: " + ownerId);
     }
 
     /**
@@ -130,15 +226,13 @@ public class GymAdminServiceImpl implements GymAdminInterface {
             System.out.println("\n========================================");
             System.out.println("          ALL BOOKINGS");
             System.out.println("========================================");
-            allBookings.forEach(booking ->
-                    System.out.println("Booking ID: " + booking.getBookingId() +
-                            " | User: " + booking.getUserId() +
-                            " | Gym: " + booking.getGymId() +
-                            " | Slot: " + booking.getSlotId() +
-                            " | Date: " + booking.getBookingDate() +
-                            " | Status: " + booking.getStatus() +
-                            " | Created: " + booking.getCreatedAt())
-            );
+            allBookings.forEach(booking -> System.out.println("Booking ID: " + booking.getBookingId() +
+                    " | User: " + booking.getUserId() +
+                    " | Gym: " + booking.getGymId() +
+                    " | Slot: " + booking.getSlotId() +
+                    " | Date: " + booking.getBookingDate() +
+                    " | Status: " + booking.getStatus() +
+                    " | Created: " + booking.getCreatedAt()));
             System.out.println("========================================");
             System.out.println("Total Bookings: " + allBookings.size());
         }
@@ -190,7 +284,7 @@ public class GymAdminServiceImpl implements GymAdminInterface {
      * @param reportType the report type
      */
     @Override
-    public void generateReports(int reportType) {
+    public void generateReports(int reportType) throws InvalidInputException {
         System.out.println("\n========================================");
         System.out.println("          SYSTEM REPORT");
         System.out.println("========================================");
@@ -213,7 +307,7 @@ public class GymAdminServiceImpl implements GymAdminInterface {
                 generateBookingReport();
                 break;
             default:
-                System.out.println("Invalid report type.");
+                throw new InvalidInputException("Invalid report type.");
         }
         System.out.println("========================================");
     }
@@ -305,7 +399,8 @@ public class GymAdminServiceImpl implements GymAdminInterface {
      * @throws ApprovalFailedException the approval failed exception
      */
     @Override
-    public void approveSlot(String slotId) throws ApprovalFailedException {
+    public void approveSlot(String slotId) throws ApprovalFailedException, InvalidInputException {
+        if (slotId == null || slotId.isBlank()) throw new InvalidInputException("Invalid slot ID.");
         if (!adminDAO.approveSlot(slotId)) { //
             throw new ApprovalFailedException("Slot ID " + slotId + " could not be approved."); //
         }
@@ -319,7 +414,8 @@ public class GymAdminServiceImpl implements GymAdminInterface {
      * @throws ApprovalFailedException the approval failed exception
      */
     @Override
-    public void rejectSlot(String slotId) throws ApprovalFailedException {
+    public void rejectSlot(String slotId) throws ApprovalFailedException, InvalidInputException {
+        if (slotId == null || slotId.isBlank()) throw new InvalidInputException("Invalid slot ID.");
         if (!adminDAO.rejectSlot(slotId)) { //
             throw new ApprovalFailedException("Slot ID " + slotId + " not found or could not be rejected."); //
         }
@@ -347,15 +443,17 @@ public class GymAdminServiceImpl implements GymAdminInterface {
             System.out.println("\n--- Recent Payments (Last 10) ---");
             int count = 0;
             for (Payment payment : allPayments) {
-                if (count >= 10) break;
-                System.out.println(String.format("Payment ID: %s | Booking: %s | Customer: %s | Amount: ₹%.2f | Method: %s | Status: %s | Date: %s",
-                    payment.getPaymentId(),
-                    payment.getBookingId(),
-                    payment.getUserId(),
-                    payment.getAmount(),
-                    payment.getPaymentMethod(),
-                    payment.getPaymentStatus(),
-                    payment.getPaymentDate()));
+                if (count >= 10)
+                    break;
+                System.out.println(String.format(
+                        "Payment ID: %s | Booking: %s | Customer: %s | Amount: ₹%.2f | Method: %s | Status: %s | Date: %s",
+                        payment.getPaymentId(),
+                        payment.getBookingId(),
+                        payment.getUserId(),
+                        payment.getAmount(),
+                        payment.getPaymentMethod(),
+                        payment.getPaymentStatus(),
+                        payment.getPaymentDate()));
                 count++;
             }
         }
@@ -367,10 +465,10 @@ public class GymAdminServiceImpl implements GymAdminInterface {
      * View revenue by date range.
      *
      * @param startDate the start date (yyyy-MM-dd)
-     * @param endDate the end date (yyyy-MM-dd)
+     * @param endDate   the end date (yyyy-MM-dd)
      */
     @Override
-    public void viewRevenueByDateRange(String startDate, String endDate) {
+    public void viewRevenueByDateRange(String startDate, String endDate) throws InvalidDateRangeException {
         try {
             java.sql.Timestamp start = java.sql.Timestamp.valueOf(startDate + " 00:00:00");
             java.sql.Timestamp end = java.sql.Timestamp.valueOf(endDate + " 23:59:59");
@@ -388,18 +486,19 @@ public class GymAdminServiceImpl implements GymAdminInterface {
             if (!payments.isEmpty()) {
                 System.out.println("\n--- Payment Details ---");
                 for (Payment payment : payments) {
-                    System.out.println(String.format("Payment ID: %s | Amount: ₹%.2f | Customer: %s | Date: %s | Status: %s",
-                        payment.getPaymentId(),
-                        payment.getAmount(),
-                        payment.getUserId(),
-                        payment.getPaymentDate(),
-                        payment.getPaymentStatus()));
+                    System.out.println(
+                            String.format("Payment ID: %s | Amount: ₹%.2f | Customer: %s | Date: %s | Status: %s",
+                                    payment.getPaymentId(),
+                                    payment.getAmount(),
+                                    payment.getUserId(),
+                                    payment.getPaymentDate(),
+                                    payment.getPaymentStatus()));
                 }
             }
 
             System.out.println("\n========================================");
         } catch (Exception e) {
-            System.err.println("Error: Invalid date format. Please use yyyy-MM-dd format.");
+            throw new InvalidDateRangeException("Invalid date format. Please use yyyy-MM-dd format.", e);
         }
     }
 }

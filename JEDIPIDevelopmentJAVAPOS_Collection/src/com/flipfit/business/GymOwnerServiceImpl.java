@@ -55,7 +55,10 @@ public class GymOwnerServiceImpl implements GymOwnerInterface {
      * @throws RegistrationFailedException the registration failed exception
      */
     @Override
-    public void registerGym(Gym gym) throws RegistrationFailedException {
+    public void registerGym(Gym gym) throws RegistrationFailedException, com.flipfit.exception.InvalidInputException {
+        if (gym == null || gym.getGymName() == null || gym.getGymName().isBlank()) {
+            throw new com.flipfit.exception.InvalidInputException("Gym information is invalid.");
+        }
         String gymId = gymDAO.generateGymId();
         gym.setGymId(gymId);
         gym.setApproved(false);
@@ -85,10 +88,11 @@ public class GymOwnerServiceImpl implements GymOwnerInterface {
      * @throws UserNotFoundException the user not found exception
      */
     @Override
-    public List<Gym> viewMyGyms(String ownerId) throws UserNotFoundException {
+    public List<Gym> viewMyGyms(String ownerId) throws com.flipfit.exception.UserNotFoundException, com.flipfit.exception.InvalidInputException {
+        if (ownerId == null || ownerId.isBlank()) throw new com.flipfit.exception.InvalidInputException("Owner ID must be provided.");
         List<Gym> gyms = gymDAO.getGymsByOwnerId(ownerId);
         if (gyms == null)
-            throw new UserNotFoundException("Owner ID not found.");
+            throw new com.flipfit.exception.UserNotFoundException("Owner ID not found.");
         return gyms;
     }
 
@@ -111,7 +115,8 @@ public class GymOwnerServiceImpl implements GymOwnerInterface {
      * @param ownerId the owner id
      */
     @Override
-    public void viewBookings(String ownerId) {
+    public void viewBookings(String ownerId) throws com.flipfit.exception.InvalidInputException {
+        if (ownerId == null || ownerId.isBlank()) throw new com.flipfit.exception.InvalidInputException("Owner ID must be provided.");
         List<Gym> ownerGyms = gymDAO.getGymsByOwnerId(ownerId);
         List<String> ownerGymIds = ownerGyms.stream().map(Gym::getGymId).collect(Collectors.toList());
 
@@ -150,7 +155,8 @@ public class GymOwnerServiceImpl implements GymOwnerInterface {
      * @param gymId the gym id
      */
     @Override
-    public void updateSchedule(String gymId) {
+    public void updateSchedule(String gymId) throws com.flipfit.exception.InvalidInputException {
+        if (gymId == null || gymId.isBlank()) throw new com.flipfit.exception.InvalidInputException("Gym ID must be provided.");
         System.out.println("Updating schedule for Gym ID: " + gymId);
         List<com.flipfit.bean.Slot> slots = slotDAO.getSlotsByGymId(gymId);
 
@@ -159,7 +165,7 @@ public class GymOwnerServiceImpl implements GymOwnerInterface {
         } else {
             System.out.println("Current slots:");
             slots.forEach(slot -> {
-                String approvalStatus = slot.isApproved() ? "✓ Approved" : "✗ Pending Approval";
+                String approvalStatus = slot.isApproved() ? "Approved" : "Pending Approval";
                 System.out.println("Slot ID: " + slot.getSlotId() + " | " + slot.getStartTime() + " - "
                         + slot.getEndTime() + " | Capacity: " + slot.getCapacity() + " | Status: " + approvalStatus);
             });

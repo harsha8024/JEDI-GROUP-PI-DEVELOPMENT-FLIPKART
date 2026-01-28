@@ -42,7 +42,13 @@ public class GymAdminFlipfitMenu {
             System.out.println("10. Generate Reports");
             System.out.println("11. View Payment & Revenue Reports");
             System.out.println("12. View Revenue by Date Range");
-            System.out.println("13. Logout");
+            System.out.println("13. View Approved Gyms");
+            System.out.println("14. View Approved Gym Owners");
+            System.out.println("15. View Pending Gym Owners");
+            System.out.println("16. Approve a Gym Owner");
+            System.out.println("17. Reject a Gym Owner");
+            System.out.println("18. Filter Gym Centers");
+            System.out.println("19. Logout");
             System.out.println("========================================");
             System.out.print("Enter your choice: ");
 
@@ -58,8 +64,14 @@ public class GymAdminFlipfitMenu {
                     String approveId = scanner.nextLine();
                     try {
                         adminService.approveGym(approveId);
-                    } catch (ApprovalFailedException e) {
-                        System.out.println("[ADMIN ERROR] " + e.getMessage());
+                    } catch (Exception e) {
+                        if (e instanceof ApprovalFailedException) {
+                            System.out.println("[ADMIN ERROR] " + e.getMessage());
+                        } else if (e instanceof com.flipfit.exception.InvalidInputException) {
+                            System.out.println("[INPUT ERROR] " + e.getMessage());
+                        } else {
+                            System.out.println("[ERROR] " + e.getMessage());
+                        }
                     }
                     break;
 
@@ -68,8 +80,14 @@ public class GymAdminFlipfitMenu {
                     String rejectId = scanner.nextLine();
                     try {
                         adminService.rejectGym(rejectId);
-                    } catch (ApprovalFailedException e) {
-                        System.out.println("[ADMIN ERROR] " + e.getMessage());
+                    } catch (Exception e) {
+                        if (e instanceof ApprovalFailedException) {
+                            System.out.println("[ADMIN ERROR] " + e.getMessage());
+                        } else if (e instanceof com.flipfit.exception.InvalidInputException) {
+                            System.out.println("[INPUT ERROR] " + e.getMessage());
+                        } else {
+                            System.out.println("[ERROR] " + e.getMessage());
+                        }
                     }
                     break;
                 case 4:
@@ -80,8 +98,14 @@ public class GymAdminFlipfitMenu {
                     String approveSlotId = scanner.nextLine();
                     try {
                         adminService.approveSlot(approveSlotId);
-                    } catch (ApprovalFailedException e) {
-                        System.out.println("[ADMIN ERROR] " + e.getMessage());
+                    } catch (Exception e) {
+                        if (e instanceof ApprovalFailedException) {
+                            System.out.println("[ADMIN ERROR] " + e.getMessage());
+                        } else if (e instanceof com.flipfit.exception.InvalidInputException) {
+                            System.out.println("[INPUT ERROR] " + e.getMessage());
+                        } else {
+                            System.out.println("[ERROR] " + e.getMessage());
+                        }
                     }
                     break;
                 case 6:
@@ -91,8 +115,14 @@ public class GymAdminFlipfitMenu {
                         adminService.rejectSlot(rejectSlotId);
                         // Successful message is usually handled inside the serviceImpl,
                         // but we catch the failure here.
-                    } catch (ApprovalFailedException e) {
-                        System.out.println("\n[ADMIN ACTION FAILED] " + e.getMessage());
+                    } catch (Exception e) {
+                        if (e instanceof ApprovalFailedException) {
+                            System.out.println("\n[ADMIN ACTION FAILED] " + e.getMessage());
+                        } else if (e instanceof com.flipfit.exception.InvalidInputException) {
+                            System.out.println("\n[INPUT ERROR] " + e.getMessage());
+                        } else {
+                            System.out.println("\n[ERROR] " + e.getMessage());
+                        }
                     }
                     break;
                 case 7:
@@ -117,9 +147,43 @@ public class GymAdminFlipfitMenu {
                     String startDate = scanner.nextLine();
                     System.out.print("Enter end date (yyyy-MM-dd): ");
                     String endDate = scanner.nextLine();
-                    adminService.viewRevenueByDateRange(startDate, endDate);
+                    try {
+                        adminService.viewRevenueByDateRange(startDate, endDate);
+                    } catch (com.flipfit.exception.InvalidDateRangeException e) {
+                        System.out.println("[DATE RANGE ERROR] " + e.getMessage());
+                    }
                     break;
                 case 13:
+                    adminService.viewApprovedGyms();
+                    break;
+                case 14:
+                    adminService.viewApprovedGymOwners();
+                    break;
+                case 15:
+                    adminService.viewPendingGymOwners();
+                    break;
+                case 16:
+                    System.out.print("Enter FULL Gym Owner ID to approve (e.g., OWN1500): ");
+                    String ownerId = scanner.nextLine();
+                    try {
+                        adminService.approveGymOwner(ownerId);
+                    } catch (ApprovalFailedException e) {
+                        System.out.println("[ADMIN ERROR] " + e.getMessage());
+                    }
+                    break;
+                case 17:
+                    System.out.print("Enter FULL Gym Owner ID to reject (e.g., OWN1500): ");
+                    String rejectOwnerId = scanner.nextLine();
+                    try {
+                        adminService.rejectGymOwner(rejectOwnerId);
+                    } catch (ApprovalFailedException e) {
+                        System.out.println("[ADMIN ERROR] " + e.getMessage());
+                    }
+                    break;
+                case 18:
+                    filterGymCenters(scanner, adminService);
+                    break;
+                case 19:
                     System.out.println("Logging out from Admin Session...");
                     back = true;
                     break;
@@ -179,6 +243,36 @@ public class GymAdminFlipfitMenu {
         int reportType = scanner.nextInt();
         scanner.nextLine();
 
-        adminService.generateReports(reportType);
+        try {
+            adminService.generateReports(reportType);
+        } catch (com.flipfit.exception.InvalidInputException e) {
+            System.out.println("[REPORT ERROR] " + e.getMessage());
+        }
+    }
+
+    private static void filterGymCenters(Scanner scanner, GymAdminInterface adminService) {
+        System.out.println("\n--- Filter Gym Centers ---");
+        System.out.println("1. View Approved Gyms");
+        System.out.println("2. View Pending (Not Approved) Gyms");
+        System.out.println("3. View Gyms by Location");
+        System.out.print("Enter your choice: ");
+        int choice = scanner.nextInt();
+        scanner.nextLine();
+
+        switch (choice) {
+            case 1:
+                adminService.viewApprovedGyms();
+                break;
+            case 2:
+                adminService.viewPendingGyms();
+                break;
+            case 3:
+                System.out.print("Enter city/location: ");
+                String location = scanner.nextLine();
+                adminService.viewGymsByLocation(location);
+                break;
+            default:
+                System.out.println("Invalid choice.");
+        }
     }
 }
