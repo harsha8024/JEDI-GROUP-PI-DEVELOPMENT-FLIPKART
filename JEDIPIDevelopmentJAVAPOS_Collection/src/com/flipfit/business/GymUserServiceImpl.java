@@ -12,9 +12,7 @@ import com.flipfit.exception.InvalidCredentialsException;
 import com.flipfit.exception.RegistrationFailedException;
 import com.flipfit.exception.UserNotFoundException;
 import com.flipfit.exception.InvalidInputException;
-import com.flipfit.exception.RegistrationFailedException;
 import com.flipfit.exception.RegistrationAlreadyExistsException;
-import com.flipfit.dao.AdminDAO;
 import java.util.Map;
 import java.util.HashMap;
 import com.flipfit.utils.ValidationUtils;
@@ -138,7 +136,7 @@ public class GymUserServiceImpl implements GymUserInterface {
         }
     }
 
-    private void registerGymOwner(User user) throws RegistrationFailedException {
+    private void registerGymOwner(User user) throws RegistrationFailedException, InvalidInputException {
         String ownerId = gymOwnerDAO.generateOwnerId();
         user.setUserID(ownerId);
 
