@@ -105,9 +105,9 @@ public class SQLConstants {
     public static final String DELETE_ALL_NOTIFICATIONS_BY_USER_ID = "DELETE FROM notifications WHERE user_id = ?";
 
     // ==================== ADMIN MANAGEMENT QUERIES ====================
-    public static final String REJECT_GYM = "UPDATE gyms SET is_approved = 0 WHERE gym_id = ?";
+    public static final String REJECT_GYM = "DELETE FROM gyms WHERE gym_id = ?";
     public static final String ACTIVATE_GYM_OWNER = "UPDATE gym_owners SET is_active = 1 WHERE owner_id = ?";
-    public static final String DEACTIVATE_GYM_OWNER = "UPDATE gym_owners SET is_active = 0 WHERE owner_id = ?";
+    public static final String DEACTIVATE_GYM_OWNER = "DELETE FROM gym_owners WHERE owner_id = ?";
     public static final String ACTIVATE_CUSTOMER = "UPDATE customers SET is_active = 1 WHERE customer_id = ?";
     public static final String DEACTIVATE_CUSTOMER = "UPDATE customers SET is_active = 0 WHERE customer_id = ?";
     public static final String COUNT_ALL_CUSTOMERS = "SELECT COUNT(*) as count FROM customers";
