@@ -8,7 +8,7 @@ public interface BookingInterface {
     // Changed java.util.Date to LocalDate
     boolean checkBookingOverlap(String userId, LocalDate date, String slotId);
     
-    String addBooking(String userId, String slotId);
+    String addBooking(String userId, String slotId, String gymId);
     boolean cancelBooking(String bookingId);
     Booking getBookingById(String bookingId);
     List<Booking> getBookingsByUserId(String userId);

@@ -92,7 +92,7 @@ public class GymCustomerServiceImpl implements GymCustomerInterface {
         }
 
         // 2. Create Booking via BookingService
-        String bookingId = bookingService.addBooking(userId, slotId);
+        String bookingId = bookingService.addBooking(userId, slotId, gymId);
         
         if (bookingId != null) {
             // 3. Get slot price and process payment via PaymentService
