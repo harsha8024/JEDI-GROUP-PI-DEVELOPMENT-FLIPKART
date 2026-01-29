@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>FlipFit API Tester</title>
+  <link rel="stylesheet" href="./stylesheet.css">
+  <style>
+    body{font-family:Segoe UI,Arial,Helvetica,sans-serif;padding:18px}
+    .row{display:flex;gap:8px;margin-bottom:8px}
+    label{width:120px;font-weight:600}
+    input[type=text],select,textarea{flex:1;padding:6px;border:1px solid #ccc;border-radius:4px}
+    textarea{height:160px;font-family:monospace}
+    .btn{padding:8px 12px;border:0;background:#1976d2;color:#fff;border-radius:4px;cursor:pointer}
+    .btn-secondary{background:#6c757d}
+    #response{white-space:pre-wrap;background:#0b132024;padding:12px;border-radius:6px;border:1px solid #ddd;margin-top:12px}
+    .presets{display:flex;flex-wrap:wrap;gap:6px}
+    .preset{background:#eee;padding:6px;border-radius:4px;cursor:pointer}
+  </style>
+</head>
+<body>
+  <h1>FlipFit API Tester</h1>
+  <p>Use this simple one-page UI to send requests to your local Dropwizard API (like Postman).</p>
+
+  <div class="row">
+    <label for="baseUrl">Base URL</label>
+    <input id="baseUrl" type="text" value="http://localhost:8080" />
+  </div>
+
+  <div class="row">
+    <label for="method">Method</label>
+    <select id="method">
+      <option>GET</option>
+      <option>POST</option>
+      <option>PUT</option>
+      <option>DELETE</option>
+    </select>
+    <label for="path">Path</label>
+    <input id="path" type="text" placeholder="/user/login or /customer/gyms" />
+  </div>
+
+  <div class="row">
+    <label>Query Params</label>
+    <input id="query" type="text" placeholder="e.g. key1=val1&key2=val2" />
+  </div>
+
+  <div class="row">
+    <label>Headers</label>
+    <input id="headers" type="text" placeholder='e.g. Content-Type=application/json; Authorization=Bearer ...' />
+  </div>
+
+  <div class="row">
+    <label>Body (JSON)</label>
+  </div>
+  <textarea id="body" placeholder='{"username":"john","password":"secret"}'></textarea>
+
+  <div style="margin-top:8px;display:flex;gap:8px;align-items:center">
+    <button id="send" class="btn">Send</button>
+    <button id="clear" class="btn btn-secondary">Clear Response</button>
+    <span id="status" style="margin-left:12px;font-weight:600"></span>
+  </div>
+
+  <h3>Presets (click to populate)</h3>
+  <div class="presets" id="presets">
+    <!-- Populated by script -->
+  </div>
+
+  <h3>Response</h3>
+  <div id="response">No response yet.</div>
+
+  <script>
+    const presets = [
+      {label:'POST /user/login', method:'POST', path:'/user/login', body:{"username":"","password":""}},
+      {label:'POST /user/register', method:'POST', path:'/user/register', body:{"username":"","password":"","role":"CUSTOMER"}},
+      {label:'GET /customer/gyms', method:'GET', path:'/customer/gyms'},
+      {label:'GET /customer/gyms/{gymId}/slots (query date)', method:'GET', path:'/customer/gyms/{gymId}/slots?date=2026-01-29'},
+      {label:'POST /customer/book', method:'POST', path:'/customer/book', body:{"userId":"","slotId":"","date":"2026-01-29"}},
+      {label:'GET /slot/gym/{gymId}', method:'GET', path:'/slot/gym/{gymId}'},
+      {label:'POST /slot/create', method:'POST', path:'/slot/create', body:{"gymId":"","startTime":"09:00","endTime":"10:00","capacity":10}},
+      {label:'POST /payment/process', method:'POST', path:'/payment/process', body:{"bookingId":"","amount":0}},
+      {label:'POST /notification/send', method:'POST', path:'/notification/send', body:{"userId":"","message":""}},
+      {label:'GET /admin/gyms/pending', method:'GET', path:'/admin/gyms/pending'}
+    ];
+
+    const presetsEl = document.getElementById('presets');
+    presets.forEach(p=>{
+      const btn = document.createElement('div'); btn.className='preset'; btn.textContent=p.label;
+      btn.onclick = ()=>{
+        document.getElementById('method').value = p.method;
+        document.getElementById('path').value = p.path;
+        document.getElementById('body').value = p.body ? JSON.stringify(p.body, null, 2) : '';
+      };
+      presetsEl.appendChild(btn);
+    });
+
+    function parseHeaders(str){
+      const out = {};
+      if(!str) return out;
+      str.split(';').map(s=>s.trim()).filter(Boolean).forEach(pair=>{
+        const idx = pair.indexOf('='); if(idx===-1) return; const k=pair.slice(0,idx).trim(); const v=pair.slice(idx+1).trim(); out[k]=v;
+      });
+      return out;
+    }
+
+    document.getElementById('send').addEventListener('click', async ()=>{
+      const base = document.getElementById('baseUrl').value.replace(/\/$/, '');
+      const method = document.getElementById('method').value;
+      let path = document.getElementById('path').value;
+      const query = document.getElementById('query').value;
+      const headersText = document.getElementById('headers').value;
+      const bodyText = document.getElementById('body').value;
+
+      if(query){
+        if(path.indexOf('?')===-1) path += (path.includes('?')? '&':'?') + query;
+        else path += '&' + query;
+      }
+
+      const url = base + (path.startsWith('/') ? path : '/' + path);
+      const headers = parseHeaders(headersText);
+      const opts = {method, headers: {...headers}};
+      if(bodyText && (method==='POST' || method==='PUT')){
+        if(!opts.headers['Content-Type']) opts.headers['Content-Type']='application/json';
+        try{ opts.body = bodyText; }catch(e){ /* keep raw */ }
+      }
+
+      const statusEl = document.getElementById('status');
+      const respEl = document.getElementById('response');
+      statusEl.textContent = 'Sending...'; respEl.textContent = '';
+
+      try{
+        const res = await fetch(url, opts);
+        const ct = res.headers.get('content-type') || '';
+        let data;
+        if(ct.includes('application/json')) data = await res.json(); else data = await res.text();
+        statusEl.textContent = res.status + ' ' + res.statusText;
+        respEl.textContent = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+      }catch(err){
+        statusEl.textContent = 'Error';
+        respEl.textContent = String(err) + '\n\nNote: If you see CORS errors, run a local static file server (see instructions) or enable CORS in the Dropwizard app.';
+      }
+    });
+
+    document.getElementById('clear').addEventListener('click', ()=>{document.getElementById('response').textContent=''; document.getElementById('status').textContent='';});
+  </script>
+</body>
+</html>
