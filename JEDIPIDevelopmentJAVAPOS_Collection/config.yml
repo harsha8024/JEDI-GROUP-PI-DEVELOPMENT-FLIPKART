@@ -1,0 +1,25 @@
+applicationName: "FlipFit Service V1"
+
+database:
+  driverClass: com.mysql.cj.jdbc.Driver
+  user: root
+  password: "abcd12#$"
+  url: jdbc:mysql://localhost:3306/flipfit_db?useSSL=false&serverTimezone=Asia/Kolkata&allowPublicKeyRetrieval=true
+  properties:
+    charSet: UTF-8
+  maxWaitForConnection: 1s
+  validationQuery: "/* FlipFit Health Check */ SELECT 1"
+  minSize: 8
+  maxSize: 32
+  checkConnectionWhileIdle: false
+  evictionInterval: 10s
+  minIdleTime: 1 minute
+
+server:
+  applicationConnectors:
+    - type: http
+      port: 8080
+  adminConnectors:
+    - type: http
+      port: 8081
+
