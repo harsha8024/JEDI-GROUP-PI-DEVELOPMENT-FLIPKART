@@ -1,10 +1,12 @@
 package com.flipfit.rest;
 
 import com.flipfit.bean.Gym;
+import com.flipfit.bean.Slot;
 import com.flipfit.bean.User;
 import com.flipfit.business.GymAdminInterface;
 import com.flipfit.business.GymAdminServiceImpl;
 import com.flipfit.exception.ApprovalFailedException;
+import com.flipfit.exception.InvalidDateRangeException;
 import com.flipfit.exception.InvalidInputException;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -24,8 +26,9 @@ public class GymAdminController {
 
     @GET
     @Path("/gyms/pending")
-    public List<Gym> viewPendingApprovals() {
-        return adminService.viewPendingApprovals();
+    public Response viewPendingApprovals() {
+        List<Gym> pendingGyms = adminService.viewPendingApprovals();
+        return Response.ok(pendingGyms).build();
     }
 
     @PUT
@@ -56,14 +59,136 @@ public class GymAdminController {
 
     @GET
     @Path("/users")
-    public List<User> viewAllUsers() {
-        return adminService.viewAllUsers();
+    public Response viewAllUsers() {
+        List<User> users = adminService.viewAllUsers();
+        return Response.ok(users).build();
     }
 
     @GET
     @Path("/gyms")
-    public List<Gym> viewAllGyms() {
-        return adminService.viewAllGyms();
+    public Response viewAllGyms() {
+        List<Gym> gyms = adminService.viewAllGyms();
+        return Response.ok(gyms).build();
+    }
+
+    @GET
+    @Path("/bookings")
+    public Response viewAllBookings() {
+        adminService.viewAllBookings();
+        return Response.ok("Bookings retrieved successfully").build();
+    }
+
+    @GET
+    @Path("/gyms/approved")
+    public Response viewApprovedGyms() {
+        adminService.viewApprovedGyms();
+        return Response.ok("Approved gyms retrieved successfully").build();
+    }
+
+    @GET
+    @Path("/gyms/location/{location}")
+    public Response viewGymsByLocation(@PathParam("location") String location) {
+        adminService.viewGymsByLocation(location);
+        return Response.ok("Gyms filtered by location successfully").build();
+    }
+
+    @GET
+    @Path("/owners/approved")
+    public Response viewApprovedGymOwners() {
+        adminService.viewApprovedGymOwners();
+        return Response.ok("Approved gym owners retrieved successfully").build();
+    }
+
+    @GET
+    @Path("/owners/pending")
+    public Response viewPendingGymOwners() {
+        adminService.viewPendingGymOwners();
+        return Response.ok("Pending gym owners retrieved successfully").build();
+    }
+
+    @PUT
+    @Path("/owners/approve/{ownerId}")
+    public Response approveGymOwner(@PathParam("ownerId") String ownerId) {
+        try {
+            adminService.approveGymOwner(ownerId);
+            return Response.ok("Gym Owner Approved Successfully").build();
+        } catch (ApprovalFailedException e) {
+            return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();
+        }
+    }
+
+    @PUT
+    @Path("/owners/reject/{ownerId}")
+    public Response rejectGymOwner(@PathParam("ownerId") String ownerId) {
+        try {
+            adminService.rejectGymOwner(ownerId);
+            return Response.ok("Gym Owner Rejected Successfully").build();
+        } catch (ApprovalFailedException e) {
+            return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();
+        }
+    }
+
+    @GET
+    @Path("/slots/pending")
+    public Response viewPendingSlots() {
+        List<Slot> pendingSlots = adminService.viewPendingSlots();
+        return Response.ok(pendingSlots).build();
+    }
+
+    @PUT
+    @Path("/slots/approve/{slotId}")
+    public Response approveSlot(@PathParam("slotId") String slotId) {
+        try {
+            adminService.approveSlot(slotId);
+            return Response.ok("Slot Approved Successfully").build();
+        } catch (ApprovalFailedException e) {
+            return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();
+        } catch (InvalidInputException e) {
+            return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
+        }
+    }
+
+    @PUT
+    @Path("/slots/reject/{slotId}")
+    public Response rejectSlot(@PathParam("slotId") String slotId) {
+        try {
+            adminService.rejectSlot(slotId);
+            return Response.ok("Slot Rejected Successfully").build();
+        } catch (ApprovalFailedException e) {
+            return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();
+        } catch (InvalidInputException e) {
+            return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
+        }
+    }
+
+    @GET
+    @Path("/reports")
+    public Response generateReports(@QueryParam("reportType") int reportType) {
+        try {
+            adminService.generateReports(reportType);
+            return Response.ok("Report generated successfully").build();
+        } catch (InvalidInputException e) {
+            return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
+        }
+    }
+
+    @GET
+    @Path("/reports/payment")
+    public Response viewPaymentReports() {
+        adminService.viewPaymentReports();
+        return Response.ok("Payment reports retrieved successfully").build();
+    }
+
+    @GET
+    @Path("/reports/revenue")
+    public Response viewRevenueByDateRange(@QueryParam("startDate") String startDate,
+                                          @QueryParam("endDate") String endDate) {
+        try {
+            adminService.viewRevenueByDateRange(startDate, endDate);
+            return Response.ok("Revenue report generated successfully").build();
+        } catch (InvalidDateRangeException e) {
+            return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
+        }
     }
 }
 
