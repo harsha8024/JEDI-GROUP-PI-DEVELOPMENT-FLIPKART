@@ -6,21 +6,33 @@
   <title>FlipFit API Tester</title>
   <link rel="stylesheet" href="./stylesheet.css">
   <style>
-    body{font-family:Segoe UI,Arial,Helvetica,sans-serif;padding:18px}
-    .row{display:flex;gap:8px;margin-bottom:8px}
-    label{width:120px;font-weight:600}
+    body{font-family:Segoe UI,Arial,Helvetica,sans-serif;padding:18px;max-width:1400px;margin:0 auto}
+    .row{display:flex;gap:8px;margin-bottom:8px;align-items:center}
+    label{width:120px;font-weight:600;flex-shrink:0}
     input[type=text],select,textarea{flex:1;padding:6px;border:1px solid #ccc;border-radius:4px}
     textarea{height:160px;font-family:monospace}
     .btn{padding:8px 12px;border:0;background:#1976d2;color:#fff;border-radius:4px;cursor:pointer}
+    .btn:hover{background:#1565c0}
     .btn-secondary{background:#6c757d}
-    #response{white-space:pre-wrap;background:#0b132024;padding:12px;border-radius:6px;border:1px solid #ddd;margin-top:12px}
-    .presets{display:flex;flex-wrap:wrap;gap:6px}
-    .preset{background:#eee;padding:6px;border-radius:4px;cursor:pointer}
+    .btn-secondary:hover{background:#5a6268}
+    #response{white-space:pre-wrap;background:#0b132024;padding:12px;border-radius:6px;border:1px solid #ddd;margin-top:12px;max-height:400px;overflow:auto}
+    .presets{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:6px;margin-top:8px}
+    .preset{background:#eee;padding:8px 12px;border-radius:4px;cursor:pointer;border:1px solid #ddd;transition:all 0.2s}
+    .preset:hover{background:#ddd;border-color:#999}
+    .preset-category{font-weight:700;font-size:0.95em;background:#333;color:#fff;padding:8px;border-radius:4px;margin-top:12px;margin-bottom:4px}
+    .cors-warning{background:#fff3cd;border:1px solid #ffc107;padding:12px;border-radius:6px;margin-bottom:16px;color:#856404}
+    .cors-warning strong{display:block;margin-bottom:6px}
   </style>
 </head>
 <body>
   <h1>FlipFit API Tester</h1>
-  <p>Use this simple one-page UI to send requests to your local Dropwizard API (like Postman).</p>
+  <p>Complete API testing tool for your Dropwizard REST endpoints.</p>
+  
+  <div class="cors-warning">
+    <strong>⚠️ CORS Note:</strong>
+    If you get CORS errors, the Dropwizard app must enable CORS headers. This HTML can be opened directly from filesystem or served via: 
+    <code>python -m http.server 8000</code> (then visit http://localhost:8000/api-tester.html)
+  </div>
 
   <div class="row">
     <label for="baseUrl">Base URL</label>
@@ -70,62 +82,98 @@
 
   <script>
     const presets = [
-      // User Authentication
-      {label:'POST /customer/register', method:'POST', path:'/customer/register', body:{"name":"","email":"","password":"","phoneNumber":"","city":""}},
-      {label:'POST /customer/login', method:'POST', path:'/customer/login?email=&password='},
-      {label:'POST /owner/register', method:'POST', path:'/owner/register', body:{"name":"","email":"","password":"","phoneNumber":"","city":"","panNumber":"","aadharNumber":"","gstinNumber":""}},
-      {label:'POST /owner/login', method:'POST', path:'/owner/login?email=&password='},
-      {label:'POST /admin/login', method:'POST', path:'/admin/login?email=&password='},
+      // === USER AUTHENTICATION ===
+      {cat:'User', label:'POST /user/login', method:'POST', path:'/user/login?email=user@example.com&password=pass123'},
+      {cat:'User', label:'POST /user/register', method:'POST', path:'/user/register', body:{name:"John Doe",email:"john@example.com",password:"pass123",phoneNumber:"1234567890",city:"Mumbai"}},
+      {cat:'User', label:'PUT /user/update-password', method:'PUT', path:'/user/update-password?email=user@example.com&password=newpass123'},
+      {cat:'User', label:'POST /user/logout', method:'POST', path:'/user/logout'},
       
-      // Customer Operations
-      {label:'GET /customer/gyms', method:'GET', path:'/customer/gyms'},
-      {label:'GET /customer/gyms/{gymId}/slots', method:'GET', path:'/customer/gyms/{gymId}/slots?date=2026-01-29'},
-      {label:'POST /customer/book', method:'POST', path:'/customer/book?userId=&slotId=&gymId=&date=2026-01-29'},
-      {label:'PUT /customer/cancel/{bookingId}', method:'PUT', path:'/customer/cancel/{bookingId}?userId='},
-      {label:'GET /customer/bookings/{userId}', method:'GET', path:'/customer/bookings/{userId}'},
+      // === CUSTOMER OPERATIONS ===
+      {cat:'Customer', label:'POST /customer/register', method:'POST', path:'/customer/register', body:{name:"Jane Customer",email:"jane@example.com",password:"pass123",phoneNumber:"9876543210",city:"Delhi"}},
+      {cat:'Customer', label:'POST /customer/login', method:'POST', path:'/customer/login?email=jane@example.com&password=pass123'},
+      {cat:'Customer', label:'GET /customer/gyms', method:'GET', path:'/customer/gyms'},
+      {cat:'Customer', label:'GET /customer/gyms/{gymId}/slots', method:'GET', path:'/customer/gyms/GYM001/slots?date=2026-02-01'},
+      {cat:'Customer', label:'POST /customer/book', method:'POST', path:'/customer/book?userId=USER001&slotId=SLOT001&gymId=GYM001&date=2026-02-01'},
+      {cat:'Customer', label:'PUT /customer/cancel/{bookingId}', method:'PUT', path:'/customer/cancel/BOOK001?userId=USER001'},
+      {cat:'Customer', label:'GET /customer/bookings/{userId}', method:'GET', path:'/customer/bookings/USER001'},
       
-      // Owner Operations
-      {label:'POST /owner/gyms/register', method:'POST', path:'/owner/gyms/register', body:{"gymName":"","location":"","gymOwnerId":""}},
-      {label:'GET /owner/gyms/{ownerId}', method:'GET', path:'/owner/gyms/{ownerId}'},
-      {label:'GET /owner/bookings/{ownerId}', method:'GET', path:'/owner/bookings/{ownerId}'},
-      {label:'POST /owner/slots/create', method:'POST', path:'/owner/slots/create?gymId=&startTime=09:00&endTime=10:00&capacity=10'},
-      {label:'GET /owner/slots/{gymId}', method:'GET', path:'/owner/slots/{gymId}'},
-      {label:'PUT /owner/slots/{slotId}', method:'PUT', path:'/owner/slots/{slotId}?capacity=15'},
-      {label:'DELETE /owner/slots/{slotId}', method:'DELETE', path:'/owner/slots/{slotId}'},
+      // === GYM OWNER OPERATIONS ===
+      {cat:'Owner', label:'POST /owner/register', method:'POST', path:'/owner/register', body:{name:"Gym Owner",email:"owner@example.com",password:"pass123",phoneNumber:"1112223333",city:"Bangalore",panNumber:"ABCDE1234F",aadharNumber:"123456789012",gstinNumber:"22ABCDE1234F1Z5"}},
+      {cat:'Owner', label:'POST /owner/login', method:'POST', path:'/owner/login?email=owner@example.com&password=pass123'},
+      {cat:'Owner', label:'POST /owner/gyms/register', method:'POST', path:'/owner/gyms/register', body:{gymName:"PowerFit Gym",location:"Bangalore",gymOwnerId:"OWNER001"}},
+      {cat:'Owner', label:'GET /owner/gyms/{ownerId}', method:'GET', path:'/owner/gyms/OWNER001'},
+      {cat:'Owner', label:'GET /owner/bookings/{ownerId}', method:'GET', path:'/owner/bookings/OWNER001'},
+      {cat:'Owner', label:'POST /owner/slots/create', method:'POST', path:'/owner/slots/create?gymId=GYM001&startTime=09:00&endTime=10:00&capacity=20'},
+      {cat:'Owner', label:'GET /owner/slots/{gymId}', method:'GET', path:'/owner/slots/GYM001'},
+      {cat:'Owner', label:'PUT /owner/slots/{slotId}', method:'PUT', path:'/owner/slots/SLOT001?capacity=25'},
+      {cat:'Owner', label:'DELETE /owner/slots/{slotId}', method:'DELETE', path:'/owner/slots/SLOT001'},
+      {cat:'Owner', label:'PUT /owner/schedule/update', method:'PUT', path:'/owner/schedule/update?gymId=GYM001'},
       
-      // Admin Operations
-      {label:'GET /admin/gyms/pending', method:'GET', path:'/admin/gyms/pending'},
-      {label:'PUT /admin/gyms/approve/{gymId}', method:'PUT', path:'/admin/gyms/approve/{gymId}'},
-      {label:'PUT /admin/gyms/reject/{gymId}', method:'PUT', path:'/admin/gyms/reject/{gymId}'},
-      {label:'GET /admin/owners/pending', method:'GET', path:'/admin/owners/pending'},
-      {label:'PUT /admin/owners/approve/{ownerId}', method:'PUT', path:'/admin/owners/approve/{ownerId}'},
-      {label:'PUT /admin/owners/reject/{ownerId}', method:'PUT', path:'/admin/owners/reject/{ownerId}'},
-      {label:'GET /admin/users', method:'GET', path:'/admin/users'},
-      {label:'GET /admin/gyms', method:'GET', path:'/admin/gyms'},
+      // === ADMIN OPERATIONS ===
+      {cat:'Admin', label:'POST /admin/login', method:'POST', path:'/admin/login?email=admin@flipfit.com&password=admin123'},
+      {cat:'Admin', label:'GET /admin/users', method:'GET', path:'/admin/users'},
+      {cat:'Admin', label:'GET /admin/gyms', method:'GET', path:'/admin/gyms'},
+      {cat:'Admin', label:'GET /admin/gyms/pending', method:'GET', path:'/admin/gyms/pending'},
+      {cat:'Admin', label:'GET /admin/gyms/approved', method:'GET', path:'/admin/gyms/approved'},
+      {cat:'Admin', label:'GET /admin/gyms/location/{location}', method:'GET', path:'/admin/gyms/location/Bangalore'},
+      {cat:'Admin', label:'PUT /admin/gyms/approve/{gymId}', method:'PUT', path:'/admin/gyms/approve/GYM001'},
+      {cat:'Admin', label:'PUT /admin/gyms/reject/{gymId}', method:'PUT', path:'/admin/gyms/reject/GYM001'},
+      {cat:'Admin', label:'GET /admin/owners/approved', method:'GET', path:'/admin/owners/approved'},
+      {cat:'Admin', label:'GET /admin/owners/pending', method:'GET', path:'/admin/owners/pending'},
+      {cat:'Admin', label:'PUT /admin/owners/approve/{ownerId}', method:'PUT', path:'/admin/owners/approve/OWNER001'},
+      {cat:'Admin', label:'PUT /admin/owners/reject/{ownerId}', method:'PUT', path:'/admin/owners/reject/OWNER001'},
+      {cat:'Admin', label:'GET /admin/slots/pending', method:'GET', path:'/admin/slots/pending'},
+      {cat:'Admin', label:'PUT /admin/slots/approve/{slotId}', method:'PUT', path:'/admin/slots/approve/SLOT001'},
+      {cat:'Admin', label:'PUT /admin/slots/reject/{slotId}', method:'PUT', path:'/admin/slots/reject/SLOT001'},
+      {cat:'Admin', label:'GET /admin/bookings', method:'GET', path:'/admin/bookings'},
+      {cat:'Admin', label:'GET /admin/reports', method:'GET', path:'/admin/reports?reportType=1'},
+      {cat:'Admin', label:'GET /admin/reports/payment', method:'GET', path:'/admin/reports/payment'},
+      {cat:'Admin', label:'GET /admin/reports/revenue', method:'GET', path:'/admin/reports/revenue?startDate=2026-01-01&endDate=2026-01-31'},
       
-      // Slot Operations
-      {label:'GET /slot/gym/{gymId}', method:'GET', path:'/slot/gym/{gymId}'},
-      {label:'POST /slot/create', method:'POST', path:'/slot/create', body:{"gymId":"","startTime":"09:00","endTime":"10:00","capacity":10}},
-      {label:'GET /slot/{slotId}', method:'GET', path:'/slot/{slotId}'},
+      // === SLOT OPERATIONS ===
+      {cat:'Slot', label:'POST /slot/create', method:'POST', path:'/slot/create?gymId=GYM001&startTime=14:00&endTime=15:00&capacity=15'},
+      {cat:'Slot', label:'GET /slot/gym/{gymId}', method:'GET', path:'/slot/gym/GYM001'},
+      {cat:'Slot', label:'GET /slot/{slotId}', method:'GET', path:'/slot/SLOT001'},
+      {cat:'Slot', label:'PUT /slot/{slotId}', method:'PUT', path:'/slot/SLOT001?capacity=18'},
+      {cat:'Slot', label:'DELETE /slot/{slotId}', method:'DELETE', path:'/slot/SLOT001'},
       
-      // Payment Operations
-      {label:'POST /payment/process', method:'POST', path:'/payment/process', body:{"bookingId":"","amount":0}},
-      {label:'GET /payment/{paymentId}', method:'GET', path:'/payment/{paymentId}'},
+      // === PAYMENT OPERATIONS ===
+      {cat:'Payment', label:'POST /payment/process', method:'POST', path:'/payment/process?bookingId=BOOK001&amount=500&paymentMethod=CARD'},
+      {cat:'Payment', label:'GET /payment/{paymentId}', method:'GET', path:'/payment/PAY001'},
+      {cat:'Payment', label:'POST /payment/refund/{paymentId}', method:'POST', path:'/payment/refund/PAY001'},
       
-      // Notification Operations
-      {label:'POST /notification/send', method:'POST', path:'/notification/send', body:{"userId":"","message":""}},
-      {label:'GET /notification/unread/{userId}', method:'GET', path:'/notification/unread/{userId}'}
+      // === NOTIFICATION OPERATIONS ===
+      {cat:'Notification', label:'POST /notification/send', method:'POST', path:'/notification/send?userId=USER001&message=Your%20booking%20confirmed&title=Booking%20Confirmation'},
+      {cat:'Notification', label:'GET /notification/unread/{userId}', method:'GET', path:'/notification/unread/USER001'},
+      {cat:'Notification', label:'PUT /notification/mark-read/{notificationId}', method:'PUT', path:'/notification/mark-read/NOTIF001'},
+      
+      // === REGISTRATION OPERATIONS ===
+      {cat:'Registration', label:'POST /registration/create', method:'POST', path:'/registration/create?userId=USER001&role=CUSTOMER'},
+      {cat:'Registration', label:'GET /registration/pending', method:'GET', path:'/registration/pending'},
+      {cat:'Registration', label:'PUT /registration/approve/{registrationId}', method:'PUT', path:'/registration/approve/REG001?adminId=ADMIN001'},
+      {cat:'Registration', label:'PUT /registration/reject/{registrationId}', method:'PUT', path:'/registration/reject/REG001?adminId=ADMIN001'}
     ];
 
+    // Group presets by category and render
+    const categories = [...new Set(presets.map(p=>p.cat))];
     const presetsEl = document.getElementById('presets');
-    presets.forEach(p=>{
-      const btn = document.createElement('div'); btn.className='preset'; btn.textContent=p.label;
-      btn.onclick = ()=>{
-        document.getElementById('method').value = p.method;
-        document.getElementById('path').value = p.path;
-        document.getElementById('body').value = p.body ? JSON.stringify(p.body, null, 2) : '';
-      };
-      presetsEl.appendChild(btn);
+    categories.forEach(cat=>{
+      const catHeader = document.createElement('div');
+      catHeader.className = 'preset-category';
+      catHeader.textContent = cat;
+      presetsEl.appendChild(catHeader);
+      
+      presets.filter(p=>p.cat===cat).forEach(p=>{
+        const btn = document.createElement('div');
+        btn.className='preset';
+        btn.textContent=p.label;
+        btn.onclick = ()=>{
+          document.getElementById('method').value = p.method;
+          document.getElementById('path').value = p.path;
+          document.getElementById('body').value = p.body ? JSON.stringify(p.body, null, 2) : '';
+        };
+        presetsEl.appendChild(btn);
+      });
     });
 
     function parseHeaders(str){

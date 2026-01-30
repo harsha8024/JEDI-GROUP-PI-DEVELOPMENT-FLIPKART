@@ -4,6 +4,10 @@ import com.flipfit.rest.*;
 import io.dropwizard.core.Application;
 import io.dropwizard.core.setup.Bootstrap;
 import io.dropwizard.core.setup.Environment;
+import org.eclipse.jetty.servlets.CrossOriginFilter;
+import jakarta.servlet.DispatcherType;
+import jakarta.servlet.FilterRegistration;
+import java.util.EnumSet;
 
 public class FlipFitApplication extends Application<FlipFitConfiguration> {
 
@@ -24,6 +28,9 @@ public class FlipFitApplication extends Application<FlipFitConfiguration> {
     @Override
     public void run(final FlipFitConfiguration configuration,
                     final Environment environment) {
+
+        // Enable CORS
+        configureCors(environment);
 
         // Register All REST Controllers
         environment.jersey().register(new UserController());
@@ -48,6 +55,22 @@ public class FlipFitApplication extends Application<FlipFitConfiguration> {
         System.out.println("  - Registration API: http://localhost:8080/registration");
         System.out.println("  - Slot API: http://localhost:8080/slot");
         System.out.println("========================================");
+        System.out.println("✓ CORS enabled - API accessible from browser");
+        System.out.println("========================================");
+    }
+
+    private void configureCors(Environment environment) {
+        FilterRegistration.Dynamic filter = environment.servlets()
+            .addFilter("CORS", CrossOriginFilter.class);
+        
+        // Configure CORS parameters
+        filter.addMappingForUrlPatterns(EnumSet.allOf(DispatcherType.class), true, "/*");
+        filter.setInitParameter(CrossOriginFilter.ALLOWED_ORIGINS_PARAM, "*");
+        filter.setInitParameter(CrossOriginFilter.ALLOWED_HEADERS_PARAM, "X-Requested-With,Content-Type,Accept,Origin,Authorization");
+        filter.setInitParameter(CrossOriginFilter.ALLOWED_METHODS_PARAM, "OPTIONS,GET,PUT,POST,DELETE,HEAD");
+        filter.setInitParameter(CrossOriginFilter.ALLOW_CREDENTIALS_PARAM, "true");
+        
+        System.out.println("CORS filter configured successfully");
     }
 }
 
