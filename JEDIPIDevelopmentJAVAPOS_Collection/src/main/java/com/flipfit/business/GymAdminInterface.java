@@ -95,16 +95,18 @@ public interface GymAdminInterface {
      *
      * @param ownerId the owner id
      * @throws ApprovalFailedException the approval failed exception
+     * @throws InvalidInputException the invalid input exception
      */
-    void approveGymOwner(String ownerId) throws ApprovalFailedException;
+    void approveGymOwner(String ownerId) throws ApprovalFailedException, InvalidInputException;
 
     /**
      * Reject gym owner.
      *
      * @param ownerId the owner id
      * @throws ApprovalFailedException the approval failed exception
+     * @throws InvalidInputException the invalid input exception
      */
-    void rejectGymOwner(String ownerId) throws ApprovalFailedException;
+    void rejectGymOwner(String ownerId) throws ApprovalFailedException, InvalidInputException;
 
     /**
      * View payment reports and revenue.

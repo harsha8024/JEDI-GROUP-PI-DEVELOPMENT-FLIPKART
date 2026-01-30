@@ -70,16 +70,51 @@
 
   <script>
     const presets = [
-      {label:'POST /user/login', method:'POST', path:'/user/login', body:{"username":"","password":""}},
-      {label:'POST /user/register', method:'POST', path:'/user/register', body:{"username":"","password":"","role":"CUSTOMER"}},
+      // User Authentication
+      {label:'POST /customer/register', method:'POST', path:'/customer/register', body:{"name":"","email":"","password":"","phoneNumber":"","city":""}},
+      {label:'POST /customer/login', method:'POST', path:'/customer/login?email=&password='},
+      {label:'POST /owner/register', method:'POST', path:'/owner/register', body:{"name":"","email":"","password":"","phoneNumber":"","city":"","panNumber":"","aadharNumber":"","gstinNumber":""}},
+      {label:'POST /owner/login', method:'POST', path:'/owner/login?email=&password='},
+      {label:'POST /admin/login', method:'POST', path:'/admin/login?email=&password='},
+      
+      // Customer Operations
       {label:'GET /customer/gyms', method:'GET', path:'/customer/gyms'},
-      {label:'GET /customer/gyms/{gymId}/slots (query date)', method:'GET', path:'/customer/gyms/{gymId}/slots?date=2026-01-29'},
-      {label:'POST /customer/book', method:'POST', path:'/customer/book', body:{"userId":"","slotId":"","date":"2026-01-29"}},
+      {label:'GET /customer/gyms/{gymId}/slots', method:'GET', path:'/customer/gyms/{gymId}/slots?date=2026-01-29'},
+      {label:'POST /customer/book', method:'POST', path:'/customer/book?userId=&slotId=&gymId=&date=2026-01-29'},
+      {label:'PUT /customer/cancel/{bookingId}', method:'PUT', path:'/customer/cancel/{bookingId}?userId='},
+      {label:'GET /customer/bookings/{userId}', method:'GET', path:'/customer/bookings/{userId}'},
+      
+      // Owner Operations
+      {label:'POST /owner/gyms/register', method:'POST', path:'/owner/gyms/register', body:{"gymName":"","location":"","gymOwnerId":""}},
+      {label:'GET /owner/gyms/{ownerId}', method:'GET', path:'/owner/gyms/{ownerId}'},
+      {label:'GET /owner/bookings/{ownerId}', method:'GET', path:'/owner/bookings/{ownerId}'},
+      {label:'POST /owner/slots/create', method:'POST', path:'/owner/slots/create?gymId=&startTime=09:00&endTime=10:00&capacity=10'},
+      {label:'GET /owner/slots/{gymId}', method:'GET', path:'/owner/slots/{gymId}'},
+      {label:'PUT /owner/slots/{slotId}', method:'PUT', path:'/owner/slots/{slotId}?capacity=15'},
+      {label:'DELETE /owner/slots/{slotId}', method:'DELETE', path:'/owner/slots/{slotId}'},
+      
+      // Admin Operations
+      {label:'GET /admin/gyms/pending', method:'GET', path:'/admin/gyms/pending'},
+      {label:'PUT /admin/gyms/approve/{gymId}', method:'PUT', path:'/admin/gyms/approve/{gymId}'},
+      {label:'PUT /admin/gyms/reject/{gymId}', method:'PUT', path:'/admin/gyms/reject/{gymId}'},
+      {label:'GET /admin/owners/pending', method:'GET', path:'/admin/owners/pending'},
+      {label:'PUT /admin/owners/approve/{ownerId}', method:'PUT', path:'/admin/owners/approve/{ownerId}'},
+      {label:'PUT /admin/owners/reject/{ownerId}', method:'PUT', path:'/admin/owners/reject/{ownerId}'},
+      {label:'GET /admin/users', method:'GET', path:'/admin/users'},
+      {label:'GET /admin/gyms', method:'GET', path:'/admin/gyms'},
+      
+      // Slot Operations
       {label:'GET /slot/gym/{gymId}', method:'GET', path:'/slot/gym/{gymId}'},
       {label:'POST /slot/create', method:'POST', path:'/slot/create', body:{"gymId":"","startTime":"09:00","endTime":"10:00","capacity":10}},
+      {label:'GET /slot/{slotId}', method:'GET', path:'/slot/{slotId}'},
+      
+      // Payment Operations
       {label:'POST /payment/process', method:'POST', path:'/payment/process', body:{"bookingId":"","amount":0}},
+      {label:'GET /payment/{paymentId}', method:'GET', path:'/payment/{paymentId}'},
+      
+      // Notification Operations
       {label:'POST /notification/send', method:'POST', path:'/notification/send', body:{"userId":"","message":""}},
-      {label:'GET /admin/gyms/pending', method:'GET', path:'/admin/gyms/pending'}
+      {label:'GET /notification/unread/{userId}', method:'GET', path:'/notification/unread/{userId}'}
     ];
 
     const presetsEl = document.getElementById('presets');

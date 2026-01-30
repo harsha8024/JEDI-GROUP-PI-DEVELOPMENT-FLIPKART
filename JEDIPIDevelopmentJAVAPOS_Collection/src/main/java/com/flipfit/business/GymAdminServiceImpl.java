@@ -199,7 +199,10 @@ public class GymAdminServiceImpl implements GymAdminInterface {
     }
 
     @Override
-    public void approveGymOwner(String ownerId) throws ApprovalFailedException {
+    public void approveGymOwner(String ownerId) throws ApprovalFailedException, InvalidInputException {
+        if (ownerId == null || ownerId.isBlank()) {
+            throw new InvalidInputException("Invalid Owner ID.");
+        }
         if (!adminDAO.approveGymOwner(ownerId)) {
             throw new ApprovalFailedException("Gym Owner ID " + ownerId + " not found or could not be approved.");
         }
@@ -207,7 +210,10 @@ public class GymAdminServiceImpl implements GymAdminInterface {
     }
 
     @Override
-    public void rejectGymOwner(String ownerId) throws ApprovalFailedException {
+    public void rejectGymOwner(String ownerId) throws ApprovalFailedException, InvalidInputException {
+        if (ownerId == null || ownerId.isBlank()) {
+            throw new InvalidInputException("Invalid Owner ID.");
+        }
         if (!adminDAO.deactivateGymOwner(ownerId)) {
             throw new ApprovalFailedException("Gym Owner ID " + ownerId + " not found or could not be rejected.");
         }

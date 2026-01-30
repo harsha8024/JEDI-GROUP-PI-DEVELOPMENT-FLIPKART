@@ -2,16 +2,17 @@ package com.flipfit.rest;
 
 import com.flipfit.bean.Booking;
 import com.flipfit.bean.Gym;
+import com.flipfit.bean.GymOwner;
 import com.flipfit.bean.Slot;
+import com.flipfit.bean.User;
+import com.flipfit.bean.Role;
 import com.flipfit.business.GymOwnerInterface;
 import com.flipfit.business.GymOwnerServiceImpl;
+import com.flipfit.business.GymUserInterface;
+import com.flipfit.business.GymUserServiceImpl;
 import com.flipfit.business.SlotServiceInterface;
 import com.flipfit.business.SlotServiceImpl;
-import com.flipfit.exception.InvalidInputException;
-import com.flipfit.exception.RegistrationFailedException;
-import com.flipfit.exception.UserNotFoundException;
-import com.flipfit.exception.SlotNotFoundException;
-import com.flipfit.exception.SlotOperationException;
+import com.flipfit.exception.*;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -25,11 +26,59 @@ import java.util.List;
 public class GymOwnerController {
 
     private final GymOwnerInterface ownerService;
+    private final GymUserInterface userService;
     private final SlotServiceInterface slotService;
 
     public GymOwnerController() {
         this.ownerService = new GymOwnerServiceImpl();
+        this.userService = new GymUserServiceImpl();
         this.slotService = new SlotServiceImpl();
+    }
+
+    @POST
+    @Path("/register")
+    public Response registerOwner(GymOwner owner) {
+        try {
+            // Set role to OWNER
+            Role role = new Role();
+            role.setRoleName("OWNER");
+            owner.setRole(role);
+            
+            userService.register(owner);
+            return Response.status(Response.Status.CREATED)
+                    .entity("Gym Owner registered successfully. Account pending admin approval.")
+                    .build();
+        } catch (RegistrationFailedException | InvalidInputException e) {
+            return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("Registration failed: " + e.getMessage())
+                    .build();
+        }
+    }
+
+    @POST
+    @Path("/login")
+    public Response loginOwner(@QueryParam("email") String email, 
+                               @QueryParam("password") String password) {
+        try {
+            boolean success = userService.login(email, password);
+            if (success) {
+                return Response.ok("Gym Owner login successful").build();
+            } else {
+                return Response.status(Response.Status.UNAUTHORIZED).entity("Login failed").build();
+            }
+        } catch (UserNotFoundException e) {
+            return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();
+        } catch (InvalidCredentialsException e) {
+            return Response.status(Response.Status.UNAUTHORIZED).entity(e.getMessage()).build();
+        } catch (InvalidInputException e) {
+            return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("Login failed: " + e.getMessage())
+                    .build();
+        }
     }
 
     @POST

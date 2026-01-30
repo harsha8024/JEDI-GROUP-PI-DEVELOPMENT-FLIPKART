@@ -3,8 +3,12 @@ package com.flipfit.rest;
 import com.flipfit.bean.Booking;
 import com.flipfit.bean.Gym;
 import com.flipfit.bean.Slot;
+import com.flipfit.bean.User;
+import com.flipfit.bean.Role;
 import com.flipfit.business.GymCustomerInterface;
 import com.flipfit.business.GymCustomerServiceImpl;
+import com.flipfit.business.GymUserInterface;
+import com.flipfit.business.GymUserServiceImpl;
 import com.flipfit.exception.*;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -19,9 +23,57 @@ import java.util.List;
 public class GymCustomerController {
 
     private final GymCustomerInterface customerService;
+    private final GymUserInterface userService;
 
     public GymCustomerController() {
         this.customerService = new GymCustomerServiceImpl();
+        this.userService = new GymUserServiceImpl();
+    }
+
+    @POST
+    @Path("/register")
+    public Response registerCustomer(User user) {
+        try {
+            // Set role to CUSTOMER
+            Role role = new Role();
+            role.setRoleName("CUSTOMER");
+            user.setRole(role);
+            
+            userService.register(user);
+            return Response.status(Response.Status.CREATED)
+                    .entity("Customer registered successfully. Account pending admin approval.")
+                    .build();
+        } catch (RegistrationFailedException | InvalidInputException e) {
+            return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("Registration failed: " + e.getMessage())
+                    .build();
+        }
+    }
+
+    @POST
+    @Path("/login")
+    public Response loginCustomer(@QueryParam("email") String email, 
+                                   @QueryParam("password") String password) {
+        try {
+            boolean success = userService.login(email, password);
+            if (success) {
+                return Response.ok("Customer login successful").build();
+            } else {
+                return Response.status(Response.Status.UNAUTHORIZED).entity("Login failed").build();
+            }
+        } catch (UserNotFoundException e) {
+            return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();
+        } catch (InvalidCredentialsException e) {
+            return Response.status(Response.Status.UNAUTHORIZED).entity(e.getMessage()).build();
+        } catch (InvalidInputException e) {
+            return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("Login failed: " + e.getMessage())
+                    .build();
+        }
     }
 
     @GET
