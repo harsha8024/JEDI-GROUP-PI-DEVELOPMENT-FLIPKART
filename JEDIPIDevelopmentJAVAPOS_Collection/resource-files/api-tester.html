@@ -1,677 +1,607 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>FlipFit API Tester</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { 
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      height: 100vh;
-      overflow: hidden;
-    }
-    
-    .container {
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-      max-width: 1800px;
-      margin: 0 auto;
-    }
-    
-    /* Header */
-    .header {
-      background: rgba(255,255,255,0.95);
-      backdrop-filter: blur(10px);
-      padding: 20px 30px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-    }
-    
-    .header h1 {
-      color: #667eea;
-      font-size: 28px;
-      font-weight: 700;
-      margin-bottom: 5px;
-    }
-    
-    .header p {
-      color: #666;
-      font-size: 14px;
-    }
-    
-    /* Main Content Area */
-    .main-content {
-      display: flex;
-      flex: 1;
-      overflow: hidden;
-      gap: 20px;
-      padding: 20px;
-    }
-    
-    /* Left Panel - Request Form */
-    .left-panel {
-      flex: 0 0 45%;
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-    
-    .form-section {
-      flex: 1;
-      overflow-y: auto;
-      padding: 25px;
-    }
-    
-    .form-group {
-      margin-bottom: 20px;
-    }
-    
-    .form-group label {
-      display: block;
-      font-weight: 600;
-      font-size: 13px;
-      color: #333;
-      margin-bottom: 8px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-    
-    .input-group {
-      display: flex;
-      gap: 10px;
-    }
-    
-    input[type="text"], select, textarea {
-      width: 100%;
-      padding: 12px 15px;
-      border: 2px solid #e0e0e0;
-      border-radius: 8px;
-      font-size: 14px;
-      transition: all 0.3s;
-      font-family: 'Courier New', monospace;
-    }
-    
-    input[type="text"]:focus, select:focus, textarea:focus {
-      outline: none;
-      border-color: #667eea;
-      box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
-    }
-    
-    select {
-      cursor: pointer;
-      background: white;
-      flex: 0 0 140px;
-    }
-    
-    textarea {
-      resize: vertical;
-      min-height: 120px;
-      font-size: 13px;
-    }
-    
-    .button-group {
-      display: flex;
-      gap: 10px;
-      padding: 20px 25px;
-      background: #f8f9fa;
-      border-top: 1px solid #e0e0e0;
-    }
-    
-    .btn {
-      flex: 1;
-      padding: 14px 24px;
-      border: none;
-      border-radius: 8px;
-      font-size: 15px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-    }
-    
-    .btn-primary {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-    }
-    
-    .btn-primary:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(102,126,234,0.4);
-    }
-    
-    .btn-secondary {
-      background: #6c757d;
-      color: white;
-    }
-    
-    .btn-secondary:hover {
-      background: #5a6268;
-    }
-    
-    /* Right Panel - Response & Presets */
-    .right-panel {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-      overflow: hidden;
-    }
-    
-    /* Response Section */
-    .response-section {
-      flex: 0 0 45%;
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-    
-    .response-header {
-      padding: 20px 25px;
-      background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-      color: white;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    
-    .response-header h3 {
-      font-size: 18px;
-      font-weight: 600;
-    }
-    
-    .status-badge {
-      padding: 6px 16px;
-      border-radius: 20px;
-      font-size: 13px;
-      font-weight: 600;
-      background: rgba(255,255,255,0.2);
-    }
-    
-    .status-success { background: #27ae60; }
-    .status-error { background: #e74c3c; }
-    .status-pending { background: #f39c12; }
-    
-    #response {
-      flex: 1;
-      overflow: auto;
-      padding: 20px;
-      font-family: 'Courier New', monospace;
-      font-size: 13px;
-      line-height: 1.6;
-      background: #f8f9fa;
-      color: #2c3e50;
-      white-space: pre-wrap;
-      word-break: break-word;
-    }
-    
-    /* Presets Section */
-    .presets-section {
-      flex: 1;
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-    
-    .presets-header {
-      padding: 20px 25px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-    }
-    
-    .presets-header h3 {
-      font-size: 18px;
-      font-weight: 600;
-    }
-    
-    .presets-container {
-      flex: 1;
-      overflow-y: auto;
-      padding: 20px;
-    }
-    
-    .preset-category {
-      font-weight: 700;
-      font-size: 12px;
-      color: #667eea;
-      padding: 12px 15px;
-      background: #f0f2ff;
-      border-radius: 6px;
-      margin-top: 15px;
-      margin-bottom: 10px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-    
-    .preset-category:first-child {
-      margin-top: 0;
-    }
-    
-    .preset {
-      background: #f8f9fa;
-      padding: 12px 15px;
-      margin-bottom: 8px;
-      border-radius: 8px;
-      cursor: pointer;
-      border: 2px solid transparent;
-      transition: all 0.2s;
-      font-size: 13px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    
-    .preset:hover {
-      background: #667eea;
-      color: white;
-      border-color: #667eea;
-      transform: translateX(5px);
-    }
-    
-    .method-tag {
-      padding: 4px 10px;
-      border-radius: 4px;
-      font-size: 11px;
-      font-weight: 700;
-      min-width: 55px;
-      text-align: center;
-    }
-    
-    .method-get { background: #27ae60; color: white; }
-    .method-post { background: #3498db; color: white; }
-    .method-put { background: #f39c12; color: white; }
-    .method-delete { background: #e74c3c; color: white; }
-    
-    /* Scrollbar Styling */
-    ::-webkit-scrollbar {
-      width: 8px;
-      height: 8px;
-    }
-    
-    ::-webkit-scrollbar-track {
-      background: #f1f1f1;
-      border-radius: 10px;
-    }
-    
-    ::-webkit-scrollbar-thumb {
-      background: #667eea;
-      border-radius: 10px;
-    }
-    
-    ::-webkit-scrollbar-thumb:hover {
-      background: #764ba2;
-    }
-    
-    /* CORS Warning */
-    .cors-warning {
-      background: linear-gradient(135deg, #fff3cd 0%, #ffe5a0 100%);
-      border: 2px solid #ffc107;
-      padding: 15px 20px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-      color: #856404;
-      font-size: 13px;
-      line-height: 1.6;
-    }
-    
-    .cors-warning strong {
-      display: block;
-      margin-bottom: 5px;
-      font-size: 14px;
-    }
-    
-    /* Responsive */
-    @media (max-width: 1200px) {
-      .main-content {
-        flex-direction: column;
-      }
-      .left-panel, .right-panel {
-        flex: 1 1 auto;
-      }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FlipFit API Tester</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+            gap: 1px;
+            background: #1e293b;
+        }
+
+        .left-panel, .right-panel {
+            background: #0f172a;
+            overflow-y: auto;
+        }
+
+        .left-panel {
+            width: 45%;
+            padding: 2rem;
+        }
+
+        .right-panel {
+            width: 55%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            padding: 2rem;
+            border-bottom: 1px solid #1e293b;
+        }
+
+        h1 {
+            font-size: 1.875rem;
+            font-weight: 700;
+            color: #f1f5f9;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            color: #94a3b8;
+            font-size: 0.875rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: #cbd5e1;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 0.75rem;
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 0.375rem;
+            color: #e2e8f0;
+            font-size: 0.875rem;
+            font-family: 'Courier New', monospace;
+            transition: all 0.2s;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .url-input-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .method-select {
+            width: 120px;
+            flex-shrink: 0;
+        }
+
+        .method-GET { border-left: 3px solid #10b981; }
+        .method-POST { border-left: 3px solid #3b82f6; }
+        .method-PUT { border-left: 3px solid #f59e0b; }
+        .method-DELETE { border-left: 3px solid #ef4444; }
+
+        .button-group {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 2rem;
+        }
+
+        button {
+            flex: 1;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.375rem;
+            font-weight: 600;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .btn-send {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-send:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-clear {
+            background: #374151;
+            color: #e2e8f0;
+        }
+
+        .btn-clear:hover {
+            background: #4b5563;
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #1e293b;
+            background: #0f172a;
+        }
+
+        .tab {
+            padding: 1rem 1.5rem;
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            font-weight: 600;
+            font-size: 0.875rem;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .tab:hover {
+            color: #e2e8f0;
+            background: #1e293b;
+        }
+
+        .tab.active {
+            color: #3b82f6;
+            border-bottom-color: #3b82f6;
+        }
+
+        .tab-content {
+            display: none;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .response-content, .presets-content {
+            padding: 2rem;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .status-success {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }
+
+        .status-error {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+
+        .response-data {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 0.375rem;
+            padding: 1rem;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: 'Courier New', monospace;
+            font-size: 0.8125rem;
+            line-height: 1.6;
+            max-height: calc(100vh - 250px);
+            overflow-y: auto;
+        }
+
+        .preset-category {
+            margin-bottom: 2rem;
+        }
+
+        .category-title {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: #f1f5f9;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #1e293b;
+        }
+
+        .preset-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 0.75rem;
+        }
+
+        .preset-item {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 0.375rem;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .preset-item:hover {
+            background: #334155;
+            border-color: #3b82f6;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .preset-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .preset-label {
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: #f1f5f9;
+        }
+
+        .method-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.625rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .method-badge.GET {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }
+
+        .method-badge.POST {
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+        }
+
+        .method-badge.PUT {
+            background: rgba(245, 158, 11, 0.1);
+            color: #f59e0b;
+        }
+
+        .method-badge.DELETE {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+
+        .preset-path {
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+            color: #94a3b8;
+            word-break: break-all;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+
+        .info-text {
+            color: #64748b;
+            font-size: 0.875rem;
+            font-style: italic;
+            margin-top: 0.5rem;
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <!-- Header -->
-    <div class="header">
-      <h1>⚡ FlipFit API Tester</h1>
-      <p>Professional REST API testing tool for Dropwizard endpoints</p>
-    </div>
-    
-    <!-- Main Content -->
-    <div class="main-content">
-      <!-- Left Panel: Request Form -->
-      <div class="left-panel">
-        <div class="form-section">
-          <div class="cors-warning">
-            <strong>⚠️ CORS Configuration Required</strong>
-            If you encounter CORS errors, enable CORS in your Dropwizard application. Check the CORS_SETUP_GUIDE.md file for instructions.
-          </div>
-          
-          <div class="form-group">
-            <label>🌐 Base URL</label>
-            <input id="baseUrl" type="text" value="http://localhost:8080" placeholder="http://localhost:8080" />
-          </div>
-          
-          <div class="form-group">
-            <label>🔗 Endpoint</label>
-            <div class="input-group">
-              <select id="method">
-                <option>GET</option>
-                <option>POST</option>
-                <option>PUT</option>
-                <option>DELETE</option>
-              </select>
-              <input id="path" type="text" placeholder="/user/login" />
+    <div class="container">
+        <div class="left-panel">
+            <div class="header">
+                <h1>FlipFit API Tester</h1>
+                <div class="subtitle">Test your Dropwizard REST endpoints</div>
             </div>
-          </div>
-          
-          <div class="form-group">
-            <label>📝 Query Parameters (auto-extracted from path)</label>
-            <textarea id="queryParams" placeholder="email=user@example.com&#10;password=pass123&#10;userId=USER001" rows="3"></textarea>
-            <small style="color: #666; font-size: 12px; margin-top: 5px; display: block;">One parameter per line (key=value format)</small>
-          </div>
-          
-          <div class="form-group">
-            <label>📋 Headers</label>
-            <textarea id="headers" placeholder="Content-Type=application/json&#10;Authorization=Bearer token123" rows="2"></textarea>
-          </div>
-          
-          <div class="form-group">
-            <label>📦 Request Body (JSON)</label>
-            <textarea id="body" placeholder='{"name":"John Doe","email":"john@example.com"}' rows="6"></textarea>
-          </div>
+
+            <form id="apiForm">
+                <div class="form-group">
+                    <label>Base URL</label>
+                    <input type="text" id="baseUrl" value="http://localhost:8080" placeholder="http://localhost:8080">
+                </div>
+
+                <div class="form-group">
+                    <label>Endpoint</label>
+                    <div class="url-input-group">
+                        <select id="method" class="method-select">
+                            <option value="GET">GET</option>
+                            <option value="POST">POST</option>
+                            <option value="PUT">PUT</option>
+                            <option value="DELETE">DELETE</option>
+                        </select>
+                        <input type="text" id="endpoint" placeholder="/api/endpoint">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Query Parameters</label>
+                    <textarea id="queryParams" placeholder="key1=value1&#10;key2=value2"></textarea>
+                    <div class="info-text">One parameter per line (key=value)</div>
+                </div>
+
+                <div class="form-group">
+                    <label>Request Body (JSON)</label>
+                    <textarea id="requestBody" rows="8" placeholder='{"key": "value"}'></textarea>
+                </div>
+
+                <div class="button-group">
+                    <button type="submit" class="btn-send">Send Request</button>
+                    <button type="button" class="btn-clear" onclick="clearForm()">Clear</button>
+                </div>
+            </form>
         </div>
-        
-        <div class="button-group">
-          <button id="send" class="btn btn-primary">
-            <span>🚀</span> Send Request
-          </button>
-          <button id="clear" class="btn btn-secondary">
-            <span>🗑️</span> Clear
-          </button>
+
+        <div class="right-panel">
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('response')">Response</button>
+                <button class="tab" onclick="switchTab('presets')">API Endpoints</button>
+            </div>
+
+            <div id="responseTab" class="tab-content active">
+                <div class="response-content">
+                    <div id="statusBadge"></div>
+                    <div id="responseData" class="response-data">Send a request to see the response here...</div>
+                </div>
+            </div>
+
+            <div id="presetsTab" class="tab-content">
+                <div class="presets-content" id="presetsContainer"></div>
+            </div>
         </div>
-      </div>
-      
-      <!-- Right Panel: Response & Presets -->
-      <div class="right-panel">
-        <!-- Response Section -->
-        <div class="response-section">
-          <div class="response-header">
-            <h3>📊 Response</h3>
-            <div id="status" class="status-badge">Ready</div>
-          </div>
-          <div id="response">Click "Send Request" or select a preset to get started...</div>
-        </div>
-        
-        <!-- Presets Section -->
-        <div class="presets-section">
-          <div class="presets-header">
-            <h3>🎯 API Endpoints</h3>
-          </div>
-          <div class="presets-container" id="presets">
-            <!-- Populated by script -->
-          </div>
-        </div>
-      </div>
     </div>
-  </div>
 
-  <script>
-  <script>
-    const presets = [
-      // === USER AUTHENTICATION ===
-      {cat:'User', label:'Login', method:'POST', path:'/user/login', query:'email=user@example.com&password=pass123'},
-      {cat:'User', label:'Register', method:'POST', path:'/user/register', body:{name:"John Doe",email:"john@example.com",password:"pass123",phoneNumber:"1234567890",city:"Mumbai"}},
-      {cat:'User', label:'Update Password', method:'PUT', path:'/user/update-password', query:'email=user@example.com&password=newpass123'},
-      {cat:'User', label:'Logout', method:'POST', path:'/user/logout'},
-      
-      // === CUSTOMER OPERATIONS ===
-      {cat:'Customer', label:'Register Customer', method:'POST', path:'/customer/register', body:{name:"Jane Customer",email:"jane@example.com",password:"pass123",phoneNumber:"9876543210",city:"Delhi"}},
-      {cat:'Customer', label:'Login Customer', method:'POST', path:'/customer/login', query:'email=jane@example.com&password=pass123'},
-      {cat:'Customer', label:'View All Gyms', method:'GET', path:'/customer/gyms', query:'city=Bangalore'},
-      {cat:'Customer', label:'View Gym Slots', method:'GET', path:'/customer/gyms/GYM001/slots', query:'date=2026-02-01'},
-      {cat:'Customer', label:'Book Slot', method:'POST', path:'/customer/book', query:'userId=USER001&slotId=SLOT001&gymId=GYM001&date=2026-02-01'},
-      {cat:'Customer', label:'Cancel Booking', method:'PUT', path:'/customer/cancel/BOOK001', query:'userId=USER001'},
-      {cat:'Customer', label:'View My Bookings', method:'GET', path:'/customer/bookings/USER001'},
-      
-      // === GYM OWNER OPERATIONS ===
-      {cat:'Owner', label:'Register Owner', method:'POST', path:'/owner/register', body:{name:"Gym Owner",email:"owner@example.com",password:"pass123",phoneNumber:"1112223333",city:"Bangalore",panNumber:"ABCDE1234F",aadharNumber:"123456789012",gstinNumber:"22ABCDE1234F1Z5"}},
-      {cat:'Owner', label:'Login Owner', method:'POST', path:'/owner/login', query:'email=owner@example.com&password=pass123'},
-      {cat:'Owner', label:'Register Gym', method:'POST', path:'/owner/gyms/register', body:{gymName:"PowerFit Gym",location:"Bangalore",gymOwnerId:"OWNER001"}},
-      {cat:'Owner', label:'View My Gyms', method:'GET', path:'/owner/gyms/OWNER001'},
-      {cat:'Owner', label:'View Gym Bookings', method:'GET', path:'/owner/bookings/OWNER001'},
-      {cat:'Owner', label:'Create Slot', method:'POST', path:'/owner/slots/create', query:'gymId=GYM001&startTime=09:00&endTime=10:00&capacity=20'},
-      {cat:'Owner', label:'View Gym Slots', method:'GET', path:'/owner/slots/GYM001'},
-      {cat:'Owner', label:'Update Slot', method:'PUT', path:'/owner/slots/SLOT001', query:'capacity=25'},
-      {cat:'Owner', label:'Delete Slot', method:'DELETE', path:'/owner/slots/SLOT001'},
-      {cat:'Owner', label:'Update Schedule', method:'PUT', path:'/owner/schedule/update', query:'gymId=GYM001'},
-      
-      // === ADMIN OPERATIONS ===
-      {cat:'Admin', label:'Admin Login', method:'POST', path:'/admin/login', query:'email=admin@flipfit.com&password=admin123'},
-      {cat:'Admin', label:'View All Users', method:'GET', path:'/admin/users'},
-      {cat:'Admin', label:'View All Gyms', method:'GET', path:'/admin/gyms'},
-      {cat:'Admin', label:'Pending Gyms', method:'GET', path:'/admin/gyms/pending'},
-      {cat:'Admin', label:'Approved Gyms', method:'GET', path:'/admin/gyms/approved'},
-      {cat:'Admin', label:'Gyms by Location', method:'GET', path:'/admin/gyms/location/Bangalore'},
-      {cat:'Admin', label:'Approve Gym', method:'PUT', path:'/admin/gyms/approve/GYM001'},
-      {cat:'Admin', label:'Reject Gym', method:'PUT', path:'/admin/gyms/reject/GYM001'},
-      {cat:'Admin', label:'Approved Owners', method:'GET', path:'/admin/owners/approved'},
-      {cat:'Admin', label:'Pending Owners', method:'GET', path:'/admin/owners/pending'},
-      {cat:'Admin', label:'Approve Owner', method:'PUT', path:'/admin/owners/approve/OWNER001'},
-      {cat:'Admin', label:'Reject Owner', method:'PUT', path:'/admin/owners/reject/OWNER001'},
-      {cat:'Admin', label:'Pending Slots', method:'GET', path:'/admin/slots/pending'},
-      {cat:'Admin', label:'Approve Slot', method:'PUT', path:'/admin/slots/approve/SLOT001'},
-      {cat:'Admin', label:'Reject Slot', method:'PUT', path:'/admin/slots/reject/SLOT001'},
-      {cat:'Admin', label:'All Bookings', method:'GET', path:'/admin/bookings'},
-      {cat:'Admin', label:'Generate Report', method:'GET', path:'/admin/reports', query:'reportType=1'},
-      {cat:'Admin', label:'Payment Report', method:'GET', path:'/admin/reports/payment'},
-      {cat:'Admin', label:'Revenue Report', method:'GET', path:'/admin/reports/revenue', query:'startDate=2026-01-01&endDate=2026-01-31'},
-      
-      // === SLOT OPERATIONS ===
-      {cat:'Slot', label:'Create Slot', method:'POST', path:'/slot/create', query:'gymId=GYM001&startTime=14:00&endTime=15:00&capacity=15'},
-      {cat:'Slot', label:'Get Slots by Gym', method:'GET', path:'/slot/gym/GYM001'},
-      {cat:'Slot', label:'Get Slot Details', method:'GET', path:'/slot/SLOT001'},
-      {cat:'Slot', label:'Update Slot', method:'PUT', path:'/slot/SLOT001', query:'capacity=18'},
-      {cat:'Slot', label:'Delete Slot', method:'DELETE', path:'/slot/SLOT001'},
-      
-      // === PAYMENT OPERATIONS ===
-      {cat:'Payment', label:'Process Payment', method:'POST', path:'/payment/process', query:'bookingId=BOOK001&amount=500&paymentMethod=CARD'},
-      {cat:'Payment', label:'Get Payment Details', method:'GET', path:'/payment/PAY001'},
-      {cat:'Payment', label:'Refund Payment', method:'POST', path:'/payment/refund/PAY001'},
-      
-      // === NOTIFICATION OPERATIONS ===
-      {cat:'Notification', label:'Send Notification', method:'POST', path:'/notification/send', query:'userId=USER001&message=Your booking confirmed&title=Booking Confirmation'},
-      {cat:'Notification', label:'Unread Notifications', method:'GET', path:'/notification/unread/USER001'},
-      {cat:'Notification', label:'Mark as Read', method:'PUT', path:'/notification/mark-read/NOTIF001'},
-      
-      // === REGISTRATION OPERATIONS ===
-      {cat:'Registration', label:'Create Registration', method:'POST', path:'/registration/create', query:'userId=USER001&role=CUSTOMER'},
-      {cat:'Registration', label:'Pending Registrations', method:'GET', path:'/registration/pending'},
-      {cat:'Registration', label:'Approve Registration', method:'PUT', path:'/registration/approve/REG001', query:'adminId=ADMIN001'},
-      {cat:'Registration', label:'Reject Registration', method:'PUT', path:'/registration/reject/REG001', query:'adminId=ADMIN001'}
-    ];
+    <script>
+        const presets = [
+            {cat:'User', label:'User Login', method:'POST', path:'/user/login', body:{email:'user@example.com', password:'password123', roleId:1}},
+            {cat:'User', label:'User Registration', method:'POST', path:'/user/register', body:{userName:'John Doe', email:'john@example.com', phoneNumber:'1234567890', password:'password123', roleId:2, city:'Bangalore'}},
+            {cat:'User', label:'Update Password', method:'PUT', path:'/user/updatePassword/{userId}', body:{password:'newPassword123'}},
+            {cat:'User', label:'Get User by ID', method:'GET', path:'/user/{userId}'},
+            {cat:'User', label:'View Profile by Email', method:'GET', path:'/user/viewProfile', query:'email=user@example.com'},
 
-    // Helper: Extract query params from path
-    function extractQueryParams(path) {
-      const idx = path.indexOf('?');
-      if (idx === -1) return { cleanPath: path, params: '' };
-      return {
-        cleanPath: path.substring(0, idx),
-        params: path.substring(idx + 1)
-      };
-    }
+            {cat:'Customer', label:'View All Gyms', method:'GET', path:'/customer/gyms', query:'city=Bangalore'},
+            {cat:'Customer', label:'Book Slot', method:'POST', path:'/customer/booking', body:{slotId:1, date:'2024-01-15'}},
+            {cat:'Customer', label:'View Bookings', method:'GET', path:'/customer/viewBookings', query:'userId=1'},
+            {cat:'Customer', label:'Cancel Booking', method:'DELETE', path:'/customer/cancelBooking/{bookingId}'},
+            {cat:'Customer', label:'View Available Slots', method:'GET', path:'/customer/slots', query:'date=2024-01-15&gymId=1'},
+            {cat:'Customer', label:'Update Profile', method:'PUT', path:'/customer/editDetails', body:{userId:1, userName:'John Updated', phoneNumber:'9876543210', city:'Mumbai'}},
 
-    // Helper: Convert query string to multiline format
-    function queryToMultiline(queryStr) {
-      if (!queryStr) return '';
-      return queryStr.split('&').join('\n');
-    }
+            {cat:'Owner', label:'Add Gym', method:'POST', path:'/gymowner/gym', body:{gymName:'FitZone', city:'Bangalore', gymAddress:'123 Main St', numSlots:20, ownerId:1}},
+            {cat:'Owner', label:'View My Gyms', method:'GET', path:'/gymowner/viewGyms', query:'ownerId=1'},
+            {cat:'Owner', label:'Update Gym', method:'PUT', path:'/gymowner/gym/{gymId}', body:{gymName:'FitZone Pro', city:'Bangalore', gymAddress:'123 Main St Updated', numSlots:25}},
+            {cat:'Owner', label:'View All Bookings', method:'GET', path:'/gymowner/viewAllBookings', query:'ownerId=1'},
+            {cat:'Owner', label:'View Gym Bookings', method:'GET', path:'/gymowner/viewBookings', query:'gymId=1'},
+            {cat:'Owner', label:'Update Profile', method:'PUT', path:'/gymowner/editDetails', body:{userId:1, userName:'Owner Name', phoneNumber:'9876543210', panCard:'ABCDE1234F', gstNum:'22ABCDE1234F1Z5', aadharNumber:'123456789012'}},
 
-    // Helper: Convert multiline to query string
-    function multilineToQuery(multiline) {
-      if (!multiline) return '';
-      return multiline.split('\n')
-        .map(line => line.trim())
-        .filter(line => line && line.includes('='))
-        .join('&');
-    }
+            {cat:'Admin', label:'View All Gyms', method:'GET', path:'/admin/gyms'},
+            {cat:'Admin', label:'View Pending Gyms', method:'GET', path:'/admin/viewPendingGymRequests'},
+            {cat:'Admin', label:'Approve Gym', method:'PUT', path:'/admin/verifyGym/{gymId}'},
+            {cat:'Admin', label:'View All Users', method:'GET', path:'/admin/users'},
+            {cat:'Admin', label:'View All Gym Owners', method:'GET', path:'/admin/viewGymOwners'},
+            {cat:'Admin', label:'View Pending Owners', method:'GET', path:'/admin/viewPendingGymOwnerRequests'},
+            {cat:'Admin', label:'Approve Owner', method:'PUT', path:'/admin/verifyGymOwner/{userId}'},
 
-    // Helper: Parse headers from multiline format
-    function parseHeaders(str) {
-      const out = {};
-      if (!str) return out;
-      str.split('\n').forEach(line => {
-        const idx = line.indexOf('=');
-        if (idx === -1) return;
-        const k = line.slice(0, idx).trim();
-        const v = line.slice(idx + 1).trim();
-        if (k && v) out[k] = v;
-      });
-      return out;
-    }
+            {cat:'Gym', label:'Get All Gyms', method:'GET', path:'/gym/allGyms'},
+            {cat:'Gym', label:'Get Gym by ID', method:'GET', path:'/gym/{gymId}'},
+            {cat:'Gym', label:'Delete Gym', method:'DELETE', path:'/gym/{gymId}'},
 
-    // Render presets
-    const categories = [...new Set(presets.map(p => p.cat))];
-    const presetsEl = document.getElementById('presets');
-    
-    categories.forEach(cat => {
-      const catHeader = document.createElement('div');
-      catHeader.className = 'preset-category';
-      catHeader.textContent = cat;
-      presetsEl.appendChild(catHeader);
-      
-      presets.filter(p => p.cat === cat).forEach(p => {
-        const btn = document.createElement('div');
-        btn.className = 'preset';
-        
-        const methodTag = document.createElement('span');
-        methodTag.className = `method-tag method-${p.method.toLowerCase()}`;
-        methodTag.textContent = p.method;
-        
-        const label = document.createElement('span');
-        label.textContent = p.label;
-        
-        btn.appendChild(methodTag);
-        btn.appendChild(label);
-        
-        btn.onclick = () => {
-          document.getElementById('method').value = p.method;
-          
-          // Handle path and query params separately
-          if (p.query) {
-            document.getElementById('path').value = p.path;
-            document.getElementById('queryParams').value = queryToMultiline(p.query);
-          } else {
-            const { cleanPath, params } = extractQueryParams(p.path);
-            document.getElementById('path').value = cleanPath;
-            document.getElementById('queryParams').value = queryToMultiline(params);
-          }
-          
-          document.getElementById('body').value = p.body ? JSON.stringify(p.body, null, 2) : '';
-          
-          // Scroll to top of form
-          document.querySelector('.form-section').scrollTo({ top: 0, behavior: 'smooth' });
-        };
-        
-        presetsEl.appendChild(btn);
-      });
-    });
+            {cat:'Slot', label:'Add Slot', method:'POST', path:'/slot', body:{gymId:1, slotTime:10, seatCount:20}},
+            {cat:'Slot', label:'Update Slot', method:'PUT', path:'/slot/{slotId}', body:{slotTime:11, seatCount:25}},
+            {cat:'Slot', label:'Get Slots by Gym', method:'GET', path:'/slot/gym/{gymId}'},
+            {cat:'Slot', label:'Delete Slot', method:'DELETE', path:'/slot/{slotId}'},
 
-    // Auto-extract query params when path changes
-    document.getElementById('path').addEventListener('input', (e) => {
-      const { cleanPath, params } = extractQueryParams(e.target.value);
-      if (params) {
-        document.getElementById('path').value = cleanPath;
-        document.getElementById('queryParams').value = queryToMultiline(params);
-      }
-    });
+            {cat:'Booking', label:'Get All Bookings', method:'GET', path:'/booking/allBookings'},
+            {cat:'Booking', label:'Get Booking by ID', method:'GET', path:'/booking/{bookingId}'},
+            {cat:'Booking', label:'Get User Bookings', method:'GET', path:'/booking/user/{userId}'},
+            {cat:'Booking', label:'Get Gym Bookings', method:'GET', path:'/booking/gym/{gymId}'},
+            {cat:'Booking', label:'Check Booking Status', method:'GET', path:'/booking/checkBooking', query:'userId=1&slotId=1'},
+            {cat:'Booking', label:'Delete Booking', method:'DELETE', path:'/booking/{bookingId}'},
 
-    // Send request handler
-    document.getElementById('send').addEventListener('click', async () => {
-      const base = document.getElementById('baseUrl').value.replace(/\/$/, '');
-      const method = document.getElementById('method').value;
-      const path = document.getElementById('path').value;
-      const queryMultiline = document.getElementById('queryParams').value;
-      const headersText = document.getElementById('headers').value;
-      const bodyText = document.getElementById('body').value;
+            {cat:'Payment', label:'Process Payment', method:'POST', path:'/payment', body:{bookingId:1, amount:500, paymentType:'UPI'}},
+            {cat:'Payment', label:'Get Payment by Booking', method:'GET', path:'/payment/booking/{bookingId}'},
+            {cat:'Payment', label:'Get User Payments', method:'GET', path:'/payment/user/{userId}'},
 
-      // Build URL with query params
-      const queryStr = multilineToQuery(queryMultiline);
-      let url = base + (path.startsWith('/') ? path : '/' + path);
-      if (queryStr) {
-        url += (url.includes('?') ? '&' : '?') + queryStr;
-      }
+            {cat:'Registration', label:'Register User', method:'POST', path:'/registration/register', body:{userName:'Jane Doe', email:'jane@example.com', phoneNumber:'9876543210', password:'pass456', roleId:3, city:'Delhi'}},
+            {cat:'Registration', label:'Update Registration', method:'PUT', path:'/registration/{registrationId}', body:{userName:'Jane Updated', email:'jane.updated@example.com', phoneNumber:'9999999999'}},
+            {cat:'Registration', label:'Get Registration by ID', method:'GET', path:'/registration/{registrationId}'},
+            {cat:'Registration', label:'Get All Registrations', method:'GET', path:'/registration/all'},
+            {cat:'Registration', label:'Delete Registration', method:'DELETE', path:'/registration/{registrationId}'}
+        ];
 
-      const headers = parseHeaders(headersText);
-      const opts = { method, headers: { ...headers } };
-      
-      if (bodyText && (method === 'POST' || method === 'PUT')) {
-        if (!opts.headers['Content-Type']) {
-          opts.headers['Content-Type'] = 'application/json';
+        let currentTab = 'response';
+
+        function renderPresets() {
+            const container = document.getElementById('presetsContainer');
+            const categories = [...new Set(presets.map(p => p.cat))];
+            
+            container.innerHTML = categories.map(cat => {
+                const categoryPresets = presets.filter(p => p.cat === cat);
+                return `
+                    <div class="preset-category">
+                        <div class="category-title">${cat} APIs</div>
+                        <div class="preset-grid">
+                            ${categoryPresets.map((preset, idx) => `
+                                <div class="preset-item" onclick='loadPreset(${JSON.stringify(preset)})'>
+                                    <div class="preset-header">
+                                        <div class="preset-label">${preset.label}</div>
+                                        <div class="method-badge ${preset.method}">${preset.method}</div>
+                                    </div>
+                                    <div class="preset-path">${preset.path}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
         }
-        opts.body = bodyText;
-      }
 
-      const statusEl = document.getElementById('status');
-      const respEl = document.getElementById('response');
-      
-      statusEl.textContent = 'Sending...';
-      statusEl.className = 'status-badge status-pending';
-      respEl.textContent = '⏳ Waiting for response...';
-
-      try {
-        const startTime = Date.now();
-        const res = await fetch(url, opts);
-        const duration = Date.now() - startTime;
-        
-        const ct = res.headers.get('content-type') || '';
-        let data;
-        
-        if (ct.includes('application/json')) {
-          data = await res.json();
-        } else {
-          data = await res.text();
+        function loadPreset(preset) {
+            document.getElementById('method').value = preset.method;
+            document.getElementById('endpoint').value = preset.path;
+            
+            if (preset.query) {
+                document.getElementById('queryParams').value = preset.query.split('&').join('\n');
+            } else {
+                document.getElementById('queryParams').value = '';
+            }
+            
+            if (preset.body) {
+                document.getElementById('requestBody').value = JSON.stringify(preset.body, null, 2);
+            } else {
+                document.getElementById('requestBody').value = '';
+            }
+            
+            switchTab('response');
+            
+            const methodSelect = document.getElementById('method');
+            methodSelect.className = 'method-select method-' + preset.method;
         }
-        
-        statusEl.textContent = `${res.status} ${res.statusText} (${duration}ms)`;
-        statusEl.className = res.ok ? 'status-badge status-success' : 'status-badge status-error';
-        
-        const formattedResponse = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
-        respEl.textContent = `✅ Response received in ${duration}ms\n\n${formattedResponse}`;
-        
-      } catch (err) {
-        statusEl.textContent = 'Error';
-        statusEl.className = 'status-badge status-error';
-        respEl.textContent = `❌ Request Failed\n\n${err.message}\n\n💡 Troubleshooting:\n- Check if the server is running on ${base}\n- Verify CORS is enabled (see CORS_SETUP_GUIDE.md)\n- Check the browser console for detailed errors`;
-      }
-    });
 
-    // Clear handler
-    document.getElementById('clear').addEventListener('click', () => {
-      document.getElementById('method').value = 'GET';
-      document.getElementById('path').value = '';
-      document.getElementById('queryParams').value = '';
-      document.getElementById('headers').value = '';
-      document.getElementById('body').value = '';
-      document.getElementById('response').textContent = 'Click "Send Request" or select a preset to get started...';
-      document.getElementById('status').textContent = 'Ready';
-      document.getElementById('status').className = 'status-badge';
-    });
-  </script>
+        function switchTab(tab) {
+            currentTab = tab;
+            
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            if (tab === 'response') {
+                document.querySelector('.tab:nth-child(1)').classList.add('active');
+                document.getElementById('responseTab').classList.add('active');
+            } else {
+                document.querySelector('.tab:nth-child(2)').classList.add('active');
+                document.getElementById('presetsTab').classList.add('active');
+            }
+        }
+
+        function clearForm() {
+            document.getElementById('endpoint').value = '';
+            document.getElementById('queryParams').value = '';
+            document.getElementById('requestBody').value = '';
+            document.getElementById('method').value = 'GET';
+            document.getElementById('method').className = 'method-select';
+        }
+
+        document.getElementById('apiForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const baseUrl = document.getElementById('baseUrl').value.trim();
+            const method = document.getElementById('method').value;
+            const endpoint = document.getElementById('endpoint').value.trim();
+            const queryParams = document.getElementById('queryParams').value.trim();
+            const requestBody = document.getElementById('requestBody').value.trim();
+            
+            let url = baseUrl + endpoint;
+            
+            if (queryParams) {
+                const params = queryParams.split('\n')
+                    .filter(line => line.trim())
+                    .map(line => {
+                        const [key, ...valueParts] = line.split('=');
+                        return `${encodeURIComponent(key.trim())}=${encodeURIComponent(valueParts.join('=').trim())}`;
+                    })
+                    .join('&');
+                url += '?' + params;
+            }
+            
+            const options = {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            };
+            
+            if (requestBody && (method === 'POST' || method === 'PUT')) {
+                options.body = requestBody;
+            }
+            
+            try {
+                const response = await fetch(url, options);
+                const data = await response.text();
+                
+                let formattedData;
+                try {
+                    formattedData = JSON.stringify(JSON.parse(data), null, 2);
+                } catch {
+                    formattedData = data;
+                }
+                
+                const statusBadge = document.getElementById('statusBadge');
+                const responseData = document.getElementById('responseData');
+                
+                if (response.ok) {
+                    statusBadge.innerHTML = `<span class="status-badge status-success">Success - ${response.status} ${response.statusText}</span>`;
+                } else {
+                    statusBadge.innerHTML = `<span class="status-badge status-error">Error - ${response.status} ${response.statusText}</span>`;
+                }
+                
+                responseData.textContent = formattedData;
+                switchTab('response');
+                
+            } catch (error) {
+                const statusBadge = document.getElementById('statusBadge');
+                const responseData = document.getElementById('responseData');
+                
+                statusBadge.innerHTML = `<span class="status-badge status-error">Request Failed</span>`;
+                responseData.textContent = `Error: ${error.message}\n\nMake sure your server is running and CORS is configured correctly.`;
+                switchTab('response');
+            }
+        });
+
+        document.getElementById('method').addEventListener('change', function() {
+            this.className = 'method-select method-' + this.value;
+        });
+
+        renderPresets();
+    </script>
 </body>
 </html>
