@@ -4,226 +4,674 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>FlipFit API Tester</title>
-  <link rel="stylesheet" href="./stylesheet.css">
   <style>
-    body{font-family:Segoe UI,Arial,Helvetica,sans-serif;padding:18px;max-width:1400px;margin:0 auto}
-    .row{display:flex;gap:8px;margin-bottom:8px;align-items:center}
-    label{width:120px;font-weight:600;flex-shrink:0}
-    input[type=text],select,textarea{flex:1;padding:6px;border:1px solid #ccc;border-radius:4px}
-    textarea{height:160px;font-family:monospace}
-    .btn{padding:8px 12px;border:0;background:#1976d2;color:#fff;border-radius:4px;cursor:pointer}
-    .btn:hover{background:#1565c0}
-    .btn-secondary{background:#6c757d}
-    .btn-secondary:hover{background:#5a6268}
-    #response{white-space:pre-wrap;background:#0b132024;padding:12px;border-radius:6px;border:1px solid #ddd;margin-top:12px;max-height:400px;overflow:auto}
-    .presets{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:6px;margin-top:8px}
-    .preset{background:#eee;padding:8px 12px;border-radius:4px;cursor:pointer;border:1px solid #ddd;transition:all 0.2s}
-    .preset:hover{background:#ddd;border-color:#999}
-    .preset-category{font-weight:700;font-size:0.95em;background:#333;color:#fff;padding:8px;border-radius:4px;margin-top:12px;margin-bottom:4px}
-    .cors-warning{background:#fff3cd;border:1px solid #ffc107;padding:12px;border-radius:6px;margin-bottom:16px;color:#856404}
-    .cors-warning strong{display:block;margin-bottom:6px}
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      height: 100vh;
+      overflow: hidden;
+    }
+    
+    .container {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      max-width: 1800px;
+      margin: 0 auto;
+    }
+    
+    /* Header */
+    .header {
+      background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(10px);
+      padding: 20px 30px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    
+    .header h1 {
+      color: #667eea;
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 5px;
+    }
+    
+    .header p {
+      color: #666;
+      font-size: 14px;
+    }
+    
+    /* Main Content Area */
+    .main-content {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+      gap: 20px;
+      padding: 20px;
+    }
+    
+    /* Left Panel - Request Form */
+    .left-panel {
+      flex: 0 0 45%;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    
+    .form-section {
+      flex: 1;
+      overflow-y: auto;
+      padding: 25px;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-group label {
+      display: block;
+      font-weight: 600;
+      font-size: 13px;
+      color: #333;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .input-group {
+      display: flex;
+      gap: 10px;
+    }
+    
+    input[type="text"], select, textarea {
+      width: 100%;
+      padding: 12px 15px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 14px;
+      transition: all 0.3s;
+      font-family: 'Courier New', monospace;
+    }
+    
+    input[type="text"]:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+    }
+    
+    select {
+      cursor: pointer;
+      background: white;
+      flex: 0 0 140px;
+    }
+    
+    textarea {
+      resize: vertical;
+      min-height: 120px;
+      font-size: 13px;
+    }
+    
+    .button-group {
+      display: flex;
+      gap: 10px;
+      padding: 20px 25px;
+      background: #f8f9fa;
+      border-top: 1px solid #e0e0e0;
+    }
+    
+    .btn {
+      flex: 1;
+      padding: 14px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(102,126,234,0.4);
+    }
+    
+    .btn-secondary {
+      background: #6c757d;
+      color: white;
+    }
+    
+    .btn-secondary:hover {
+      background: #5a6268;
+    }
+    
+    /* Right Panel - Response & Presets */
+    .right-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      overflow: hidden;
+    }
+    
+    /* Response Section */
+    .response-section {
+      flex: 0 0 45%;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    
+    .response-header {
+      padding: 20px 25px;
+      background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .response-header h3 {
+      font-size: 18px;
+      font-weight: 600;
+    }
+    
+    .status-badge {
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      background: rgba(255,255,255,0.2);
+    }
+    
+    .status-success { background: #27ae60; }
+    .status-error { background: #e74c3c; }
+    .status-pending { background: #f39c12; }
+    
+    #response {
+      flex: 1;
+      overflow: auto;
+      padding: 20px;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      line-height: 1.6;
+      background: #f8f9fa;
+      color: #2c3e50;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    
+    /* Presets Section */
+    .presets-section {
+      flex: 1;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    
+    .presets-header {
+      padding: 20px 25px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+    
+    .presets-header h3 {
+      font-size: 18px;
+      font-weight: 600;
+    }
+    
+    .presets-container {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+    }
+    
+    .preset-category {
+      font-weight: 700;
+      font-size: 12px;
+      color: #667eea;
+      padding: 12px 15px;
+      background: #f0f2ff;
+      border-radius: 6px;
+      margin-top: 15px;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    
+    .preset-category:first-child {
+      margin-top: 0;
+    }
+    
+    .preset {
+      background: #f8f9fa;
+      padding: 12px 15px;
+      margin-bottom: 8px;
+      border-radius: 8px;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: all 0.2s;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .preset:hover {
+      background: #667eea;
+      color: white;
+      border-color: #667eea;
+      transform: translateX(5px);
+    }
+    
+    .method-tag {
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 700;
+      min-width: 55px;
+      text-align: center;
+    }
+    
+    .method-get { background: #27ae60; color: white; }
+    .method-post { background: #3498db; color: white; }
+    .method-put { background: #f39c12; color: white; }
+    .method-delete { background: #e74c3c; color: white; }
+    
+    /* Scrollbar Styling */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    
+    ::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 10px;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+      background: #667eea;
+      border-radius: 10px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+      background: #764ba2;
+    }
+    
+    /* CORS Warning */
+    .cors-warning {
+      background: linear-gradient(135deg, #fff3cd 0%, #ffe5a0 100%);
+      border: 2px solid #ffc107;
+      padding: 15px 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      color: #856404;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+    
+    .cors-warning strong {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 14px;
+    }
+    
+    /* Responsive */
+    @media (max-width: 1200px) {
+      .main-content {
+        flex-direction: column;
+      }
+      .left-panel, .right-panel {
+        flex: 1 1 auto;
+      }
+    }
   </style>
 </head>
 <body>
-  <h1>FlipFit API Tester</h1>
-  <p>Complete API testing tool for your Dropwizard REST endpoints.</p>
-  
-  <div class="cors-warning">
-    <strong>⚠️ CORS Note:</strong>
-    If you get CORS errors, the Dropwizard app must enable CORS headers. This HTML can be opened directly from filesystem or served via: 
-    <code>python -m http.server 8000</code> (then visit http://localhost:8000/api-tester.html)
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <h1>⚡ FlipFit API Tester</h1>
+      <p>Professional REST API testing tool for Dropwizard endpoints</p>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+      <!-- Left Panel: Request Form -->
+      <div class="left-panel">
+        <div class="form-section">
+          <div class="cors-warning">
+            <strong>⚠️ CORS Configuration Required</strong>
+            If you encounter CORS errors, enable CORS in your Dropwizard application. Check the CORS_SETUP_GUIDE.md file for instructions.
+          </div>
+          
+          <div class="form-group">
+            <label>🌐 Base URL</label>
+            <input id="baseUrl" type="text" value="http://localhost:8080" placeholder="http://localhost:8080" />
+          </div>
+          
+          <div class="form-group">
+            <label>🔗 Endpoint</label>
+            <div class="input-group">
+              <select id="method">
+                <option>GET</option>
+                <option>POST</option>
+                <option>PUT</option>
+                <option>DELETE</option>
+              </select>
+              <input id="path" type="text" placeholder="/user/login" />
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label>📝 Query Parameters (auto-extracted from path)</label>
+            <textarea id="queryParams" placeholder="email=user@example.com&#10;password=pass123&#10;userId=USER001" rows="3"></textarea>
+            <small style="color: #666; font-size: 12px; margin-top: 5px; display: block;">One parameter per line (key=value format)</small>
+          </div>
+          
+          <div class="form-group">
+            <label>📋 Headers</label>
+            <textarea id="headers" placeholder="Content-Type=application/json&#10;Authorization=Bearer token123" rows="2"></textarea>
+          </div>
+          
+          <div class="form-group">
+            <label>📦 Request Body (JSON)</label>
+            <textarea id="body" placeholder='{"name":"John Doe","email":"john@example.com"}' rows="6"></textarea>
+          </div>
+        </div>
+        
+        <div class="button-group">
+          <button id="send" class="btn btn-primary">
+            <span>🚀</span> Send Request
+          </button>
+          <button id="clear" class="btn btn-secondary">
+            <span>🗑️</span> Clear
+          </button>
+        </div>
+      </div>
+      
+      <!-- Right Panel: Response & Presets -->
+      <div class="right-panel">
+        <!-- Response Section -->
+        <div class="response-section">
+          <div class="response-header">
+            <h3>📊 Response</h3>
+            <div id="status" class="status-badge">Ready</div>
+          </div>
+          <div id="response">Click "Send Request" or select a preset to get started...</div>
+        </div>
+        
+        <!-- Presets Section -->
+        <div class="presets-section">
+          <div class="presets-header">
+            <h3>🎯 API Endpoints</h3>
+          </div>
+          <div class="presets-container" id="presets">
+            <!-- Populated by script -->
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <div class="row">
-    <label for="baseUrl">Base URL</label>
-    <input id="baseUrl" type="text" value="http://localhost:8080" />
-  </div>
-
-  <div class="row">
-    <label for="method">Method</label>
-    <select id="method">
-      <option>GET</option>
-      <option>POST</option>
-      <option>PUT</option>
-      <option>DELETE</option>
-    </select>
-    <label for="path">Path</label>
-    <input id="path" type="text" placeholder="/user/login or /customer/gyms" />
-  </div>
-
-  <div class="row">
-    <label>Query Params</label>
-    <input id="query" type="text" placeholder="e.g. key1=val1&key2=val2" />
-  </div>
-
-  <div class="row">
-    <label>Headers</label>
-    <input id="headers" type="text" placeholder='e.g. Content-Type=application/json; Authorization=Bearer ...' />
-  </div>
-
-  <div class="row">
-    <label>Body (JSON)</label>
-  </div>
-  <textarea id="body" placeholder='{"username":"john","password":"secret"}'></textarea>
-
-  <div style="margin-top:8px;display:flex;gap:8px;align-items:center">
-    <button id="send" class="btn">Send</button>
-    <button id="clear" class="btn btn-secondary">Clear Response</button>
-    <span id="status" style="margin-left:12px;font-weight:600"></span>
-  </div>
-
-  <h3>Presets (click to populate)</h3>
-  <div class="presets" id="presets">
-    <!-- Populated by script -->
-  </div>
-
-  <h3>Response</h3>
-  <div id="response">No response yet.</div>
-
+  <script>
   <script>
     const presets = [
       // === USER AUTHENTICATION ===
-      {cat:'User', label:'POST /user/login', method:'POST', path:'/user/login?email=user@example.com&password=pass123'},
-      {cat:'User', label:'POST /user/register', method:'POST', path:'/user/register', body:{name:"John Doe",email:"john@example.com",password:"pass123",phoneNumber:"1234567890",city:"Mumbai"}},
-      {cat:'User', label:'PUT /user/update-password', method:'PUT', path:'/user/update-password?email=user@example.com&password=newpass123'},
-      {cat:'User', label:'POST /user/logout', method:'POST', path:'/user/logout'},
+      {cat:'User', label:'Login', method:'POST', path:'/user/login', query:'email=user@example.com&password=pass123'},
+      {cat:'User', label:'Register', method:'POST', path:'/user/register', body:{name:"John Doe",email:"john@example.com",password:"pass123",phoneNumber:"1234567890",city:"Mumbai"}},
+      {cat:'User', label:'Update Password', method:'PUT', path:'/user/update-password', query:'email=user@example.com&password=newpass123'},
+      {cat:'User', label:'Logout', method:'POST', path:'/user/logout'},
       
       // === CUSTOMER OPERATIONS ===
-      {cat:'Customer', label:'POST /customer/register', method:'POST', path:'/customer/register', body:{name:"Jane Customer",email:"jane@example.com",password:"pass123",phoneNumber:"9876543210",city:"Delhi"}},
-      {cat:'Customer', label:'POST /customer/login', method:'POST', path:'/customer/login?email=jane@example.com&password=pass123'},
-      {cat:'Customer', label:'GET /customer/gyms', method:'GET', path:'/customer/gyms'},
-      {cat:'Customer', label:'GET /customer/gyms/{gymId}/slots', method:'GET', path:'/customer/gyms/GYM001/slots?date=2026-02-01'},
-      {cat:'Customer', label:'POST /customer/book', method:'POST', path:'/customer/book?userId=USER001&slotId=SLOT001&gymId=GYM001&date=2026-02-01'},
-      {cat:'Customer', label:'PUT /customer/cancel/{bookingId}', method:'PUT', path:'/customer/cancel/BOOK001?userId=USER001'},
-      {cat:'Customer', label:'GET /customer/bookings/{userId}', method:'GET', path:'/customer/bookings/USER001'},
+      {cat:'Customer', label:'Register Customer', method:'POST', path:'/customer/register', body:{name:"Jane Customer",email:"jane@example.com",password:"pass123",phoneNumber:"9876543210",city:"Delhi"}},
+      {cat:'Customer', label:'Login Customer', method:'POST', path:'/customer/login', query:'email=jane@example.com&password=pass123'},
+      {cat:'Customer', label:'View All Gyms', method:'GET', path:'/customer/gyms', query:'city=Bangalore'},
+      {cat:'Customer', label:'View Gym Slots', method:'GET', path:'/customer/gyms/GYM001/slots', query:'date=2026-02-01'},
+      {cat:'Customer', label:'Book Slot', method:'POST', path:'/customer/book', query:'userId=USER001&slotId=SLOT001&gymId=GYM001&date=2026-02-01'},
+      {cat:'Customer', label:'Cancel Booking', method:'PUT', path:'/customer/cancel/BOOK001', query:'userId=USER001'},
+      {cat:'Customer', label:'View My Bookings', method:'GET', path:'/customer/bookings/USER001'},
       
       // === GYM OWNER OPERATIONS ===
-      {cat:'Owner', label:'POST /owner/register', method:'POST', path:'/owner/register', body:{name:"Gym Owner",email:"owner@example.com",password:"pass123",phoneNumber:"1112223333",city:"Bangalore",panNumber:"ABCDE1234F",aadharNumber:"123456789012",gstinNumber:"22ABCDE1234F1Z5"}},
-      {cat:'Owner', label:'POST /owner/login', method:'POST', path:'/owner/login?email=owner@example.com&password=pass123'},
-      {cat:'Owner', label:'POST /owner/gyms/register', method:'POST', path:'/owner/gyms/register', body:{gymName:"PowerFit Gym",location:"Bangalore",gymOwnerId:"OWNER001"}},
-      {cat:'Owner', label:'GET /owner/gyms/{ownerId}', method:'GET', path:'/owner/gyms/OWNER001'},
-      {cat:'Owner', label:'GET /owner/bookings/{ownerId}', method:'GET', path:'/owner/bookings/OWNER001'},
-      {cat:'Owner', label:'POST /owner/slots/create', method:'POST', path:'/owner/slots/create?gymId=GYM001&startTime=09:00&endTime=10:00&capacity=20'},
-      {cat:'Owner', label:'GET /owner/slots/{gymId}', method:'GET', path:'/owner/slots/GYM001'},
-      {cat:'Owner', label:'PUT /owner/slots/{slotId}', method:'PUT', path:'/owner/slots/SLOT001?capacity=25'},
-      {cat:'Owner', label:'DELETE /owner/slots/{slotId}', method:'DELETE', path:'/owner/slots/SLOT001'},
-      {cat:'Owner', label:'PUT /owner/schedule/update', method:'PUT', path:'/owner/schedule/update?gymId=GYM001'},
+      {cat:'Owner', label:'Register Owner', method:'POST', path:'/owner/register', body:{name:"Gym Owner",email:"owner@example.com",password:"pass123",phoneNumber:"1112223333",city:"Bangalore",panNumber:"ABCDE1234F",aadharNumber:"123456789012",gstinNumber:"22ABCDE1234F1Z5"}},
+      {cat:'Owner', label:'Login Owner', method:'POST', path:'/owner/login', query:'email=owner@example.com&password=pass123'},
+      {cat:'Owner', label:'Register Gym', method:'POST', path:'/owner/gyms/register', body:{gymName:"PowerFit Gym",location:"Bangalore",gymOwnerId:"OWNER001"}},
+      {cat:'Owner', label:'View My Gyms', method:'GET', path:'/owner/gyms/OWNER001'},
+      {cat:'Owner', label:'View Gym Bookings', method:'GET', path:'/owner/bookings/OWNER001'},
+      {cat:'Owner', label:'Create Slot', method:'POST', path:'/owner/slots/create', query:'gymId=GYM001&startTime=09:00&endTime=10:00&capacity=20'},
+      {cat:'Owner', label:'View Gym Slots', method:'GET', path:'/owner/slots/GYM001'},
+      {cat:'Owner', label:'Update Slot', method:'PUT', path:'/owner/slots/SLOT001', query:'capacity=25'},
+      {cat:'Owner', label:'Delete Slot', method:'DELETE', path:'/owner/slots/SLOT001'},
+      {cat:'Owner', label:'Update Schedule', method:'PUT', path:'/owner/schedule/update', query:'gymId=GYM001'},
       
       // === ADMIN OPERATIONS ===
-      {cat:'Admin', label:'POST /admin/login', method:'POST', path:'/admin/login?email=admin@flipfit.com&password=admin123'},
-      {cat:'Admin', label:'GET /admin/users', method:'GET', path:'/admin/users'},
-      {cat:'Admin', label:'GET /admin/gyms', method:'GET', path:'/admin/gyms'},
-      {cat:'Admin', label:'GET /admin/gyms/pending', method:'GET', path:'/admin/gyms/pending'},
-      {cat:'Admin', label:'GET /admin/gyms/approved', method:'GET', path:'/admin/gyms/approved'},
-      {cat:'Admin', label:'GET /admin/gyms/location/{location}', method:'GET', path:'/admin/gyms/location/Bangalore'},
-      {cat:'Admin', label:'PUT /admin/gyms/approve/{gymId}', method:'PUT', path:'/admin/gyms/approve/GYM001'},
-      {cat:'Admin', label:'PUT /admin/gyms/reject/{gymId}', method:'PUT', path:'/admin/gyms/reject/GYM001'},
-      {cat:'Admin', label:'GET /admin/owners/approved', method:'GET', path:'/admin/owners/approved'},
-      {cat:'Admin', label:'GET /admin/owners/pending', method:'GET', path:'/admin/owners/pending'},
-      {cat:'Admin', label:'PUT /admin/owners/approve/{ownerId}', method:'PUT', path:'/admin/owners/approve/OWNER001'},
-      {cat:'Admin', label:'PUT /admin/owners/reject/{ownerId}', method:'PUT', path:'/admin/owners/reject/OWNER001'},
-      {cat:'Admin', label:'GET /admin/slots/pending', method:'GET', path:'/admin/slots/pending'},
-      {cat:'Admin', label:'PUT /admin/slots/approve/{slotId}', method:'PUT', path:'/admin/slots/approve/SLOT001'},
-      {cat:'Admin', label:'PUT /admin/slots/reject/{slotId}', method:'PUT', path:'/admin/slots/reject/SLOT001'},
-      {cat:'Admin', label:'GET /admin/bookings', method:'GET', path:'/admin/bookings'},
-      {cat:'Admin', label:'GET /admin/reports', method:'GET', path:'/admin/reports?reportType=1'},
-      {cat:'Admin', label:'GET /admin/reports/payment', method:'GET', path:'/admin/reports/payment'},
-      {cat:'Admin', label:'GET /admin/reports/revenue', method:'GET', path:'/admin/reports/revenue?startDate=2026-01-01&endDate=2026-01-31'},
+      {cat:'Admin', label:'Admin Login', method:'POST', path:'/admin/login', query:'email=admin@flipfit.com&password=admin123'},
+      {cat:'Admin', label:'View All Users', method:'GET', path:'/admin/users'},
+      {cat:'Admin', label:'View All Gyms', method:'GET', path:'/admin/gyms'},
+      {cat:'Admin', label:'Pending Gyms', method:'GET', path:'/admin/gyms/pending'},
+      {cat:'Admin', label:'Approved Gyms', method:'GET', path:'/admin/gyms/approved'},
+      {cat:'Admin', label:'Gyms by Location', method:'GET', path:'/admin/gyms/location/Bangalore'},
+      {cat:'Admin', label:'Approve Gym', method:'PUT', path:'/admin/gyms/approve/GYM001'},
+      {cat:'Admin', label:'Reject Gym', method:'PUT', path:'/admin/gyms/reject/GYM001'},
+      {cat:'Admin', label:'Approved Owners', method:'GET', path:'/admin/owners/approved'},
+      {cat:'Admin', label:'Pending Owners', method:'GET', path:'/admin/owners/pending'},
+      {cat:'Admin', label:'Approve Owner', method:'PUT', path:'/admin/owners/approve/OWNER001'},
+      {cat:'Admin', label:'Reject Owner', method:'PUT', path:'/admin/owners/reject/OWNER001'},
+      {cat:'Admin', label:'Pending Slots', method:'GET', path:'/admin/slots/pending'},
+      {cat:'Admin', label:'Approve Slot', method:'PUT', path:'/admin/slots/approve/SLOT001'},
+      {cat:'Admin', label:'Reject Slot', method:'PUT', path:'/admin/slots/reject/SLOT001'},
+      {cat:'Admin', label:'All Bookings', method:'GET', path:'/admin/bookings'},
+      {cat:'Admin', label:'Generate Report', method:'GET', path:'/admin/reports', query:'reportType=1'},
+      {cat:'Admin', label:'Payment Report', method:'GET', path:'/admin/reports/payment'},
+      {cat:'Admin', label:'Revenue Report', method:'GET', path:'/admin/reports/revenue', query:'startDate=2026-01-01&endDate=2026-01-31'},
       
       // === SLOT OPERATIONS ===
-      {cat:'Slot', label:'POST /slot/create', method:'POST', path:'/slot/create?gymId=GYM001&startTime=14:00&endTime=15:00&capacity=15'},
-      {cat:'Slot', label:'GET /slot/gym/{gymId}', method:'GET', path:'/slot/gym/GYM001'},
-      {cat:'Slot', label:'GET /slot/{slotId}', method:'GET', path:'/slot/SLOT001'},
-      {cat:'Slot', label:'PUT /slot/{slotId}', method:'PUT', path:'/slot/SLOT001?capacity=18'},
-      {cat:'Slot', label:'DELETE /slot/{slotId}', method:'DELETE', path:'/slot/SLOT001'},
+      {cat:'Slot', label:'Create Slot', method:'POST', path:'/slot/create', query:'gymId=GYM001&startTime=14:00&endTime=15:00&capacity=15'},
+      {cat:'Slot', label:'Get Slots by Gym', method:'GET', path:'/slot/gym/GYM001'},
+      {cat:'Slot', label:'Get Slot Details', method:'GET', path:'/slot/SLOT001'},
+      {cat:'Slot', label:'Update Slot', method:'PUT', path:'/slot/SLOT001', query:'capacity=18'},
+      {cat:'Slot', label:'Delete Slot', method:'DELETE', path:'/slot/SLOT001'},
       
       // === PAYMENT OPERATIONS ===
-      {cat:'Payment', label:'POST /payment/process', method:'POST', path:'/payment/process?bookingId=BOOK001&amount=500&paymentMethod=CARD'},
-      {cat:'Payment', label:'GET /payment/{paymentId}', method:'GET', path:'/payment/PAY001'},
-      {cat:'Payment', label:'POST /payment/refund/{paymentId}', method:'POST', path:'/payment/refund/PAY001'},
+      {cat:'Payment', label:'Process Payment', method:'POST', path:'/payment/process', query:'bookingId=BOOK001&amount=500&paymentMethod=CARD'},
+      {cat:'Payment', label:'Get Payment Details', method:'GET', path:'/payment/PAY001'},
+      {cat:'Payment', label:'Refund Payment', method:'POST', path:'/payment/refund/PAY001'},
       
       // === NOTIFICATION OPERATIONS ===
-      {cat:'Notification', label:'POST /notification/send', method:'POST', path:'/notification/send?userId=USER001&message=Your%20booking%20confirmed&title=Booking%20Confirmation'},
-      {cat:'Notification', label:'GET /notification/unread/{userId}', method:'GET', path:'/notification/unread/USER001'},
-      {cat:'Notification', label:'PUT /notification/mark-read/{notificationId}', method:'PUT', path:'/notification/mark-read/NOTIF001'},
+      {cat:'Notification', label:'Send Notification', method:'POST', path:'/notification/send', query:'userId=USER001&message=Your booking confirmed&title=Booking Confirmation'},
+      {cat:'Notification', label:'Unread Notifications', method:'GET', path:'/notification/unread/USER001'},
+      {cat:'Notification', label:'Mark as Read', method:'PUT', path:'/notification/mark-read/NOTIF001'},
       
       // === REGISTRATION OPERATIONS ===
-      {cat:'Registration', label:'POST /registration/create', method:'POST', path:'/registration/create?userId=USER001&role=CUSTOMER'},
-      {cat:'Registration', label:'GET /registration/pending', method:'GET', path:'/registration/pending'},
-      {cat:'Registration', label:'PUT /registration/approve/{registrationId}', method:'PUT', path:'/registration/approve/REG001?adminId=ADMIN001'},
-      {cat:'Registration', label:'PUT /registration/reject/{registrationId}', method:'PUT', path:'/registration/reject/REG001?adminId=ADMIN001'}
+      {cat:'Registration', label:'Create Registration', method:'POST', path:'/registration/create', query:'userId=USER001&role=CUSTOMER'},
+      {cat:'Registration', label:'Pending Registrations', method:'GET', path:'/registration/pending'},
+      {cat:'Registration', label:'Approve Registration', method:'PUT', path:'/registration/approve/REG001', query:'adminId=ADMIN001'},
+      {cat:'Registration', label:'Reject Registration', method:'PUT', path:'/registration/reject/REG001', query:'adminId=ADMIN001'}
     ];
 
-    // Group presets by category and render
-    const categories = [...new Set(presets.map(p=>p.cat))];
+    // Helper: Extract query params from path
+    function extractQueryParams(path) {
+      const idx = path.indexOf('?');
+      if (idx === -1) return { cleanPath: path, params: '' };
+      return {
+        cleanPath: path.substring(0, idx),
+        params: path.substring(idx + 1)
+      };
+    }
+
+    // Helper: Convert query string to multiline format
+    function queryToMultiline(queryStr) {
+      if (!queryStr) return '';
+      return queryStr.split('&').join('\n');
+    }
+
+    // Helper: Convert multiline to query string
+    function multilineToQuery(multiline) {
+      if (!multiline) return '';
+      return multiline.split('\n')
+        .map(line => line.trim())
+        .filter(line => line && line.includes('='))
+        .join('&');
+    }
+
+    // Helper: Parse headers from multiline format
+    function parseHeaders(str) {
+      const out = {};
+      if (!str) return out;
+      str.split('\n').forEach(line => {
+        const idx = line.indexOf('=');
+        if (idx === -1) return;
+        const k = line.slice(0, idx).trim();
+        const v = line.slice(idx + 1).trim();
+        if (k && v) out[k] = v;
+      });
+      return out;
+    }
+
+    // Render presets
+    const categories = [...new Set(presets.map(p => p.cat))];
     const presetsEl = document.getElementById('presets');
-    categories.forEach(cat=>{
+    
+    categories.forEach(cat => {
       const catHeader = document.createElement('div');
       catHeader.className = 'preset-category';
       catHeader.textContent = cat;
       presetsEl.appendChild(catHeader);
       
-      presets.filter(p=>p.cat===cat).forEach(p=>{
+      presets.filter(p => p.cat === cat).forEach(p => {
         const btn = document.createElement('div');
-        btn.className='preset';
-        btn.textContent=p.label;
-        btn.onclick = ()=>{
+        btn.className = 'preset';
+        
+        const methodTag = document.createElement('span');
+        methodTag.className = `method-tag method-${p.method.toLowerCase()}`;
+        methodTag.textContent = p.method;
+        
+        const label = document.createElement('span');
+        label.textContent = p.label;
+        
+        btn.appendChild(methodTag);
+        btn.appendChild(label);
+        
+        btn.onclick = () => {
           document.getElementById('method').value = p.method;
-          document.getElementById('path').value = p.path;
+          
+          // Handle path and query params separately
+          if (p.query) {
+            document.getElementById('path').value = p.path;
+            document.getElementById('queryParams').value = queryToMultiline(p.query);
+          } else {
+            const { cleanPath, params } = extractQueryParams(p.path);
+            document.getElementById('path').value = cleanPath;
+            document.getElementById('queryParams').value = queryToMultiline(params);
+          }
+          
           document.getElementById('body').value = p.body ? JSON.stringify(p.body, null, 2) : '';
+          
+          // Scroll to top of form
+          document.querySelector('.form-section').scrollTo({ top: 0, behavior: 'smooth' });
         };
+        
         presetsEl.appendChild(btn);
       });
     });
 
-    function parseHeaders(str){
-      const out = {};
-      if(!str) return out;
-      str.split(';').map(s=>s.trim()).filter(Boolean).forEach(pair=>{
-        const idx = pair.indexOf('='); if(idx===-1) return; const k=pair.slice(0,idx).trim(); const v=pair.slice(idx+1).trim(); out[k]=v;
-      });
-      return out;
-    }
+    // Auto-extract query params when path changes
+    document.getElementById('path').addEventListener('input', (e) => {
+      const { cleanPath, params } = extractQueryParams(e.target.value);
+      if (params) {
+        document.getElementById('path').value = cleanPath;
+        document.getElementById('queryParams').value = queryToMultiline(params);
+      }
+    });
 
-    document.getElementById('send').addEventListener('click', async ()=>{
+    // Send request handler
+    document.getElementById('send').addEventListener('click', async () => {
       const base = document.getElementById('baseUrl').value.replace(/\/$/, '');
       const method = document.getElementById('method').value;
-      let path = document.getElementById('path').value;
-      const query = document.getElementById('query').value;
+      const path = document.getElementById('path').value;
+      const queryMultiline = document.getElementById('queryParams').value;
       const headersText = document.getElementById('headers').value;
       const bodyText = document.getElementById('body').value;
 
-      if(query){
-        if(path.indexOf('?')===-1) path += (path.includes('?')? '&':'?') + query;
-        else path += '&' + query;
+      // Build URL with query params
+      const queryStr = multilineToQuery(queryMultiline);
+      let url = base + (path.startsWith('/') ? path : '/' + path);
+      if (queryStr) {
+        url += (url.includes('?') ? '&' : '?') + queryStr;
       }
 
-      const url = base + (path.startsWith('/') ? path : '/' + path);
       const headers = parseHeaders(headersText);
-      const opts = {method, headers: {...headers}};
-      if(bodyText && (method==='POST' || method==='PUT')){
-        if(!opts.headers['Content-Type']) opts.headers['Content-Type']='application/json';
-        try{ opts.body = bodyText; }catch(e){ /* keep raw */ }
+      const opts = { method, headers: { ...headers } };
+      
+      if (bodyText && (method === 'POST' || method === 'PUT')) {
+        if (!opts.headers['Content-Type']) {
+          opts.headers['Content-Type'] = 'application/json';
+        }
+        opts.body = bodyText;
       }
 
       const statusEl = document.getElementById('status');
       const respEl = document.getElementById('response');
-      statusEl.textContent = 'Sending...'; respEl.textContent = '';
+      
+      statusEl.textContent = 'Sending...';
+      statusEl.className = 'status-badge status-pending';
+      respEl.textContent = '⏳ Waiting for response...';
 
-      try{
+      try {
+        const startTime = Date.now();
         const res = await fetch(url, opts);
+        const duration = Date.now() - startTime;
+        
         const ct = res.headers.get('content-type') || '';
         let data;
-        if(ct.includes('application/json')) data = await res.json(); else data = await res.text();
-        statusEl.textContent = res.status + ' ' + res.statusText;
-        respEl.textContent = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
-      }catch(err){
+        
+        if (ct.includes('application/json')) {
+          data = await res.json();
+        } else {
+          data = await res.text();
+        }
+        
+        statusEl.textContent = `${res.status} ${res.statusText} (${duration}ms)`;
+        statusEl.className = res.ok ? 'status-badge status-success' : 'status-badge status-error';
+        
+        const formattedResponse = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+        respEl.textContent = `✅ Response received in ${duration}ms\n\n${formattedResponse}`;
+        
+      } catch (err) {
         statusEl.textContent = 'Error';
-        respEl.textContent = String(err) + '\n\nNote: If you see CORS errors, run a local static file server (see instructions) or enable CORS in the Dropwizard app.';
+        statusEl.className = 'status-badge status-error';
+        respEl.textContent = `❌ Request Failed\n\n${err.message}\n\n💡 Troubleshooting:\n- Check if the server is running on ${base}\n- Verify CORS is enabled (see CORS_SETUP_GUIDE.md)\n- Check the browser console for detailed errors`;
       }
     });
 
-    document.getElementById('clear').addEventListener('click', ()=>{document.getElementById('response').textContent=''; document.getElementById('status').textContent='';});
+    // Clear handler
+    document.getElementById('clear').addEventListener('click', () => {
+      document.getElementById('method').value = 'GET';
+      document.getElementById('path').value = '';
+      document.getElementById('queryParams').value = '';
+      document.getElementById('headers').value = '';
+      document.getElementById('body').value = '';
+      document.getElementById('response').textContent = 'Click "Send Request" or select a preset to get started...';
+      document.getElementById('status').textContent = 'Ready';
+      document.getElementById('status').className = 'status-badge';
+    });
   </script>
 </body>
 </html>
