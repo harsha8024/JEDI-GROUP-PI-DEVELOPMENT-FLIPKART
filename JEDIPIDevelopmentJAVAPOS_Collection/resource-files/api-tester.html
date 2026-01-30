@@ -414,7 +414,7 @@
 
             {cat:'Owner', label:'Owner Login', method:'POST', path:'/owner/login', query:'email=owner@example.com&password=password123'},
             {cat:'Owner', label:'Owner Registration', method:'POST', path:'/owner/register', body:{name:'Jane Owner', email:'owner@example.com', phoneNumber:'9876543210', password:'password123', panNumber:'ABCDE1234F', gstinNumber:'22ABCDE1234F1Z5', aadharNumber:'123456789012'}},
-            {cat:'Owner', label:'Add Gym', method:'POST', path:'/owner/gyms/register', body:{gymName:'FitZone', city:'Bangalore', gymAddress:'123 Main St', numSlots:20, ownerId:'1'}},
+            {cat:'Owner', label:'Add Gym', method:'POST', path:'/owner/gyms/register', body:{gymName:'FitZone', location:'Bangalore', gymOwnerId:'1'}},
             {cat:'Owner', label:'View My Gyms', method:'GET', path:'/owner/gyms/{ownerId}'},
             {cat:'Owner', label:'View My Bookings', method:'GET', path:'/owner/bookings/{ownerId}'},
             {cat:'Owner', label:'Create Slot', method:'POST', path:'/owner/slots/create', query:'gymId=1&startTime=10:00&endTime=11:00&capacity=20'},
