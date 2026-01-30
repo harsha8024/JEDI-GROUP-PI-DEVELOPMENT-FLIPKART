@@ -1,7 +1,13 @@
 -- ========================================
--- FlipFit POS System - MySQL Database Schema
+-- FlipFit POS System - Complete MySQL Database Schema
+-- Version: 2.0 (Final - No Migration Required)
+-- Date: January 30, 2026
 -- ========================================
--- Drop database if exists (optional - use with caution)
+-- This script creates the complete database structure
+-- No additional migration scripts needed
+-- ========================================
+
+-- Drop database if exists (optional - use with caution in production)
 -- DROP DATABASE IF EXISTS flipfit_db;
 
 -- Create database
@@ -16,7 +22,7 @@ CREATE TABLE IF NOT EXISTS roles (
     role_name VARCHAR(20) PRIMARY KEY,
     description VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Initialize roles
 INSERT INTO roles (role_name, description) VALUES
@@ -36,7 +42,7 @@ CREATE TABLE IF NOT EXISTS customers (
     phone_number VARCHAR(15),
     city VARCHAR(50),
     password VARCHAR(255) NOT NULL,
-    is_active BOOLEAN DEFAULT FALSE,
+    is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_email (email),
     INDEX idx_city (city)
@@ -45,6 +51,7 @@ CREATE TABLE IF NOT EXISTS customers (
 -- ========================================
 -- TABLE: gym_owners
 -- Stores gym owner information
+-- Includes PAN, Aadhar, and GSTIN for compliance
 -- ========================================
 CREATE TABLE IF NOT EXISTS gym_owners (
     owner_id VARCHAR(50) PRIMARY KEY,
@@ -187,6 +194,7 @@ SELECT customer_id as user_id, name, email, phone_number, city, password,
 CREATE OR REPLACE VIEW view_gym_owners AS
 SELECT owner_id as user_id, name, email, phone_number, city, password, 
        'OWNER' as role, is_active, created_at FROM gym_owners;
+
 -- ========================================
 -- TABLE: id_counters
 -- Stores auto-increment counters for ID generation
@@ -207,3 +215,24 @@ INSERT INTO id_counters (counter_name, current_value) VALUES
     ('PAYMENT', 6000),
     ('NOTIFICATION', 7000)
 ON DUPLICATE KEY UPDATE counter_name=counter_name;
+
+-- ========================================
+-- SAMPLE DATA (Optional - for testing)
+-- ========================================
+
+-- Sample Admin (password: admin123)
+INSERT INTO admins (admin_id, name, email, phone_number, city, password, is_active) VALUES
+    ('ADMIN2000', 'System Admin', 'admin@flipfit.com', '9999999999', 'Bangalore', 'admin123', TRUE)
+ON DUPLICATE KEY UPDATE admin_id=admin_id;
+
+-- ========================================
+-- DATABASE SETUP COMPLETE
+-- ========================================
+-- All tables, indexes, and relationships have been created
+-- No migration scripts needed
+-- You can now start the application
+-- ========================================
+
+SELECT 'FlipFit Database Schema v2.0 created successfully!' as status;
+SELECT 'All tables, views, and counters initialized.' as info;
+SELECT 'You can now run your application without any migration scripts.' as next_step;
