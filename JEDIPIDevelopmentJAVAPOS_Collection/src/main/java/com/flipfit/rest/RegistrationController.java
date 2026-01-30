@@ -53,7 +53,7 @@ public class RegistrationController {
         try {
             boolean success = registrationService.approveRegistration(registrationId, adminId);
             if (success) {
-                return Response.ok("Registration Approved Successfully").build();
+                return Response.ok(java.util.Collections.singletonMap("message", "Registration Approved Successfully")).build();
             } else {
                 return Response.status(Response.Status.BAD_REQUEST).entity("Approval Failed").build();
             }
@@ -71,7 +71,7 @@ public class RegistrationController {
         try {
             boolean success = registrationService.rejectRegistration(registrationId, adminId);
             if (success) {
-                return Response.ok("Registration Rejected Successfully").build();
+                return Response.ok(java.util.Collections.singletonMap("message", "Registration Rejected Successfully")).build();
             } else {
                 return Response.status(Response.Status.BAD_REQUEST).entity("Rejection Failed").build();
             }

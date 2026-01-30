@@ -29,7 +29,7 @@ public class PaymentController {
         try {
             boolean success = paymentService.processPayment(bookingId, amount, paymentMethod);
             if (success) {
-                return Response.ok("Payment Processed Successfully").build();
+                return Response.ok(java.util.Collections.singletonMap("message", "Payment Processed Successfully")).build();
             } else {
                 return Response.status(Response.Status.BAD_REQUEST).entity("Payment Processing Failed").build();
             }
@@ -59,7 +59,7 @@ public class PaymentController {
         try {
             boolean success = paymentService.refundPayment(paymentId);
             if (success) {
-                return Response.ok("Refund Processed Successfully").build();
+                return Response.ok(java.util.Collections.singletonMap("message", "Refund Processed Successfully")).build();
             } else {
                 return Response.status(Response.Status.BAD_REQUEST).entity("Refund Processing Failed").build();
             }

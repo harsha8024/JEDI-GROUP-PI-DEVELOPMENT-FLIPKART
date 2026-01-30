@@ -28,7 +28,10 @@ public class UserController {
         try {
             boolean loggedIn = userService.login(userCredentials.getEmail(), userCredentials.getPassword());
             if (loggedIn) {
-                return Response.ok("Login Successful").build();
+                // Return the user object (without password) so clients get useful data
+                com.flipfit.bean.User loggedUser = GymUserServiceImpl.getUserMap().get(userCredentials.getEmail());
+                if (loggedUser != null) loggedUser.setPassword(null);
+                return Response.ok(loggedUser).build();
             } else {
                 return Response.status(Response.Status.UNAUTHORIZED).entity("Login Failed").build();
             }
@@ -46,7 +49,10 @@ public class UserController {
     public Response register(User user) {
         try {
             userService.register(user);
-            return Response.status(Response.Status.CREATED).entity("User Registered Successfully").build();
+            // Fetch created user and return it (without password)
+            com.flipfit.bean.User created = GymUserServiceImpl.getUserMap().get(user.getEmail());
+            if (created != null) created.setPassword(null);
+            return Response.status(Response.Status.CREATED).entity(created).build();
         } catch (RegistrationFailedException e) {
             return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
         } catch (InvalidInputException e) {
@@ -59,7 +65,7 @@ public class UserController {
     public Response updatePassword(@QueryParam("email") String email, @QueryParam("password") String password) {
         try {
              userService.updatePassword(email, password);
-             return Response.ok("Password updated successfully").build();
+             return Response.ok(java.util.Collections.singletonMap("message", "Password updated successfully")).build();
         } catch (UserNotFoundException e) {
             return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();
         } catch (InvalidInputException e) {
@@ -71,7 +77,7 @@ public class UserController {
     @Path("/logout")
     public Response logout() {
         userService.logout();
-        return Response.ok("Logged out successfully").build();
+        return Response.ok(java.util.Collections.singletonMap("message", "Logged out successfully")).build();
     }
 }
 

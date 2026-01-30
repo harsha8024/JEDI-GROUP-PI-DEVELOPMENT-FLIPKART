@@ -53,8 +53,9 @@ public interface GymAdminInterface {
 
     /**
      * View all bookings.
+     * @return list of all bookings
      */
-    void viewAllBookings();
+    java.util.List<com.flipfit.bean.Booking> viewAllBookings();
 
     /**
      * Generate reports.

@@ -30,7 +30,7 @@ public class NotificationController {
                                     @QueryParam("title") String title) {
         try {
             notificationService.sendNotification(userId, message, title);
-            return Response.ok("Notification Sent Successfully").build();
+            return Response.ok(java.util.Collections.singletonMap("message", "Notification Sent Successfully")).build();
         } catch (InvalidInputException e) {
             return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
         } catch (NotificationFailedException e) {
@@ -54,7 +54,7 @@ public class NotificationController {
     public Response markAsRead(@PathParam("notificationId") String notificationId) {
         try {
             notificationService.markAsRead(notificationId);
-            return Response.ok("Notification Marked as Read").build();
+            return Response.ok(java.util.Collections.singletonMap("message", "Notification Marked as Read")).build();
         } catch (InvalidInputException e) {
             return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
         } catch (NotificationNotFoundException e) {

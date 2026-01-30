@@ -45,9 +45,10 @@ public class GymOwnerController {
             owner.setRole(role);
             
             userService.register(owner);
-            return Response.status(Response.Status.CREATED)
-                    .entity("Gym Owner registered successfully. You can now log in immediately!")
-                    .build();
+            // Return created owner data (without password)
+            GymOwner created = (GymOwner) GymUserServiceImpl.getUserMap().get(owner.getEmail());
+            if (created != null) created.setPassword(null);
+            return Response.status(Response.Status.CREATED).entity(created).build();
         } catch (RegistrationFailedException | InvalidInputException e) {
             return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
         } catch (Exception e) {
@@ -64,7 +65,9 @@ public class GymOwnerController {
         try {
             boolean success = userService.login(email, password);
             if (success) {
-                return Response.ok("Gym Owner login successful").build();
+                GymOwner logged = (GymOwner) GymUserServiceImpl.getUserMap().get(email);
+                if (logged != null) logged.setPassword(null);
+                return Response.ok(logged).build();
             } else {
                 return Response.status(Response.Status.UNAUTHORIZED).entity("Login failed").build();
             }
@@ -153,7 +156,7 @@ public class GymOwnerController {
                               @QueryParam("capacity") int capacity) {
         try {
             slotService.updateSlot(slotId, capacity);
-            return Response.ok("Slot Updated Successfully").build();
+            return Response.ok(java.util.Collections.singletonMap("message", "Slot Updated Successfully")).build();
         } catch (InvalidInputException | SlotNotFoundException | SlotOperationException e) {
             return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
         }
@@ -164,7 +167,7 @@ public class GymOwnerController {
     public Response deleteSlot(@PathParam("slotId") String slotId) {
         try {
             slotService.deleteSlot(slotId);
-            return Response.ok("Slot Deleted Successfully").build();
+            return Response.ok(java.util.Collections.singletonMap("message", "Slot Deleted Successfully")).build();
         } catch (InvalidInputException | SlotNotFoundException e) {
             return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
         }
@@ -175,7 +178,7 @@ public class GymOwnerController {
     public Response updateSchedule(@QueryParam("gymId") String gymId) {
         try {
             ownerService.updateSchedule(gymId);
-            return Response.ok("Schedule Updated Successfully").build();
+            return Response.ok(java.util.Collections.singletonMap("message", "Schedule Updated Successfully")).build();
         } catch (InvalidInputException e) {
             return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
         }

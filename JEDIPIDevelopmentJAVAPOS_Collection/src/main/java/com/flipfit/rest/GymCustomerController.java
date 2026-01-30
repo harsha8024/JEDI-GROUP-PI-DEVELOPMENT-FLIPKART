@@ -40,9 +40,10 @@ public class GymCustomerController {
             user.setRole(role);
             
             userService.register(user);
-            return Response.status(Response.Status.CREATED)
-                    .entity("Customer registered successfully. You can now log in immediately!")
-                    .build();
+            // Return created customer (without password)
+            com.flipfit.bean.GymCustomer created = (com.flipfit.bean.GymCustomer) GymUserServiceImpl.getUserMap().get(user.getEmail());
+            if (created != null) created.setPassword(null);
+            return Response.status(Response.Status.CREATED).entity(created).build();
         } catch (RegistrationFailedException | InvalidInputException e) {
             return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
         } catch (Exception e) {
@@ -59,7 +60,9 @@ public class GymCustomerController {
         try {
             boolean success = userService.login(email, password);
             if (success) {
-                return Response.ok("Customer login successful").build();
+                com.flipfit.bean.GymCustomer logged = (com.flipfit.bean.GymCustomer) GymUserServiceImpl.getUserMap().get(email);
+                if (logged != null) logged.setPassword(null);
+                return Response.ok(logged).build();
             } else {
                 return Response.status(Response.Status.UNAUTHORIZED).entity("Login failed").build();
             }
@@ -113,7 +116,7 @@ public class GymCustomerController {
              LocalDate localDate = LocalDate.parse(date);
              boolean success = customerService.bookSlot(userId, slotId, gymId, localDate);
              if (success) {
-                 return Response.ok("Booking Successful").build();
+                 return Response.ok(java.util.Collections.singletonMap("message", "Booking Successful")).build();
              } else {
                  return Response.status(Response.Status.BAD_REQUEST).entity("Booking Failed").build();
              }
@@ -130,7 +133,7 @@ public class GymCustomerController {
         try {
             boolean success = customerService.cancelBooking(bookingId, userId);
             if (success) {
-                 return Response.ok("Booking Cancelled Successfully").build();
+                 return Response.ok(java.util.Collections.singletonMap("message", "Booking Cancelled Successfully")).build();
             } else {
                  return Response.status(Response.Status.BAD_REQUEST).entity("Cancellation Failed").build();
             }

@@ -3,6 +3,7 @@ package com.flipfit.rest;
 import com.flipfit.bean.Gym;
 import com.flipfit.bean.Slot;
 import com.flipfit.bean.User;
+import com.flipfit.bean.Booking;
 import com.flipfit.business.GymAdminInterface;
 import com.flipfit.business.GymAdminServiceImpl;
 import com.flipfit.business.GymUserInterface;
@@ -33,7 +34,9 @@ public class GymAdminController {
         try {
             boolean success = userService.login(email, password);
             if (success) {
-                return Response.ok("Admin login successful").build();
+                com.flipfit.bean.GymAdmin admin = (com.flipfit.bean.GymAdmin) GymUserServiceImpl.getUserMap().get(email);
+                if (admin != null) admin.setPassword(null);
+                return Response.ok(admin).build();
             } else {
                 return Response.status(Response.Status.UNAUTHORIZED).entity("Login failed").build();
             }
@@ -62,7 +65,7 @@ public class GymAdminController {
     public Response approveGym(@PathParam("gymId") String gymId) {
         try {
             adminService.approveGym(gymId);
-            return Response.ok("Gym Approved Successfully").build();
+            return Response.ok(java.util.Collections.singletonMap("message", "Gym Approved Successfully")).build();
         } catch (ApprovalFailedException e) {
              return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();
         } catch (InvalidInputException e) {
@@ -75,7 +78,7 @@ public class GymAdminController {
     public Response rejectGym(@PathParam("gymId") String gymId) {
         try {
             adminService.rejectGym(gymId);
-            return Response.ok("Gym Rejected Successfully").build();
+            return Response.ok(java.util.Collections.singletonMap("message", "Gym Rejected Successfully")).build();
          } catch (ApprovalFailedException e) {
              return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();
         } catch (InvalidInputException e) {
@@ -100,36 +103,48 @@ public class GymAdminController {
     @GET
     @Path("/bookings")
     public Response viewAllBookings() {
-        adminService.viewAllBookings();
-        return Response.ok("Bookings retrieved successfully").build();
+        java.util.List<Booking> bookings = adminService.viewAllBookings();
+        return Response.ok(bookings).build();
     }
 
     @GET
     @Path("/gyms/approved")
     public Response viewApprovedGyms() {
-        adminService.viewApprovedGyms();
-        return Response.ok("Approved gyms retrieved successfully").build();
+        List<Gym> approvedGyms = adminService.viewAllGyms().stream()
+            .filter(Gym::isApproved)
+            .collect(java.util.stream.Collectors.toList());
+        return Response.ok(approvedGyms).build();
     }
 
     @GET
     @Path("/gyms/location/{location}")
     public Response viewGymsByLocation(@PathParam("location") String location) {
-        adminService.viewGymsByLocation(location);
-        return Response.ok("Gyms filtered by location successfully").build();
+        List<Gym> gyms = adminService.viewAllGyms().stream()
+            .filter(gym -> gym.getLocation() != null && gym.getLocation().equalsIgnoreCase(location))
+            .collect(java.util.stream.Collectors.toList());
+        return Response.ok(gyms).build();
     }
 
     @GET
     @Path("/owners/approved")
     public Response viewApprovedGymOwners() {
-        adminService.viewApprovedGymOwners();
-        return Response.ok("Approved gym owners retrieved successfully").build();
+        List<User> allUsers = adminService.viewAllUsers();
+        List<com.flipfit.bean.GymOwner> approvedOwners = allUsers.stream()
+            .filter(user -> user instanceof com.flipfit.bean.GymOwner && user.isActive())
+            .map(user -> (com.flipfit.bean.GymOwner) user)
+            .collect(java.util.stream.Collectors.toList());
+        return Response.ok(approvedOwners).build();
     }
 
     @GET
     @Path("/owners/pending")
     public Response viewPendingGymOwners() {
-        adminService.viewPendingGymOwners();
-        return Response.ok("Pending gym owners retrieved successfully").build();
+        List<User> allUsers = adminService.viewAllUsers();
+        List<com.flipfit.bean.GymOwner> pendingOwners = allUsers.stream()
+            .filter(user -> user instanceof com.flipfit.bean.GymOwner && !user.isActive())
+            .map(user -> (com.flipfit.bean.GymOwner) user)
+            .collect(java.util.stream.Collectors.toList());
+        return Response.ok(pendingOwners).build();
     }
 
     @PUT
@@ -137,7 +152,7 @@ public class GymAdminController {
     public Response approveGymOwner(@PathParam("ownerId") String ownerId) {
         try {
             adminService.approveGymOwner(ownerId);
-            return Response.ok("Gym Owner Approved Successfully").build();
+            return Response.ok(java.util.Collections.singletonMap("message", "Gym Owner Approved Successfully")).build();
         } catch (ApprovalFailedException e) {
             return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();
         } catch (InvalidInputException e) {
@@ -150,7 +165,7 @@ public class GymAdminController {
     public Response rejectGymOwner(@PathParam("ownerId") String ownerId) {
         try {
             adminService.rejectGymOwner(ownerId);
-            return Response.ok("Gym Owner Rejected Successfully").build();
+            return Response.ok(java.util.Collections.singletonMap("message", "Gym Owner Rejected Successfully")).build();
         } catch (ApprovalFailedException e) {
             return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();
         } catch (InvalidInputException e) {
@@ -170,7 +185,7 @@ public class GymAdminController {
     public Response approveSlot(@PathParam("slotId") String slotId) {
         try {
             adminService.approveSlot(slotId);
-            return Response.ok("Slot Approved Successfully").build();
+            return Response.ok(java.util.Collections.singletonMap("message", "Slot Approved Successfully")).build();
         } catch (ApprovalFailedException e) {
             return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();
         } catch (InvalidInputException e) {
@@ -183,7 +198,7 @@ public class GymAdminController {
     public Response rejectSlot(@PathParam("slotId") String slotId) {
         try {
             adminService.rejectSlot(slotId);
-            return Response.ok("Slot Rejected Successfully").build();
+            return Response.ok(java.util.Collections.singletonMap("message", "Slot Rejected Successfully")).build();
         } catch (ApprovalFailedException e) {
             return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();
         } catch (InvalidInputException e) {
@@ -196,7 +211,7 @@ public class GymAdminController {
     public Response generateReports(@QueryParam("reportType") int reportType) {
         try {
             adminService.generateReports(reportType);
-            return Response.ok("Report generated successfully").build();
+            return Response.ok(java.util.Collections.singletonMap("message", "Report generated successfully")).build();
         } catch (InvalidInputException e) {
             return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
         }
@@ -206,7 +221,7 @@ public class GymAdminController {
     @Path("/reports/payment")
     public Response viewPaymentReports() {
         adminService.viewPaymentReports();
-        return Response.ok("Payment reports retrieved successfully").build();
+        return Response.ok(java.util.Collections.singletonMap("message", "Payment reports retrieved successfully")).build();
     }
 
     @GET
@@ -215,7 +230,7 @@ public class GymAdminController {
                                           @QueryParam("endDate") String endDate) {
         try {
             adminService.viewRevenueByDateRange(startDate, endDate);
-            return Response.ok("Revenue report generated successfully").build();
+            return Response.ok(java.util.Collections.singletonMap("message", "Revenue report generated successfully")).build();
         } catch (InvalidDateRangeException e) {
             return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
         }

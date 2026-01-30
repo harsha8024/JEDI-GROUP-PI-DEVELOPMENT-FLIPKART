@@ -73,7 +73,7 @@ public class SlotController {
                               @QueryParam("capacity") int capacity) {
         try {
             slotService.updateSlot(slotId, capacity);
-            return Response.ok("Slot Updated Successfully").build();
+            return Response.ok(java.util.Collections.singletonMap("message", "Slot Updated Successfully")).build();
         } catch (InvalidInputException | SlotOperationException e) {
             return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
         } catch (SlotNotFoundException e) {
@@ -86,7 +86,7 @@ public class SlotController {
     public Response deleteSlot(@PathParam("slotId") String slotId) {
         try {
             slotService.deleteSlot(slotId);
-            return Response.ok("Slot Deleted Successfully").build();
+            return Response.ok(java.util.Collections.singletonMap("message", "Slot Deleted Successfully")).build();
         } catch (InvalidInputException e) {
             return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
         } catch (SlotNotFoundException e) {

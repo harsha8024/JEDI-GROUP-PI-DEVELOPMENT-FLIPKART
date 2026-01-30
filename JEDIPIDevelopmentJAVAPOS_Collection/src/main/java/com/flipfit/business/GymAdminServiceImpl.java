@@ -224,7 +224,7 @@ public class GymAdminServiceImpl implements GymAdminInterface {
      * View all bookings.
      */
     @Override
-    public void viewAllBookings() {
+    public List<Booking> viewAllBookings() {
         List<Booking> allBookings = bookingDAO.getAllBookings();
 
         if (allBookings.isEmpty()) {
@@ -243,6 +243,7 @@ public class GymAdminServiceImpl implements GymAdminInterface {
             System.out.println("========================================");
             System.out.println("Total Bookings: " + allBookings.size());
         }
+        return allBookings;
     }
 
     /**
