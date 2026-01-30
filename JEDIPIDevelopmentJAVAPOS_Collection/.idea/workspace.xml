@@ -4,23 +4,83 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b7b36b37-22d4-4ff7-a30e-6f084d04cd8f" name="Changes" comment="" />
+    <list default="true" id="b7b36b37-22d4-4ff7-a30e-6f084d04cd8f" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/resource-files/api-tester.html" beforeDir="false" afterPath="$PROJECT_DIR$/resource-files/api-tester.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/flipfit/business/GymAdminInterface.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flipfit/business/GymAdminInterface.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/flipfit/business/GymAdminServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flipfit/business/GymAdminServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/flipfit/rest/GymAdminController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flipfit/rest/GymAdminController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/flipfit/rest/GymCustomerController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flipfit/rest/GymCustomerController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/flipfit/rest/GymOwnerController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flipfit/rest/GymOwnerController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/flipfit-dropwizard-1.0-SNAPSHOT.jar" beforeDir="false" afterPath="$PROJECT_DIR$/target/flipfit-dropwizard-1.0-SNAPSHOT.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/original-flipfit-dropwizard-1.0-SNAPSHOT.jar" beforeDir="false" afterPath="$PROJECT_DIR$/target/original-flipfit-dropwizard-1.0-SNAPSHOT.jar" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
   <component name="McpProjectServerCommands">
     <commands />
     <urls />
   </component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "associatedIndex": 0
+}]]></component>
+  <component name="ProjectId" id="38xY2S8QcsIWekMqqHQwV0Jx3xY" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
     "Application.FlipFitApplication.executor": "Run",
-    "node.js.selected.package.tslint": "(autodetect)"
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.MCP Project settings loaded": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "git-widget-placeholder": "dropwizard__om",
+    "kotlin-language-version-configured": "true",
+    "node.js.detected.package.eslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-30f59d01ecdd-26cb7f24e5b0-intellij.indexing.shared.core-IU-253.29346.138" />
+        <option value="bundled-js-predefined-d6986cc7102b-9b0f141eb926-JavaScript-IU-253.29346.138" />
+      </set>
+    </attachedChunks>
+  </component>
   <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="b7b36b37-22d4-4ff7-a30e-6f084d04cd8f" name="Changes" comment="" />
+      <created>1769742487269</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1769742487269</updated>
+      <workItem from="1769742490694" duration="652000" />
+    </task>
     <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="github-copilot-workspace">
+    <instructionFileLocations>
+      <option value=".github/instructions" />
+    </instructionFileLocations>
+    <promptFileLocations>
+      <option value=".github/prompts" />
+    </promptFileLocations>
   </component>
 </project>

@@ -5,6 +5,7 @@ import com.flipfit.bean.Gym;
 import com.flipfit.bean.Slot;
 import com.flipfit.business.GymAdminInterface;
 import com.flipfit.exception.ApprovalFailedException;
+import com.flipfit.exception.InvalidInputException;
 
 import java.util.List;
 import java.util.Scanner;
@@ -167,7 +168,7 @@ public class GymAdminFlipfitMenu {
                     String ownerId = scanner.nextLine();
                     try {
                         adminService.approveGymOwner(ownerId);
-                    } catch (ApprovalFailedException e) {
+                    } catch (ApprovalFailedException | InvalidInputException e) {
                         System.out.println("[ADMIN ERROR] " + e.getMessage());
                     }
                     break;
@@ -176,7 +177,7 @@ public class GymAdminFlipfitMenu {
                     String rejectOwnerId = scanner.nextLine();
                     try {
                         adminService.rejectGymOwner(rejectOwnerId);
-                    } catch (ApprovalFailedException e) {
+                    } catch (ApprovalFailedException | InvalidInputException e) {
                         System.out.println("[ADMIN ERROR] " + e.getMessage());
                     }
                     break;
