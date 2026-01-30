@@ -46,7 +46,7 @@ public class GymOwnerController {
             
             userService.register(owner);
             return Response.status(Response.Status.CREATED)
-                    .entity("Gym Owner registered successfully. Account pending admin approval.")
+                    .entity("Gym Owner registered successfully. You can now log in immediately!")
                     .build();
         } catch (RegistrationFailedException | InvalidInputException e) {
             return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();

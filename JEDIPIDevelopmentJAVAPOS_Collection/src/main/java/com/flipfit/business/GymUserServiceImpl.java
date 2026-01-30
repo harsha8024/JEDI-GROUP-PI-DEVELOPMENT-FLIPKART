@@ -116,21 +116,15 @@ public class GymUserServiceImpl implements GymUserInterface {
         customer.setCity(user.getCity());
         customer.setPassword(user.getPassword());
 
-        // Account is INACTIVE until Admin approves
-        customer.setActive(false);
+        // Customer account is ACTIVE immediately (no approval needed for user account)
+        customer.setActive(true);
 
         Role role = new Role();
         role.setRoleName("CUSTOMER");
         customer.setRole(role);
 
         if (customerDAO.saveCustomer(customer)) {
-            System.out.println("Customer data saved. Creating registration request...");
-            try {
-                registrationService.createRegistration(customerId, "CUSTOMER");
-                System.out.println("Registration successful! Your account is pending Admin approval.");
-            } catch (RegistrationAlreadyExistsException raee) {
-                System.out.println("Registration request already exists for user: " + customerId);
-            }
+            System.out.println("Customer registration successful! You can now log in immediately.");
         } else {
             throw new RegistrationFailedException("Customer registration failed for: " + customer.getName());
         }
@@ -148,7 +142,9 @@ public class GymUserServiceImpl implements GymUserInterface {
         owner.setCity(user.getCity());
         owner.setPassword(user.getPassword());
 
-        owner.setActive(false); // Make gym owner inactive initially (requires Admin approval)
+        // Gym owner is ACTIVE immediately after registration (no approval needed for user account)
+        // Only gyms and slots require admin approval
+        owner.setActive(true);
 
         if (user instanceof GymOwner) {
             String pan = ((GymOwner) user).getPanNumber();
@@ -181,7 +177,7 @@ public class GymUserServiceImpl implements GymUserInterface {
 
         if (gymOwnerDAO.saveGymOwner(owner)) {
             System.out.println("\n✓ Gym Owner registration successful: " + owner.getName() + " (ID: " + ownerId + ")");
-            System.out.println("You can now log in once Admin approves your account.");
+            System.out.println("You can now log in immediately. Your gyms and slots will require admin approval.");
         } else {
             throw new RegistrationFailedException("Gym Owner registration failed for: " + owner.getName());
         }

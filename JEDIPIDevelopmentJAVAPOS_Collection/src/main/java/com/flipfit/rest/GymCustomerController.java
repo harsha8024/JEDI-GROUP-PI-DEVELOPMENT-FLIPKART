@@ -41,7 +41,7 @@ public class GymCustomerController {
             
             userService.register(user);
             return Response.status(Response.Status.CREATED)
-                    .entity("Customer registered successfully. Account pending admin approval.")
+                    .entity("Customer registered successfully. You can now log in immediately!")
                     .build();
         } catch (RegistrationFailedException | InvalidInputException e) {
             return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
