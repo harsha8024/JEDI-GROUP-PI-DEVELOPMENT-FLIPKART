@@ -405,22 +405,22 @@
     <script>
         const presets = [
             {cat:'Customer', label:'Customer Login', method:'POST', path:'/customer/login', query:'email=customer@example.com&password=password123'},
-            {cat:'Customer', label:'Customer Registration', method:'POST', path:'/customer/register', body:{userName:'John Customer', email:'customer@example.com', phoneNumber:'1234567890', password:'password123', city:'Bangalore'}},
+            {cat:'Customer', label:'Customer Registration', method:'POST', path:'/customer/register', body:{name:'John Customer', email:'customer@example.com', phoneNumber:'1234567890', password:'password123', city:'Bangalore'}},
             {cat:'Customer', label:'View All Gyms', method:'GET', path:'/customer/gyms', query:'city=Bangalore'},
             {cat:'Customer', label:'Book Slot', method:'POST', path:'/customer/booking', body:{slotId:1, date:'2024-01-15'}},
             {cat:'Customer', label:'View Bookings', method:'GET', path:'/customer/viewBookings', query:'userId=1'},
             {cat:'Customer', label:'Cancel Booking', method:'DELETE', path:'/customer/cancelBooking/{bookingId}'},
             {cat:'Customer', label:'View Available Slots', method:'GET', path:'/customer/slots', query:'date=2024-01-15&gymId=1'},
-            {cat:'Customer', label:'Update Profile', method:'PUT', path:'/customer/editDetails', body:{userId:1, userName:'John Updated', phoneNumber:'9876543210', city:'Mumbai'}},
+            {cat:'Customer', label:'Update Profile', method:'PUT', path:'/customer/editDetails', body:{userId:1, name:'John Updated', phoneNumber:'9876543210', city:'Mumbai'}},
 
             {cat:'Owner', label:'Owner Login', method:'POST', path:'/owner/login', query:'email=owner@example.com&password=password123'},
-            {cat:'Owner', label:'Owner Registration', method:'POST', path:'/owner/register', body:{userName:'Jane Owner', email:'owner@example.com', phoneNumber:'9876543210', password:'password123', panCard:'ABCDE1234F', gstNum:'22ABCDE1234F1Z5', aadharNumber:'123456789012'}},
+            {cat:'Owner', label:'Owner Registration', method:'POST', path:'/owner/register', body:{name:'Jane Owner', email:'owner@example.com', phoneNumber:'9876543210', password:'password123', panNumber:'ABCDE1234F', gstinNumber:'22ABCDE1234F1Z5', aadharNumber:'123456789012'}},
             {cat:'Owner', label:'Add Gym', method:'POST', path:'/owner/gym', body:{gymName:'FitZone', city:'Bangalore', gymAddress:'123 Main St', numSlots:20, ownerId:1}},
             {cat:'Owner', label:'View My Gyms', method:'GET', path:'/owner/viewGyms', query:'ownerId=1'},
             {cat:'Owner', label:'Update Gym', method:'PUT', path:'/owner/gym/{gymId}', body:{gymName:'FitZone Pro', city:'Bangalore', gymAddress:'123 Main St Updated', numSlots:25}},
             {cat:'Owner', label:'View All Bookings', method:'GET', path:'/owner/viewAllBookings', query:'ownerId=1'},
             {cat:'Owner', label:'View Gym Bookings', method:'GET', path:'/owner/viewBookings', query:'gymId=1'},
-            {cat:'Owner', label:'Update Profile', method:'PUT', path:'/owner/editDetails', body:{userId:1, userName:'Owner Name', phoneNumber:'9876543210', panCard:'ABCDE1234F', gstNum:'22ABCDE1234F1Z5', aadharNumber:'123456789012'}},
+            {cat:'Owner', label:'Update Profile', method:'PUT', path:'/owner/editDetails', body:{userId:1, name:'Owner Name', phoneNumber:'9876543210', panNumber:'ABCDE1234F', gstinNumber:'22ABCDE1234F1Z5', aadharNumber:'123456789012'}},
 
             {cat:'Admin', label:'Admin Login', method:'POST', path:'/admin/login', query:'email=admin@example.com&password=password123'},
             {cat:'Admin', label:'View All Gyms', method:'GET', path:'/admin/gyms'},
@@ -452,13 +452,13 @@
             {cat:'Payment', label:'Get User Payments', method:'GET', path:'/payment/user/{userId}'},
 
             {cat:'User', label:'Generic User Login', method:'POST', path:'/user/login', body:{email:'user@example.com', password:'password123', roleId:1}},
-            {cat:'User', label:'Generic User Registration', method:'POST', path:'/user/register', body:{userName:'Generic User', email:'genericuser@example.com', phoneNumber:'1234567890', password:'password123', roleId:2, city:'Bangalore'}},
+            {cat:'User', label:'Generic User Registration', method:'POST', path:'/user/register', body:{name:'Generic User', email:'genericuser@example.com', phoneNumber:'1234567890', password:'password123', roleId:2, city:'Bangalore'}},
             {cat:'User', label:'Update Password', method:'PUT', path:'/user/updatePassword/{userId}', body:{password:'newPassword123'}},
             {cat:'User', label:'Get User by ID', method:'GET', path:'/user/{userId}'},
             {cat:'User', label:'View Profile by Email', method:'GET', path:'/user/viewProfile', query:'email=user@example.com'},
 
-            {cat:'Registration', label:'Register User', method:'POST', path:'/registration/register', body:{userName:'Jane Doe', email:'jane@example.com', phoneNumber:'9876543210', password:'pass456', roleId:3, city:'Delhi'}},
-            {cat:'Registration', label:'Update Registration', method:'PUT', path:'/registration/{registrationId}', body:{userName:'Jane Updated', email:'jane.updated@example.com', phoneNumber:'9999999999'}},
+            {cat:'Registration', label:'Register User', method:'POST', path:'/registration/register', body:{name:'Jane Doe', email:'jane@example.com', phoneNumber:'9876543210', password:'pass456', roleId:3, city:'Delhi'}},
+            {cat:'Registration', label:'Update Registration', method:'PUT', path:'/registration/{registrationId}', body:{name:'Jane Updated', email:'jane.updated@example.com', phoneNumber:'9999999999'}},
             {cat:'Registration', label:'Get Registration by ID', method:'GET', path:'/registration/{registrationId}'},
             {cat:'Registration', label:'Get All Registrations', method:'GET', path:'/registration/all'},
             {cat:'Registration', label:'Delete Registration', method:'DELETE', path:'/registration/{registrationId}'}
